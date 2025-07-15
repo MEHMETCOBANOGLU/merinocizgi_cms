@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!--
+    Eğer sitenizi bir alt dizinde (örn: merinocizgi.com.tr/app/) sunmuyorsanız,
+    bu base href'e dokunmanıza gerek yok. Flutter bunu build sırasında ayarlar.
+  -->
+    <base href="$FLUTTER_BASE_HREF">
+
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+
+    <!-- === SEO (Arama Motoru Optimizasyonu) ve Site Kimliği === -->
+
+    <!-- 1. SİTE BAŞLIĞI: Tarayıcı sekmesinde ve arama sonuçlarında görünür. -->
+    <title>MerinoÇizgi - Yerli Çizgi Roman Platformu</title>
+
+    <!-- 2. AÇIKLAMA: Google'da sitenizin altında görünecek kısa açıklama (155-160 karakter ideal). -->
+    <meta name="description" content="MerinoÇizgi, yetenekli Türk çizerlerin ve manga sanatçılarının eserlerini keşfedebileceğiniz, okuyabileceğiniz ve destekleyebileceğiniz yeni nesil dijital çizgi roman platformudur.">
+
+    <!-- 3. ANAHTAR KELİMELER: Sitenizin içeriğiyle ilgili anahtar kelimeler (artık daha az önemli ama yine de faydalı). -->
+    <meta name="keywords" content="merino, çizgi, çizgi roman, manga, yerli çizgi roman, türk manga, webtoon, dijital çizgi roman, online oku, sanatçı, çizer">
+
+    <!-- 4. YAZAR BİLGİSİ -->
+    <meta name="author" content="MerinoÇizgi">
+
+    <!-- === SOSYAL MEDYA PAYLAŞIMLARI İÇİN OPEN GRAPH (OG) TAG'LERİ === -->
+    <!-- Facebook, LinkedIn, WhatsApp vb. platformlarda link paylaşıldığında görünecek içerik. -->
+
+    <meta property="og:title" content="MerinoÇizgi - Yerli Çizgi Roman ve Manga Platformu" />
+    <meta property="og:description" content="Yetenekli Türk sanatçıların eserlerini keşfedin, okuyun ve destekleyin." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://merinocizgi.com.tr/" />
+    <!-- PAYLAŞIM GÖRSELİ: 1200x630 piksel boyutunda bir görselin tam URL'sini buraya koyun. -->
+    <!-- <meta property="og:image" content="https://merinocizgi.com.tr/assets/paylasim_gorseli.jpg" />  -->
+    <meta property="og:image" content="https://merinocizgi.com.tr/assets/images/merino.png" />
+    <meta property="og:site_name" content="MerinoÇizgi" />
+    <meta property="og:locale " content="tr_TR" />
+
+    <!-- === TWITTER PAYLAŞIMLARI İÇİN TWITTER CARD TAG'LERİ === -->
+    <meta name="twitter:card " content="summary_large_image ">
+    <meta name="twitter:title " content="MerinoÇizgi - Yerli Çizgi Roman ve Manga Platformu ">
+    <meta name="twitter:description " content="Yetenekli Türk sanatçıların eserlerini keşfedin, okuyun ve destekleyin. ">
+    <!-- PAYLAŞIM GÖRSELİ: Yukarıdaki og:image ile aynı olabilir. -->
+    <!-- <meta name="twitter:image " content="https://merinocizgi.com.tr/assets/paylasim_gorseli.jpg "> -->
+    <meta name="twitter:image " content="https://merinocizgi.com.tr/assets/images/merino.png ">
+
+    <!-- === GOOGLE İLE GİRİŞ İÇİN CLIENT ID (MEVCUT KODUNUZ) === -->
+    <meta name="google-signin-client_id " content="483380386928-8dnbtnanurmlk16dt4mh3psb0ibod1bn.apps.googleusercontent.com">
+
+    <!-- === FAVICON ve İKONLAR === -->
+    <!-- Bu dosyaların projenizin 'web' klasöründe olduğundan emin olun. -->
+    <!-- <link rel="icon " type="image/png " href="favicon2.png " /> -->
+    <!-- Faviconlar -->
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="android-chrome-512x512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <!-- Web Manifest (PWA uyumu) -->
+    <link rel="manifest" href="site.webmanifest">
+
+    <!-- <link rel="apple-touch-icon " href="icons/Icon-192.png "> -->
+
+    <!-- Manifest dosyası (PWA özellikleri için) -->
+    <link rel="manifest " href="manifest.json ">
+
+    <!-- Mobil cihazlar için viewport ayarı -->
+    <meta name="viewport " content="width=device-width, initial-scale=1.0 ">
+</head>
+
+<body>
+    <!-- <script>
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId: '601228582627047',
+                autoLogAppEvents: true,
+                xfbml: true,
+                version: 'v18.0'
+            });
+        };
+    </script>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+ -->
+
+
+    <!-- /////////////////// -->
+
+    <script>
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId: '601228582627047',
+                autoLogAppEvents: true,
+                xfbml: true,
+                version: 'v18.0'
+            });
+
+            FB.AppEvents.logPageView();
+
+        };
+
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {
+                return;
+            }
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
+
+
+    <!-- Bu script, Flutter uygulamanızı yükler. -->
+    <script src="flutter_bootstrap.js " async></script>
+</body>
+
+</html>

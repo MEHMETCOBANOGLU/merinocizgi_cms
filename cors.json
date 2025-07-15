@@ -1,0 +1,19 @@
+[{
+        "origin": [
+            "http://localhost",
+            "https://localhost",
+            "http://localhost:8080",
+            "http://127.0.0.1:8080"
+        ],
+        "method": ["GET"],
+        "maxAgeSeconds": 3600
+    },
+    {
+        "origin": [
+            "https://merinocizgi.com.tr",
+            "https://www.merinocizgi.com.tr"
+        ],
+        "method": ["GET"],
+        "maxAgeSeconds": 3600
+    }
+]

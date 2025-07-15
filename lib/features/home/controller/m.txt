@@ -1,0 +1,1 @@
+controller/ → Scroll, login popup vb. iş mantığını (örneğin bir HomeController / Provider / Bloc).

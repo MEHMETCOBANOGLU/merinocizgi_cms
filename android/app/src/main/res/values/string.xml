@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+<string name="app_name">Merino Çizgi</string>
+<string name="facebook_app_id">601228582627047</string>
+<string name="fb_login_protocol_scheme">fb601228582627047</string>
+<string name="facebook_client_token">3751fc6211d080433411f520d0720439</string>
+
+</resources>

@@ -1,0 +1,10 @@
+# Tüm arama motoru botlarına izin ver
+User-agent: *
+Allow: /
+
+# Taranmasını istemediğimiz dizinler (eğer varsa)
+Disallow: /admin/ 
+
+
+# Sitemap'in konumunu belirt
+Sitemap: https://merinocizgi.com.tr/sitemap.xml

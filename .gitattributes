@@ -1,0 +1,10 @@
+# Tüm .dart dosyalarını Dart olarak tanımla
+*.dart linguist-language=Dart
+
+# Android ve iOS klasörlerini vendored (sayıma dahil etme)
+android/** linguist-vendored
+ios/**     linguist-vendored
+
+# Eğer cpp uzantılı dosyalar varsa, satır dışı bırak
+*.cpp linguist-vendored
+*.h   linguist-vendored
