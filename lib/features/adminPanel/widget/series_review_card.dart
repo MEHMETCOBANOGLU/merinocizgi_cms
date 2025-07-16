@@ -12,7 +12,7 @@ import 'package:merinocizgi/features/adminPanel/widget/episode_review_tile.dart'
 
 class SeriesReviewCard extends ConsumerWidget {
   final String seriesId;
-  const SeriesReviewCard({Key? key, required this.seriesId}) : super(key: key);
+  const SeriesReviewCard({super.key, required this.seriesId});
 
   Widget _buildSeriesHeader(
       BuildContext context,
@@ -40,7 +40,7 @@ class SeriesReviewCard extends ConsumerWidget {
             children: [
               Text(title,
                   style: AppTextStyles.title.copyWith(color: Colors.black)),
-              SizedBox(height: 4.0),
+              const SizedBox(height: 4.0),
               RichText(
                 text: TextSpan(
                   children: [
@@ -97,7 +97,7 @@ class SeriesReviewCard extends ConsumerWidget {
                         ),
                       ),
                       TextSpan(
-                        text: DateFormat('dd.MM.yyyy').format(createdAt!),
+                        text: DateFormat('dd.MM.yyyy').format(createdAt),
                         style: AppTextStyles.subtitle.copyWith(
                           color: Colors.black,
                           fontSize: 16.0,

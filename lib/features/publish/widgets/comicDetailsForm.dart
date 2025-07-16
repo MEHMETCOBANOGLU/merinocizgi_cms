@@ -17,9 +17,9 @@ class ComisDetailForm extends ConsumerStatefulWidget {
   final void Function(int step) onStepTapped;
 
   const ComisDetailForm({
-    Key? key,
+    super.key,
     required this.onStepTapped,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<ComisDetailForm> createState() => _ComisDetailFormState();
@@ -123,7 +123,7 @@ class _ComisDetailFormState extends ConsumerState<ComisDetailForm> {
                       : _buildFormFields(isWideScreen),
 
                   if (!isWideScreen) _buildImagePickers(),
-                  SizedBox(
+                  const SizedBox(
                     height: 18,
                   ),
                   if (!isWideScreen)
@@ -203,9 +203,10 @@ class _ComisDetailFormState extends ConsumerState<ComisDetailForm> {
               ),
               onSelected: (selected) {
                 // if (selected != null) _showContinueSeriesDialog(selected['id'], selected['title']!);
-                if (selected != null)
+                if (selected != null) {
                   _showContinueSeriesDialog(
                       context, selected['id']!, selected['title']!);
+                }
               },
             ),
           );

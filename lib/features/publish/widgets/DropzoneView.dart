@@ -9,7 +9,7 @@ import 'package:merinocizgi/core/theme/typography.dart';
 class DropzoneW extends StatefulWidget {
   final void Function(List<Uint8List>) onFilesChanged;
 
-  const DropzoneW({Key? key, required this.onFilesChanged}) : super(key: key);
+  const DropzoneW({super.key, required this.onFilesChanged});
 
   @override
   State<DropzoneW> createState() => _DropzoneWState();
@@ -46,7 +46,7 @@ class _DropzoneWState extends State<DropzoneW> {
     final widthH = MediaQuery.of(context).size.width;
     final heightH = MediaQuery.of(context).size.height;
 
-    return Container(
+    return SizedBox(
       width: widthH * 0.7,
       // padding: const EdgeInsets.all(16.0),
       // decoration: BoxDecoration(
@@ -62,13 +62,13 @@ class _DropzoneWState extends State<DropzoneW> {
             children: [
               Text('Sayfa Yükle',
                   style: AppTextStyles.title.copyWith(color: Colors.black)),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Tooltip(
                 message:
                     'Görselin genişliği 800 pikselden, uzunluğu 1280 pikselden az olmalıdır. Toplamda 20MB\'a kadar ve en az 5 sayfa yükleyebilirsiniz. Her bir dosya en fazla 2MB olabilir. Sadece .JPG formatına izin verilir',
-                waitDuration: Duration(milliseconds: 500),
-                showDuration: Duration(seconds: 2),
-                textStyle: TextStyle(color: Colors.white),
+                waitDuration: const Duration(milliseconds: 500),
+                showDuration: const Duration(seconds: 2),
+                textStyle: const TextStyle(color: Colors.white),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade500,
                   borderRadius: BorderRadius.circular(8),

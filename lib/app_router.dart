@@ -132,7 +132,7 @@ List<RouteBase> _getMobileRoutes() {
       builder: (context, state) {
         final seriesId = state.pathParameters['seriesId']!;
         final episodeId = state.pathParameters['episodeId']!;
-        return MobileReaderPage(seriesId: seriesId, episodeId: episodeId);
+        return ReaderPage(seriesId: seriesId, episodeId: episodeId);
       },
     ),
     // Mobil için seri detay sayfası (kabuk dışında olabilir)

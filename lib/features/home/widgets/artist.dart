@@ -3,7 +3,7 @@ import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 
 class ArtistsSection extends StatefulWidget {
-  const ArtistsSection({Key? key}) : super(key: key);
+  const ArtistsSection({super.key});
 
   @override
   _ArtistsSectionState createState() => _ArtistsSectionState();

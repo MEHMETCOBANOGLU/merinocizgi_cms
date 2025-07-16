@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 
 class TermsOfServicePage extends StatelessWidget {
-  const TermsOfServicePage({Key? key}) : super(key: key);
+  const TermsOfServicePage({super.key});
 
   @override
   Widget build(BuildContext context) {

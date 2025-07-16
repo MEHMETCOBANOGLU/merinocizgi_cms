@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 
 class KvkkPage extends StatelessWidget {
-  const KvkkPage({Key? key}) : super(key: key);
+  const KvkkPage({super.key});
 
   @override
   Widget build(BuildContext context) {

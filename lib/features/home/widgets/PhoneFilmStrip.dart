@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 
 class PhoneFilmStrip extends StatefulWidget {
-  const PhoneFilmStrip({Key? key}) : super(key: key);
+  const PhoneFilmStrip({super.key});
 
   @override
   State<PhoneFilmStrip> createState() => _PhoneFilmStripState();

@@ -79,7 +79,8 @@ class _MobileComicDetailsPageState
                       final episodesDoc = entry.value;
 
                       return ChapterCardWidget(
-                        SeriesId: widget.arguments.seriesId,
+                        episodeId: episodesDoc.id,
+                        seriesId: widget.arguments.seriesId,
                         title: episodesDoc['title'],
                         chapter: (index + 1)
                             .toString(), // 👈 sadece sayıyı gönderiyoruz

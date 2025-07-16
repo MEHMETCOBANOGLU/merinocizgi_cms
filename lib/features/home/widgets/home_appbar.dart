@@ -21,7 +21,7 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final GlobalKey merinoKey, comicsKey, artistsKey;
 
   const HomeAppBar({
-    Key? key,
+    super.key,
     required this.merinoKey,
     required this.comicsKey,
     required this.artistsKey,
@@ -30,7 +30,7 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.onNavTap,
     required this.onPublish,
     required this.onLogin, // ← Yeni eklenen satır
-  }) : super(key: key);
+  });
 
   @override
   Size get preferredSize => const Size.fromHeight(100);
@@ -366,7 +366,7 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.person, color: Colors.white),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Flexible(
               child: Text(
                 displayName,

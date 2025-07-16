@@ -4,7 +4,7 @@ import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 
 class ComicsSection extends StatefulWidget {
-  const ComicsSection({Key? key}) : super(key: key);
+  const ComicsSection({super.key});
 
   @override
   State<ComicsSection> createState() => _ComicsSectionState();
@@ -23,7 +23,7 @@ class _ComicsSectionState extends State<ComicsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final CarouselSliderController _carouselController =
+    final CarouselSliderController carouselController =
         CarouselSliderController();
     final double screenWidth = MediaQuery.of(context).size.width;
     // Frame PNG'in iç ekran oranı (ör. 300x450)
@@ -47,7 +47,7 @@ class _ComicsSectionState extends State<ComicsSection> {
               // ı want to add text
 
               child: CarouselSlider.builder(
-            carouselController: _carouselController,
+            carouselController: carouselController,
             itemCount: _comics.length,
             options: CarouselOptions(
               height: frameHeight,

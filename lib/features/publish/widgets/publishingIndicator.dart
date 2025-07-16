@@ -16,8 +16,7 @@ void showPublishingDialog(BuildContext context, Future<void> publishingFuture) {
 class _PublishingDialog extends StatefulWidget {
   final Future<void> publishingFuture;
 
-  const _PublishingDialog({Key? key, required this.publishingFuture})
-      : super(key: key);
+  const _PublishingDialog({super.key, required this.publishingFuture});
 
   @override
   State<_PublishingDialog> createState() => _PublishingDialogState();

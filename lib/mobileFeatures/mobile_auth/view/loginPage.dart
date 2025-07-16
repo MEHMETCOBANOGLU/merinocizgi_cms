@@ -81,7 +81,7 @@ class MobileLoginPage extends ConsumerWidget {
                   'assets/images/googleLogo.png',
                   width: 22,
                 ), // Google ikonu eklenebilir
-                label: Center(child: const Text('Google ile Devam Et')),
+                label: const Center(child: Text('Google ile Devam Et')),
                 style: ElevatedButton.styleFrom(
                   fixedSize: Size(MediaQuery.of(context).size.width * 0.9, 40),
                   backgroundColor: Colors.transparent,

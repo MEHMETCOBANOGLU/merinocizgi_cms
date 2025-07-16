@@ -10,7 +10,7 @@ import 'package:merinocizgi/features/auth/controller/auth_controller.dart';
 /// E-posta ile giriş/kayıt işlemlerini yapan diyalog
 class EmailLoginPage extends ConsumerStatefulWidget {
   final bool isLoginMode;
-  const EmailLoginPage({Key? key, required this.isLoginMode}) : super(key: key);
+  const EmailLoginPage({super.key, required this.isLoginMode});
 
   @override
   ConsumerState<EmailLoginPage> createState() => _EmailLoginDialogState();

@@ -8,10 +8,10 @@ class LoginMethodDialog extends StatelessWidget {
   final VoidCallback onGoogleSelected;
 
   const LoginMethodDialog({
-    Key? key,
+    super.key,
     required this.onEmailSelected,
     required this.onGoogleSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

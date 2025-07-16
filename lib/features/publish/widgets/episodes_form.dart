@@ -23,11 +23,11 @@ class EpisodesForm extends ConsumerStatefulWidget {
   final void Function(int step) onStepTapped;
 
   const EpisodesForm({
-    Key? key,
+    super.key,
     // required this.seriesId,
     // required this.onNext,
     required this.onStepTapped,
-  }) : super(key: key);
+  });
 
   @override
   // 2. The createState method remains the same
@@ -38,7 +38,7 @@ class EpisodesForm extends ConsumerStatefulWidget {
 class _EpisodesFormState extends ConsumerState<EpisodesForm> {
   final _titleCtrl = TextEditingController();
   Uint8List? _episodeImage;
-  bool _loading = false;
+  final bool _loading = false;
   List<Uint8List> _pages = [];
 
   // --- RESİM SEÇİMİ ---
@@ -268,7 +268,7 @@ class _EpisodesFormState extends ConsumerState<EpisodesForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (isWideScreen)
-                  Container(
+                  SizedBox(
                     height: 500,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -302,7 +302,7 @@ class _EpisodesFormState extends ConsumerState<EpisodesForm> {
                       onTap: _pickImage, // Simplified the call
                     ),
                   ),
-                SizedBox(
+                const SizedBox(
                   height: 18,
                 ),
                 if (!isWideScreen)

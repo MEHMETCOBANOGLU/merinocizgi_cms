@@ -9,9 +9,10 @@ import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_auth/view/loginPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/bottom_bar_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/home_app_bar_widget.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/reading_history_list.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
 
-// Seçili olan profil sekmesinin (En Son, Serilerim vb.) state'ini tutar.
+// Seçili olan profil sekmesinin (Okumaya Devam Et, Serilerim vb.) state'ini tutar.
 final _selectedProfileTabIndexProvider =
     StateProvider.autoDispose<int>((ref) => 0);
 
@@ -20,7 +21,7 @@ class MyAccountPage extends ConsumerWidget {
 
   // Sabit verileri build metodu dışında tanımlamak en iyi pratiktir.
   static const List<String> _tabs = [
-    'En Son',
+    'Okumaya Devam Et',
     'Takip',
     'Takipçi',
     'Serilerim',
@@ -85,9 +86,13 @@ class MyAccountPage extends ConsumerWidget {
           // 3. Sekmelere karşılık gelen içerik.
           body: TabBarView(
             children: _tabs.map((tabLabel) {
-              // Her sekme için ilgili içeriği göster.
-              // Şimdilik hepsi aynı placeholder'ı gösteriyor.
+              if (tabLabel == 'Okumaya Devam Et') {
+                return const ReadingHistoryList();
+              }
+              // Diğer sekmeler için de kendi widget'larını oluşturacaksın.
               // Örneğin: if (tabLabel == 'Serilerim') return AuthorSeriesDashboard();
+
+              // Şimdilik diğerleri için placeholder
               return Center(
                 child: Text(
                   "$tabLabel İçeriği",

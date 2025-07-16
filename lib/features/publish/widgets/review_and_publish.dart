@@ -46,11 +46,11 @@ class ReviewAndPublishView extends ConsumerWidget {
   final void Function(int step) onStepTapped;
 
   const ReviewAndPublishView({
-    Key? key,
+    super.key,
     // required this.seriesId,
     required this.onPublishComplete,
     required this.onStepTapped,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -135,7 +135,7 @@ class ReviewAndPublishView extends ConsumerWidget {
                       ],
                     ),
                     if (!isWideScreen) episodesSection,
-                    if (!isWideScreen) SizedBox(height: 32),
+                    if (!isWideScreen) const SizedBox(height: 32),
                     if (!isWideScreen)
                       publishButton(
                           widthH: widthH,
@@ -371,7 +371,7 @@ Widget _buildEpisodeCard(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (episode.isDraft)
-                          Chip(
+                          const Chip(
                             label: Text('Yeni',
                                 style: TextStyle(
                                     color: Colors.white, fontSize: 10)),

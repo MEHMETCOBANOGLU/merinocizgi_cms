@@ -185,7 +185,7 @@ class AuthController extends StateNotifier<AsyncValue<UserCredential?>> {
       default:
         // Eğer hata kodu hala yakalanamıyorsa, orijinal mesajı göstermek daha iyi olabilir.
         {
-          print('FirebaseAuthException: ${e.code}  - ${e}  - ${e.message}');
+          print('FirebaseAuthException: ${e.code}  - $e  - ${e.message}');
         }
         return 'Bir hata oluştuu: ${e ?? 'Bilinmeyen hata.'}';
     }

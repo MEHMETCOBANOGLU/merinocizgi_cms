@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:merinocizgi/features/auth/controller/auth_providers.dart'; // bannerVisibilityProvider için
 
 class EmailVerificationBanner extends ConsumerWidget {
-  const EmailVerificationBanner({Key? key}) : super(key: key);
+  const EmailVerificationBanner({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -12,7 +12,7 @@ import 'package:merinocizgi/features/home/widgets/PhoneFilmStrip.dart';
 import 'package:merinocizgi/features/home/widgets/artist.dart';
 
 class HomePage extends ConsumerWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -45,10 +45,10 @@ class HomePage extends ConsumerWidget {
         children: [
           const EmailVerificationBanner(),
           About(key: merinoKey),
-          PhoneFilmStrip(),
+          const PhoneFilmStrip(),
           ComicsSection(key: comicsKey),
           ArtistsSection(key: artistsKey),
-          AppFooter(),
+          const AppFooter(),
         ],
       ),
     );

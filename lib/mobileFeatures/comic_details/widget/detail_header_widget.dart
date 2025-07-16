@@ -89,7 +89,7 @@ class _DetailHeaderWidgetState extends State<DetailHeaderWidget> {
                         const SizedBox(width: 4),
                         Text(
                           widget.rating.toStringAsFixed(1),
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                           ),

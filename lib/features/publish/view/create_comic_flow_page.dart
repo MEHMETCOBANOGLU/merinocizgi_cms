@@ -7,7 +7,7 @@ import 'package:merinocizgi/features/publish/widgets/episodes_form.dart';
 import 'package:merinocizgi/features/publish/widgets/review_and_publish.dart';
 
 class CreateComicFlowPage extends ConsumerStatefulWidget {
-  const CreateComicFlowPage({Key? key}) : super(key: key);
+  const CreateComicFlowPage({super.key});
 
   @override
   ConsumerState<CreateComicFlowPage> createState() =>

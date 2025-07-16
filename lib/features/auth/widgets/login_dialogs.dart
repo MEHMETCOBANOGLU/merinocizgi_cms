@@ -9,7 +9,7 @@ import 'package:merinocizgi/features/auth/widgets/email_login_dialog.dart';
 
 /// Giriş yöntemi seçim diyaloğu
 class LoginSelectionDialog extends ConsumerWidget {
-  const LoginSelectionDialog({Key? key}) : super(key: key);
+  const LoginSelectionDialog({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

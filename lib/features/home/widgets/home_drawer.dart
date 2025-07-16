@@ -18,14 +18,14 @@ class HomeDrawer extends ConsumerWidget {
   final void Function(GlobalKey) onNavTap;
 
   const HomeDrawer({
-    Key? key,
+    super.key,
     required this.merinoKey,
     required this.comicsKey,
     required this.artistsKey,
     required this.onPublish,
     required this.onLogin,
     required this.onNavTap,
-  }) : super(key: key);
+  });
 
   // HomeAppBar'dan kopyalanan özel buton widget'ları
   Widget _loginButton(String label, VoidCallback onTap) {

@@ -18,6 +18,7 @@ class SeriesInfoCard extends ConsumerWidget {
   final VoidCallback onPublishComplete;
 
   const SeriesInfoCard({
+    super.key,
     required this.title,
     required this.summary,
     required this.category1,

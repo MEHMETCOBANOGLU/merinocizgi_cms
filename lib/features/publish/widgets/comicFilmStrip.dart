@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 class ComicFilmStrip extends StatefulWidget {
   final List<dynamic> pages;
 
-  const ComicFilmStrip({Key? key, required this.pages}) : super(key: key);
+  const ComicFilmStrip({super.key, required this.pages});
 
   @override
   State<ComicFilmStrip> createState() => _ComicFilmStripState();

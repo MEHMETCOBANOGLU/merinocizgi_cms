@@ -10,7 +10,7 @@ class WordStamp {
 
 /// KaraokePage: Ses kaydıyla eş zamanlı metin gösterimi.
 class KaraokePage extends StatefulWidget {
-  const KaraokePage({Key? key}) : super(key: key);
+  const KaraokePage({super.key});
 
   @override
   _KaraokePageState createState() => _KaraokePageState();

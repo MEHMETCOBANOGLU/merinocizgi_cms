@@ -12,6 +12,7 @@ class StepIndicator extends StatelessWidget {
   // final void Function(int)? onStepTapped; // ← yeni
 
   const StepIndicator({
+    super.key,
     required this.steps,
     this.currentStep = 0,
     this.activeColor = Colors.green,
@@ -22,6 +23,7 @@ class StepIndicator extends StatelessWidget {
     // this.onStepTapped, // ← yeni
   });
 
+  @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,

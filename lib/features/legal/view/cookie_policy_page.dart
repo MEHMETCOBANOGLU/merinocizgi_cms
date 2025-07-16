@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 
 class CookiePolicyPage extends StatelessWidget {
-  const CookiePolicyPage({Key? key}) : super(key: key);
+  const CookiePolicyPage({super.key});
 
   @override
   Widget build(BuildContext context) {

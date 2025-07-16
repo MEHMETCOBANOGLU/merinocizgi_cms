@@ -11,11 +11,11 @@ class CarouselTopWidget extends StatelessWidget {
   final VoidCallback? onSeeMore;
 
   const CarouselTopWidget({
-    Key? key,
+    super.key,
     required this.title,
     required this.children,
     this.onSeeMore,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

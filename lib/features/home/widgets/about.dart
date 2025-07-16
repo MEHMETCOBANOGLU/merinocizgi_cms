@@ -6,7 +6,7 @@ import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/core/widgets/app_button.dart';
 
 class About extends StatelessWidget {
-  const About({Key? key}) : super(key: key);
+  const About({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -10,7 +10,7 @@ import 'package:merinocizgi/features/auth/controller/auth_controller.dart';
 /// E-posta ile giriş/kayıt işlemlerini yapan diyalog
 class EmailLoginPage extends ConsumerStatefulWidget {
   final bool isLoginMode;
-  const EmailLoginPage({Key? key, required this.isLoginMode}) : super(key: key);
+  const EmailLoginPage({super.key, required this.isLoginMode});
 
   @override
   ConsumerState<EmailLoginPage> createState() => _EmailLoginDialogState();
@@ -148,11 +148,11 @@ class _EmailLoginDialogState extends ConsumerState<EmailLoginPage> {
                           height: 3,
                           width: 60,
                           color: AppColors.primary,
-                          margin: EdgeInsets.only(top: 4),
+                          margin: const EdgeInsets.only(top: 4),
                         )
                     ],
                   ),
-                  SizedBox(width: 40),
+                  const SizedBox(width: 40),
                   Column(
                     children: [
                       GestureDetector(
@@ -173,7 +173,7 @@ class _EmailLoginDialogState extends ConsumerState<EmailLoginPage> {
                           height: 3,
                           width: 60,
                           color: AppColors.primary,
-                          margin: EdgeInsets.only(top: 4),
+                          margin: const EdgeInsets.only(top: 4),
                         )
                     ],
                   ),
@@ -247,7 +247,7 @@ class _EmailLoginDialogState extends ConsumerState<EmailLoginPage> {
                         alignment: Alignment.topRight,
                         child: TextButton(
                           style: TextButton.styleFrom(
-                            padding: EdgeInsets.only(right: 30),
+                            padding: const EdgeInsets.only(right: 30),
                           ),
                           onPressed: isLoading ? null : _resetPassword,
                           child: const Text(
