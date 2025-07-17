@@ -40,7 +40,6 @@
 //   Future<void> signUpWithEmail({
 //     required String email,
 //     required String password,
-//     required String fullName,
 //     required String mahlas,
 //   }) async {
 //     state = const AsyncLoading();
@@ -54,7 +53,6 @@
 //         // 2. Kullanıcı bilgilerini Firestore'a kaydet.
 //         await _firestore.collection('users').doc(user.uid).set({
 //           'email': email,
-//           'fullName': fullName,
 //           'mahlas': mahlas,
 //           'createdAt': FieldValue.serverTimestamp(),
 //           'uid': user.uid,

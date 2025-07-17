@@ -12,6 +12,8 @@ import 'package:merinocizgi/mobileFeatures/comic_details/widget/title_chapters_w
 
 class DetailPageArguments {
   final String seriesId;
+  final String authorName;
+  final String authorId;
   final String urlImage;
   final String title;
   final String synopsis;
@@ -19,6 +21,8 @@ class DetailPageArguments {
 
   DetailPageArguments({
     required this.seriesId,
+    required this.authorName,
+    required this.authorId,
     required this.urlImage,
     required this.title,
     required this.synopsis,
@@ -60,6 +64,8 @@ class _MobileComicDetailsPageState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DetailHeaderWidget(
+                  authorName: widget.arguments.authorName,
+                  authorId: widget.arguments.authorId,
                   urlImage: widget.arguments.urlImage,
                   title: widget.arguments.title,
                   synopsis: widget.arguments.synopsis,

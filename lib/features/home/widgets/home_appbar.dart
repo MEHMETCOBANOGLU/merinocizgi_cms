@@ -168,7 +168,8 @@ class HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   // Senaryo 2: Kullanıcı giriş yapmış.
                   else {
                     // userProfileProvider'ı burada, giriş yapıldığından emin olduktan sonra izle.
-                    final userProfileAsync = ref.watch(userProfileProvider);
+                    final userProfileAsync =
+                        ref.watch(currentUserProfileProvider);
 
                     return userProfileAsync.when(
                         data: (profileData) {

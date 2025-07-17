@@ -66,6 +66,9 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                               context,
                               arguments: DetailPageArguments(
                                 seriesId: seriesDoc.id,
+                                authorName:
+                                    seriesDoc['authorName'], // authorName
+                                authorId: seriesDoc['authorId'],
                                 title: seriesDoc['title'],
                                 synopsis: seriesDoc['summary'],
                                 urlImage: seriesDoc['squareImageUrl'],
@@ -98,6 +101,8 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                               context,
                               arguments: DetailPageArguments(
                                 seriesId: seriesDoc.id,
+                                authorName: seriesDoc['authorName'],
+                                authorId: seriesDoc['authorId'],
                                 title: seriesDoc['title'],
                                 synopsis: seriesDoc['summary'],
                                 urlImage: seriesDoc['squareImageUrl'],
@@ -164,6 +169,8 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                                 context,
                                 arguments: DetailPageArguments(
                                   seriesId: seriesDoc.id,
+                                  authorName: seriesDoc['authorName'],
+                                  authorId: seriesDoc['authorId'],
                                   title: seriesDoc['title'],
                                   synopsis: seriesDoc['summary'],
                                   urlImage: seriesDoc['squareImageUrl'],
@@ -205,6 +212,8 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                                 context,
                                 arguments: DetailPageArguments(
                                   seriesId: seriesDoc.id,
+                                  authorName: seriesDoc['authorName'],
+                                  authorId: seriesDoc['authorId'],
                                   title: seriesDoc['title'],
                                   synopsis: seriesDoc['summary'],
                                   urlImage: seriesDoc['squareImageUrl'],
@@ -254,6 +263,8 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                               context,
                               arguments: DetailPageArguments(
                                 seriesId: seriesDoc.id,
+                                authorName: seriesDoc['authorName'],
+                                authorId: seriesDoc['authorId'],
                                 title: seriesDoc['title'],
                                 synopsis: seriesDoc['summary'],
                                 urlImage: seriesDoc['squareImageUrl'],

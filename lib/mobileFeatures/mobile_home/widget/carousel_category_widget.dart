@@ -151,6 +151,8 @@ class _CarouselCategoryWidgetState
                       context,
                       arguments: DetailPageArguments(
                         seriesId: seriesDoc.id,
+                        authorName: seriesDoc['authorName'],
+                        authorId: seriesDoc['authorId'],
                         title: seriesDoc['title'],
                         synopsis: seriesDoc['summary'],
                         urlImage: seriesDoc['squareImageUrl'],

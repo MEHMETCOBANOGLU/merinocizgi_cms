@@ -26,7 +26,7 @@ class _ReaderPageState extends ConsumerState<ReaderPage> {
   void _updateHistory(
       Map<String, dynamic> seriesData, Map<String, dynamic> episodeData) {
     // Controller'daki metodu çağırarak geçmişi güncelle.
-    ref.read(MyaccountControllerProvider.notifier).updateUserReadingHistory(
+    ref.read(MyAccountControllerProvider.notifier).updateUserReadingHistory(
           seriesId: widget.seriesId,
           seriesTitle: seriesData['title'] ?? '',
           seriesImageUrl: seriesData['squareImageUrl'] ?? '',

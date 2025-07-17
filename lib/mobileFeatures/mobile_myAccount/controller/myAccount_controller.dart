@@ -48,9 +48,35 @@ class MyAccountController extends StateNotifier<AsyncValue<void>> {
       print("Okuma geçmişi güncellenirken hata oluştu: $e");
     }
   }
+
+  /// Bir yazarı takip eder.///
+  Future<void> followUser(String authorId) async {
+    final user = _ref.read(authStateProvider).value?.user;
+    if (user == null || user.uid == authorId) return; // Kendini takip edemez
+
+    final followRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('following')
+        .doc(authorId);
+    await followRef.set({}); // Boş bir döküman oluşturmak trigger'ı tetikler
+  }
+
+  /// Bir yazarı takipten çıkar.///
+  Future<void> unfollowUser(String authorId) async {
+    final user = _ref.read(authStateProvider).value?.user;
+    if (user == null) return;
+
+    final followRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('following')
+        .doc(authorId);
+    await followRef.delete(); // Dökümanı silmek trigger'ı tetikler
+  }
 }
 
-final MyaccountControllerProvider =
+final MyAccountControllerProvider =
     StateNotifierProvider.autoDispose<MyAccountController, AsyncValue<void>>(
         (ref) {
   return MyAccountController(ref);

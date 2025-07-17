@@ -20,14 +20,12 @@ class Myaccountpages extends ConsumerStatefulWidget {
 class _MyaccountpagesState extends ConsumerState<Myaccountpages> {
   // --- STATE DEĞİŞKENLERİ ---
   bool _isEditing = false;
-  final _fullNameController = TextEditingController();
   final _mahlasController = TextEditingController();
   Uint8List? _newProfileImageBytes; // Seçilen yeni resmin verisi
 
   @override
   void dispose() {
     // Controller'ları temizlemeyi unutmuyoruz.
-    _fullNameController.dispose();
     _mahlasController.dispose();
     super.dispose();
   }
@@ -57,7 +55,6 @@ class _MyaccountpagesState extends ConsumerState<Myaccountpages> {
     // .notifier ile StateNotifier'ın kendisine erişiriz.
     final success =
         await ref.read(accountControllerProvider.notifier).updateProfile(
-              fullName: _fullNameController.text.trim(),
               mahlas: _mahlasController.text.trim(),
               newProfileImage: _newProfileImageBytes,
             );
@@ -96,7 +93,7 @@ class _MyaccountpagesState extends ConsumerState<Myaccountpages> {
 
     // Profil panelini oluşturan fonksiyon
     Widget buildProfilePanel() {
-      final userProfile = ref.watch(userProfileProvider);
+      final userProfile = ref.watch(currentUserProfileProvider);
       return Container(
         margin: const EdgeInsets.fromLTRB(20, 20, 20, 20),
         padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
@@ -107,14 +104,14 @@ class _MyaccountpagesState extends ConsumerState<Myaccountpages> {
         ),
         child: userProfile.when(
           data: (user) {
-            if (user == null) {
+            if (user == null || !user.exists || user.data() == null) {
               return const Center(child: Text("Profil bilgileri yüklenemedi."));
             }
             return AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: _isEditing
-                  ? _buildEditProfileView(user)
-                  : _buildViewProfileView(user),
+                  ? _buildEditProfileView(user as Map<String, dynamic>)
+                  : _buildViewProfileView(user as Map<String, dynamic>),
             );
           },
           error: (error, stackTrace) => Center(child: Text(error.toString())),
@@ -184,15 +181,6 @@ class _MyaccountpagesState extends ConsumerState<Myaccountpages> {
         ),
         const SizedBox(height: 16),
         Text(
-          user['fullName'] ?? 'İsim Belirtilmemiş',
-          textAlign: TextAlign.center,
-          style: Theme.of(context)
-              .textTheme
-              .headlineSmall
-              ?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 4),
-        Text(
           user['mahlas'] != null && user['mahlas'].isNotEmpty
               ? user['mahlas']
               : 'Mahlas Belirtilmemiş',
@@ -213,7 +201,6 @@ class _MyaccountpagesState extends ConsumerState<Myaccountpages> {
               icon: const Icon(Icons.edit),
               label: const Text('Profili Düzenle'),
               onPressed: () {
-                _fullNameController.text = user['fullName'] ?? '';
                 _mahlasController.text = user['mahlas'] ?? '';
                 setState(() => _isEditing = true);
               },
@@ -363,18 +350,7 @@ class _MyaccountpagesState extends ConsumerState<Myaccountpages> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text("İsim Soyisim",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: _fullNameController,
-            enabled: !isSaving, // Kaydederken düzenlemeyi engelle
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: "Adınız ve Soyadınız",
-            ),
-          ),
-          const SizedBox(height: 16),
+
           const Text("Mahlas (Yazar Adı)",
               style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),

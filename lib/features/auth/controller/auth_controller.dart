@@ -127,8 +127,7 @@ class AuthController extends StateNotifier<AsyncValue<UserCredential?>> {
         final user = userCredential.user!;
         await _firestore.collection('users').doc(user.uid).set({
           'email': user.email,
-          'fullName': user.displayName,
-          'mahlas': '',
+          'mahlas': user.displayName,
           'createdAt': FieldValue.serverTimestamp(),
           'uid': user.uid,
           'profileImageUrl': user.photoURL,

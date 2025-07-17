@@ -11,7 +11,6 @@ class AccountController extends StateNotifier<AsyncValue<void>> {
   AccountController(this._ref) : super(const AsyncData(null));
 
   Future<bool> updateProfile({
-    required String fullName,
     required String mahlas,
     Uint8List? newProfileImage,
   }) async {
@@ -27,7 +26,6 @@ class AccountController extends StateNotifier<AsyncValue<void>> {
 
       // Firestore'a gönderilecek veriyi tutan map.
       final Map<String, dynamic> dataToUpdate = {
-        'fullName': fullName,
         'mahlas': mahlas,
       };
 

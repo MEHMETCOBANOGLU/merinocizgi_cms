@@ -24,12 +24,12 @@ class AccountSettingsPage extends ConsumerWidget {
         children: [
           _SectionHeader('Hesap'),
           Consumer(builder: (context, ref, _) {
-            final userProfile = ref.watch(userProfileProvider);
+            final userProfile = ref.watch(currentUserProfileProvider);
             return userProfile.when(
               data: (data) => Column(
                 children: [
                   _SettingsTile(
-                    title: data?['fullName'] ?? 'İsim Yükleniyor...',
+                    title: data?['mahlas'] ?? 'Mahlas Yükleniyor...',
                     subtitle: "Profilini düzenle",
                     icon: Icons.person_outline,
                     onTap: () => context

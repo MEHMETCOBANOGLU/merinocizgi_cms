@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:merinocizgi/core/providers/account_providers.dart';
-import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
@@ -187,7 +186,7 @@ class SeriesReviewCard extends ConsumerWidget {
         final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
 
         final authorId = data['authorId'] as String? ?? 'Bilinmiyor';
-        final authorDataAsync = ref.watch(authorProfileProvider(authorId));
+        final authorDataAsync = ref.watch(userProfileProvider(authorId));
 
         final authorEmail = authorDataAsync.when(
           data: (authorData) => authorData?['email'] as String? ?? 'Bilinmiyor',

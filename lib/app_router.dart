@@ -14,6 +14,7 @@ import 'package:merinocizgi/features/legal/view/terms_of_service_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_auth/widgets/email_login_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/view/myAccountPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/accountSettings.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_user_profile/view/userProfilePage.dart';
 import 'package:merinocizgi/mobileFeatures/shared/view/mobile_main_layout.dart'; // Mobil için yeni layout
 
 // Web Sayfaları
@@ -161,6 +162,12 @@ List<RouteBase> _getMobileRoutes() {
         builder: (context, state) {
           // final seriesId = state.pathParameters['seriesId']!;
           return const EmailLoginPage(isLoginMode: true);
+        }),
+    GoRoute(
+        path: '/UserProfile/:authorId',
+        builder: (context, state) {
+          final authorId = state.pathParameters['authorId']!;
+          return UserProfilePage(authorId: authorId);
         }),
 
     GoRoute(

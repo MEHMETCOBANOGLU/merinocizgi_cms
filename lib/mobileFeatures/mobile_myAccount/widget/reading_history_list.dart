@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_myAccount/controller/readingHistoryProvider.dart'; // Yeni provider'ı import et
+import 'package:merinocizgi/mobileFeatures/mobile_myAccount/controller/MyAccount_providers.dart'; // Yeni provider'ı import et
 
 // Bu widget, "Okumaya Devam Et" sekmesinin içeriğini çizer.
 class ReadingHistoryList extends ConsumerWidget {

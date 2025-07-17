@@ -7,6 +7,8 @@ import 'package:merinocizgi/core/theme/colors.dart';
 
 class DetailHeaderWidget extends StatefulWidget {
   final String urlImage;
+  final String authorName;
+  final String authorId;
   final String title;
   final String synopsis;
   final String seriesId;
@@ -15,6 +17,8 @@ class DetailHeaderWidget extends StatefulWidget {
   const DetailHeaderWidget({
     super.key,
     required this.urlImage,
+    required this.authorName,
+    required this.authorId,
     required this.title,
     required this.synopsis,
     required this.seriesId,
@@ -28,11 +32,52 @@ class DetailHeaderWidget extends StatefulWidget {
 class _DetailHeaderWidgetState extends State<DetailHeaderWidget> {
   bool isLiked = false;
   int rating = 0;
+  bool isReadMore = false;
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+
+    // --- METİN HESAPLAMA MANTIĞI ---
+    // TextPainter'ı build metodunun en başında oluşturup,
+    // metnin kaplayacağı alanı önceden hesaplıyoruz.
+    final textSpan = TextSpan(
+      text: widget.synopsis,
+      style: const TextStyle(color: Colors.grey, fontSize: 12),
+    );
+    final textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+      maxLines:
+          isReadMore ? 1000 : 3, // "Daha fazla" modunda satır limiti olmasın
+    )..layout(maxWidth: size.width * 0.9 - 32); // Container genişliği - padding
+
+    // Metnin kapladığı gerçek yüksekliği alıyoruz.
+    final double textHeight = textPainter.size.height;
+// "Devamını Oku" butonunun gösterilip gösterilmeyeceğini hesapla.
+    // Bunun için metni, olması gereken maksimum satır limitiyle ölçüyoruz.
+    final textPainterForCheck = TextPainter(
+      text: textSpan,
+      maxLines: 3, // <-- ANA DEĞİŞİKLİK BURADA: Limiti belirtiyoruz.
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: size.width * 0.9 - 32); // Container genişliği - padding
+
+    // 'didExceedMaxLines', şimdi metnin 3 satırdan uzun olup olmadığını doğru bir şekilde kontrol edecek.
+    final bool shouldShowReadMore = textPainterForCheck.didExceedMaxLines;
+
+    // --- YENİ VE DİNAMİK YÜKSEKLİK HESABI ---
+    // Yüksekliği, metnin gerçek yüksekliğine göre hesaplıyoruz.
+    // 'size.height * 0.22' gibi sabit değerler yerine,
+    // (Başlık vb. için sabit yükseklik) + (Metnin dinamik yüksekliği) + (Padding'ler)
+    const double baseHeight =
+        121; // Başlık, ikonlar, boşluklar için tahmini sabit yükseklik
+    final double containerHeight = baseHeight +
+        textHeight +
+        (shouldShowReadMore ? textHeight * 0.7 : textHeight * 0.5);
+    final double totalHeaderHeight =
+        (size.height * 0.38) - (size.height * 0.1) + containerHeight;
+
     return SizedBox(
-      height: size.height * .45,
+      height: totalHeaderHeight,
       width: size.width,
       child: Stack(
         alignment: Alignment.center,
@@ -40,7 +85,7 @@ class _DetailHeaderWidgetState extends State<DetailHeaderWidget> {
           Positioned(
             top: 0,
             child: Container(
-              height: size.height * .35,
+              height: size.height * .32,
               width: size.width,
               decoration: BoxDecoration(
                 image: DecorationImage(
@@ -53,7 +98,7 @@ class _DetailHeaderWidgetState extends State<DetailHeaderWidget> {
           Positioned(
             top: (size.height * .35) - (size.height * .1),
             child: Container(
-              height: size.height * .18,
+              height: containerHeight,
               width: size.width * .9,
               decoration: BoxDecoration(
                 color: AppColors.darkColor,
@@ -73,13 +118,33 @@ class _DetailHeaderWidgetState extends State<DetailHeaderWidget> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          widget.title,
-                          style: GoogleFonts.oswald(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.title,
+                              style: GoogleFonts.oswald(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                // context.push('/author/${widget.authorId}');
+                                // /UserProfile/:authorId
+                                context.push('/UserProfile/${widget.authorId}');
+                                print('Author: ${widget.authorName}');
+                              },
+                              child: Text(
+                                '@${widget.authorName}',
+                                style: GoogleFonts.oswald(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const Spacer(),
                         const Icon(
@@ -108,41 +173,57 @@ class _DetailHeaderWidgetState extends State<DetailHeaderWidget> {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              isLiked = !isLiked;
-                              rating = isLiked ? 5 : 0;
-                            });
-                            submitRating(widget.seriesId, rating);
-                          },
-                          icon: Icon(
-                            isLiked ? Icons.favorite : Icons.favorite_border,
-                            color: isLiked ? Colors.blue : Colors.grey,
-                          ),
-                        )
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Sinopsis',
-                      style: GoogleFonts.oswald(
-                        color: Colors.grey,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        widget.synopsis,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
+                    Row(
+                      children: [
+                        Text(
+                          'Sinopsis',
+                          style: GoogleFonts.oswald(
+                            color: Colors.grey,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const Spacer(),
+                        ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.all(7),
+                              minimumSize: const Size.square(25),
+                              backgroundColor: Colors.transparent,
+                              overlayColor: AppColors.primary,
+                              side: const BorderSide(color: Colors.white24),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            onPressed: () {},
+                            // icon: const Icon(Icons.add_circle),
+                            icon: const Icon(
+                              Icons.bookmark_add,
+                              size: 15,
+                            ),
+                            label: const Text('Kaydet',
+                                style: TextStyle(fontSize: 14))),
+                      ],
                     ),
+                    Text.rich(
+                      textSpan,
+                      maxLines: isReadMore ? 1000 : 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (shouldShowReadMore)
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: GestureDetector(
+                          onTap: () => setState(() => isReadMore = !isReadMore),
+                          child: Text(
+                            isReadMore ? 'Daha az göster' : 'daha fazla',
+                            style: TextStyle(
+                                color: AppColors.primary, fontSize: 12),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -171,16 +252,25 @@ class _DetailHeaderWidgetState extends State<DetailHeaderWidget> {
                           color: Colors.transparent,
                           shape: const CircleBorder(),
                           child: IconButton(
-                            icon: const Icon(Icons.favorite_outline),
-                            onPressed: () => context.pop(),
-                            color: Colors.white,
+                            onPressed: () {
+                              setState(() {
+                                isLiked = !isLiked;
+                                rating = isLiked ? 5 : 0;
+                              });
+                              submitRating(widget.seriesId, rating);
+                            },
+                            icon: Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              size: 30,
+                              color: isLiked ? Colors.red : Colors.red,
+                            ),
                           ),
                         ),
                         Material(
                           color: Colors.transparent,
                           shape: const CircleBorder(),
                           child: IconButton(
-                            icon: const Icon(Icons.share_outlined),
+                            icon: const Icon(Icons.share_outlined, size: 30),
                             onPressed: () => context.pop(),
                             color: Colors.white,
                           ),

@@ -12,9 +12,9 @@ admin.initializeApp();
  * Bu fonksiyon, sadece kimliği doğrulanmış kullanıcılar tarafından çağrılabilir.
  * İlk admini atamak için güvenlik kontrolü geçici olarak devre dışı bırakılabilir.
  */
-const { onDocumentWritten } = require("firebase-functions/v2/firestore");
-const admin = require("firebase-admin");
-const { logger } = require("firebase-functions");
+// const { onDocumentWritten } = require("firebase-functions/v2/firestore");
+// const admin = require("firebase-admin");
+// const { logger } = require("firebase-functions");
 
 // --- FONKSİYON 1: Admin Rolü Atama ---
 // (Bu fonksiyon production-ready, değişiklik gerekmiyor)
@@ -166,4 +166,66 @@ exports.recalculateSeriesRating = onDocumentWritten("series/{seriesId}/ratings/{
         logger.error(`Seri puanı yeniden hesaplanırken hata oluştu (${seriesId}):`, error);
         return null;
     }
+});
+
+
+
+
+/**
+ * YENİ FONKSİYON: Takip Etme İşlemi
+ * Bir kullanıcı, 'following' koleksiyonuna yeni bir döküman eklediğinde tetiklenir.
+ */
+exports.onUserFollow = onDocumentWritten("users/{followerId}/following/{followedId}", async(event) => {
+    const followerId = event.params.followerId;
+    const followedId = event.params.followedId;
+
+    // --- Takip etme (döküman oluşturulduğunda) ---
+    if (event.data.after.exists && !event.data.before.exists) {
+        logger.info(`Kullanıcı ${followerId}, ${followedId}'ı takibe aldı. İşlemler başlıyor.`);
+
+        // 1. Takip edilen kişinin 'followers' koleksiyonuna, takip edeni ekle.
+        const followerDoc = await admin.firestore().collection("users").doc(followerId).get();
+        const followerData = followerDoc.data() || {};
+        await admin.firestore()
+            .collection("users").doc(followedId)
+            .collection("followers").doc(followerId)
+            .set({
+                followerName: followerData.mahlas || 'Bilinmeyen',
+                followerImageUrl: followerData.profileImageUrl || null,
+                followedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+        // 2. İlgili sayaçları güncelle. (Atomik işlem için 'increment')
+        const increment = admin.firestore.FieldValue.increment(1);
+        const followerRef = admin.firestore().collection("users").doc(followerId);
+        const followedRef = admin.firestore().collection("users").doc(followedId);
+
+        await followerRef.update({ followingCount: increment });
+        await followedRef.update({ followersCount: increment });
+
+        return logger.info("Takip işlemi başarıyla tamamlandı.");
+    }
+
+    // --- Takipten Çıkma (döküman silindiğinde) ---
+    if (!event.data.after.exists && event.data.before.exists) {
+        logger.info(`Kullanıcı ${followerId}, ${followedId}'ı takipten çıktı. İşlemler başlıyor.`);
+
+        // 1. Takip edilen kişinin 'followers' koleksiyonundan, takip edeni sil.
+        await admin.firestore()
+            .collection("users").doc(followedId)
+            .collection("followers").doc(followerId)
+            .delete();
+
+        // 2. İlgili sayaçları güncelle.
+        const decrement = admin.firestore.FieldValue.increment(-1);
+        const followerRef = admin.firestore().collection("users").doc(followerId);
+        const followedRef = admin.firestore().collection("users").doc(followedId);
+
+        await followerRef.update({ followingCount: decrement });
+        await followedRef.update({ followersCount: decrement });
+
+        return logger.info("Takipten çıkma işlemi başarıyla tamamlandı.");
+    }
+
+    return null;
 });

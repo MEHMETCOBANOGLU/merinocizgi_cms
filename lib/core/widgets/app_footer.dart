@@ -140,7 +140,7 @@ class AppFooter extends ConsumerWidget {
                 //     return _InteractionCard(
                 //       imageUrl: data['profileImageUrl'],
                 //       label: 'Aramıza Hoş Geldin!',
-                //       sublabel: data['mahlas'] ?? data['fullName'] ?? '',
+                //       sublabel: data['mahlas'] ?? '',
                 //       onTap: () => context
                 //           .go('/artist/${doc.id}'), // Rota yapına göre ayarla
                 //     );
