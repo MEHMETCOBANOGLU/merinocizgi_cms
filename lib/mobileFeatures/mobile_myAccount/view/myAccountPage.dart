@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:merinocizgi/core/providers/account_providers.dart';
 import 'package:merinocizgi/core/providers/auth_state_provider.dart';
+import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_auth/view/loginPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/bottom_bar_widget.dart';
@@ -13,6 +14,7 @@ import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/followers_lis
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/following_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/reading_history_list.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
+import 'package:merinocizgi/mobileFeatures/shared/widget.dart/profile_header.dart';
 
 // Seçili olan profil sekmesinin (Okumaya Devam Et, Serilerim vb.) state'ini tutar.
 final _selectedProfileTabIndexProvider =
@@ -68,7 +70,9 @@ class MyAccountPage extends ConsumerWidget {
             return [
               // 1. Profilin üst bilgilerini (Avatar, isim, takipçi sayısı) içeren bölüm.
               SliverToBoxAdapter(
-                child: _ProfileHeader(),
+                child: ProfileHeader(
+                  authorId: authStateAsync.value!.user!.uid,
+                ),
               ),
               // 2. Sekmelerin olduğu, kaydırıldığında yukarıya yapışan bar.
               SliverPersistentHeader(
@@ -150,60 +154,6 @@ class MyAccountPage extends ConsumerWidget {
 }
 
 // --- BU SAYFAYA ÖZEL ALT WIDGET'LAR ---
-
-class _ProfileHeader extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final userProfile = ref.watch(currentUserProfileProvider);
-    return userProfile.when(
-      data: (data) => Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            CircleAvatar(
-                radius: 50,
-                backgroundImage: data?['profileImageUrl'] != null
-                    ? NetworkImage(data!['profileImageUrl'])
-                    : null),
-            const SizedBox(height: 12),
-            Text("@${data?['mahlas'] ?? 'kullanici'}",
-                style: const TextStyle(color: Colors.grey)),
-            const SizedBox(height: 16),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _StatColumn(count: "1.2K", label: "Takipçi"),
-                _StatColumn(count: "150", label: "Takip Edilen"),
-                _StatColumn(count: "7", label: "Seri"),
-              ],
-            )
-          ],
-        ),
-      ),
-      loading: () => const SizedBox(
-          height: 200, child: Center(child: CircularProgressIndicator())),
-      error: (e, st) => const SizedBox(
-          height: 200, child: Center(child: Text("Profil yüklenemedi"))),
-    );
-  }
-}
-
-class _StatColumn extends StatelessWidget {
-  final String count;
-  final String label;
-  const _StatColumn({required this.count, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(count,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        Text(label, style: const TextStyle(color: Colors.grey)),
-      ],
-    );
-  }
-}
 
 // TabBar'ı yapışkan hale getirmek için gereken delegate sınıfı.
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {

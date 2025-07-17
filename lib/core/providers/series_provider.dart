@@ -70,6 +70,16 @@ final approvedEpisodesProvider = StreamProvider.autoDispose
   return stream.map((snapshot) => snapshot.docs);
 });
 
+/// YAZARLAR için: Bir kullanıcının kendi sahip olduğu serilerin sayısını getirir.
+final userSeriesCountProvider =
+    StreamProvider.autoDispose.family<int, String>((ref, userId) {
+  return FirebaseFirestore.instance
+      .collection('series')
+      .where('authorId', isEqualTo: userId) // sadece o kullanıcıya ait veriler
+      .snapshots()
+      .map((snapshot) => snapshot.size); // belge sayısını alıyoruz
+});
+
 /// YAZARLAR için: Oturum açmış kullanıcının kendi sahip olduğu tüm serileri listeler.
 final authorSeriesProvider = StreamProvider.autoDispose<QuerySnapshot>((ref) {
   final user = ref.watch(authStateProvider).value?.user;

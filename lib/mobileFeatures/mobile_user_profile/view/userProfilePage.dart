@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:merinocizgi/core/providers/account_providers.dart';
 import 'package:merinocizgi/core/providers/auth_state_provider.dart';
+import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_auth/view/loginPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/bottom_bar_widget.dart';
@@ -14,6 +15,7 @@ import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/followers_lis
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/following_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/reading_history_list.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
+import 'package:merinocizgi/mobileFeatures/shared/widget.dart/profile_header.dart';
 
 // Seçili olan profil sekmesinin (Okumaya Devam Et, Serilerim vb.) state'ini tutar.
 final _selectedProfileTabIndexProvider =
@@ -64,7 +66,7 @@ class UserProfilePage extends ConsumerWidget {
             return [
               // 1. Profilin üst bilgilerini (Avatar, isim, takipçi sayısı) içeren bölüm.
               SliverToBoxAdapter(
-                child: _ProfileHeader(authorId: authorId),
+                child: ProfileHeader(authorId: authorId),
               ),
               // 2. Sekmelerin üst bölümü
               SliverToBoxAdapter(
@@ -179,91 +181,6 @@ class UserProfilePage extends ConsumerWidget {
 }
 
 // --- BU SAYFAYA ÖZEL ALT WIDGET'LAR ---
-
-// --- BU SAYFAYA ÖZEL ALT WIDGET'LAR ---
-
-class _ProfileHeader extends ConsumerWidget {
-  final String authorId;
-  const _ProfileHeader({required this.authorId});
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // userProfileProvider'ı izlemeye devam ediyoruz.
-    final userProfile = ref.watch(userProfileProvider(authorId));
-
-    return userProfile.when(
-      // AsyncValue.data geldiğinde bu blok çalışır. 'snapshot' DocumentSnapshot'ı temsil eder.
-      data: (snapshot) {
-        print("authorIddddddddddddd:    $authorId");
-        // --- ÇÖZÜM BURADA ---
-        // Veriyi kullanmadan ÖNCE belgenin var olup olmadığını kontrol et.
-        if (!snapshot!.exists || snapshot.data() == null) {
-          // Eğer belge yoksa, kullanıcı bulunamadı mesajı göster.
-          return const SizedBox(
-              height: 200,
-              child: Center(child: Text("Kullanıcı profili bulunamadı.")));
-        }
-
-        // Kontrolü geçtiysek, belge verisi güvenle kullanılabilir.
-        // Veriyi bir Map'e cast ederek daha güvenli erişim sağlayalım.
-        final userData = snapshot.data() as Map<String, dynamic>;
-
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 50,
-                // Artık 'userData' map'ini kullanıyoruz.
-                backgroundImage: userData['profileImageUrl'] != null
-                    ? NetworkImage(userData['profileImageUrl'])
-                    : null,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                "@${userData['mahlas'] ?? 'kullanici'}",
-                style: const TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 16),
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _StatColumn(count: "1.2K", label: "Takipçi"),
-                  _StatColumn(count: "150", label: "Takip Edilen"),
-                  _StatColumn(count: "7", label: "Seri"),
-                ],
-              )
-            ],
-          ),
-        );
-      },
-      loading: () => const SizedBox(
-          height: 200, child: Center(child: CircularProgressIndicator())),
-      error: (e, st) {
-        // Hata ayıklama için hatayı yazdırmak iyi bir pratiktir.
-        print('Profile Header Error: $e');
-        return const SizedBox(
-            height: 200, child: Center(child: Text("Profil yüklenemedi")));
-      },
-    );
-  }
-}
-
-class _StatColumn extends StatelessWidget {
-  final String count;
-  final String label;
-  const _StatColumn({required this.count, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(count,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        Text(label, style: const TextStyle(color: Colors.grey)),
-      ],
-    );
-  }
-}
 
 // TabBar'ı yapışkan hale getirmek için gereken delegate sınıfı.
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
