@@ -69,38 +69,48 @@ class UserProfilePage extends ConsumerWidget {
                 child: ProfileHeader(authorId: authorId),
               ),
               // 2. Sekmelerin üst bölümü
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 60.0,
-                  ),
-                  child: isFollowingAsync.when(
-                    data: (isFollowing) {
-                      if (isFollowing) {
-                        // Eğer takip ediyorsa, "Takipten Çık" butonu göster
-                        return OutlinedButton(
-                          onPressed: () =>
-                              myAccountController.unfollowUser(authorId),
-                          child: const Text("Takipten Çık"),
-                        );
-                      } else {
-                        // Eğer takip etmiyorsa, "Takip Et" butonu göster
-                        return SizedBox(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent),
+              if (authorId != authStateAsync.value!.user!.uid)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 60.0,
+                    ),
+                    child: isFollowingAsync.when(
+                      data: (isFollowing) {
+                        if (isFollowing) {
+                          // Eğer takip ediyorsa, "Takipten Çık" butonu göster
+                          return OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              side: const BorderSide(
+                                color: Colors.white30,
+                              ),
+                            ),
                             onPressed: () =>
-                                myAccountController.followUser(authorId),
-                            child: const Text("Takip Et"),
-                          ),
-                        );
-                      }
-                    },
-                    loading: () => const CircularProgressIndicator(),
-                    error: (e, s) => const SizedBox.shrink(),
+                                myAccountController.unfollowUser(authorId),
+                            child: const Text("Takipten Çık"),
+                          );
+                        } else {
+                          // Eğer takip etmiyorsa, "Takip Et" butonu göster
+                          return SizedBox(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: Colors.white30,
+                                  ),
+                                  backgroundColor: Colors.transparent),
+                              onPressed: () =>
+                                  myAccountController.followUser(authorId),
+                              child: const Text("Takip Et"),
+                            ),
+                          );
+                        }
+                      },
+                      loading: () => const CircularProgressIndicator(),
+                      error: (e, s) => const SizedBox.shrink(),
+                    ),
                   ),
                 ),
-              ),
               // 2. Sekmelerin olduğu, kaydırıldığında yukarıya yapışan bar.
               SliverPersistentHeader(
                 delegate: _SliverTabBarDelegate(

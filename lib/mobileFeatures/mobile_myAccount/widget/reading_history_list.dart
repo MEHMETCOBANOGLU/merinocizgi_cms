@@ -44,72 +44,6 @@ class ReadingHistoryList extends ConsumerWidget {
   }
 }
 
-// Tek bir okuma geçmişi elemanını gösteren kart.
-// class _HistoryCard extends StatelessWidget {
-//   final Map<String, dynamic> data;
-//   const _HistoryCard({required this.data});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Card(
-//       margin: const EdgeInsets.only(bottom: 12.0),
-//       child: InkWell(
-//         onTap: () {
-//           // Kullanıcıyı, kaldığı bölümü okumaya devam etmesi için ReaderPage'e yönlendir.
-//           context
-//               .push('/reader/${data['seriesId']}/${data['lastReadEpisodeId']}');
-//         },
-//         child: Padding(
-//           padding: const EdgeInsets.all(12.0),
-//           child: Row(
-//             children: [
-//               ClipRRect(
-//                 borderRadius: BorderRadius.circular(8),
-//                 child: Image.network(
-//                   data['seriesImageUrl'] ?? '',
-//                   width: 60,
-//                   height: 80,
-//                   fit: BoxFit.cover,
-//                   errorBuilder: (c, e, s) =>
-//                       Container(width: 60, height: 80, color: Colors.grey[200]),
-//                 ),
-//               ),
-//               const SizedBox(width: 16),
-//               Expanded(
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     Text(
-//                       data['seriesTitle'] ?? 'Seri Başlığı Yok',
-//                       style: const TextStyle(
-//                           fontWeight: FontWeight.bold, fontSize: 16),
-//                       maxLines: 1,
-//                       overflow: TextOverflow.ellipsis,
-//                     ),
-//                     const SizedBox(height: 4),
-//                     Text(
-//                       "Okumaya Devam Et: ${data['lastReadEpisodeTitle'] ?? 'Bölüm'}",
-//                       style: TextStyle(color: Colors.grey[600], fontSize: 14),
-//                       maxLines: 1,
-//                       overflow: TextOverflow.ellipsis,
-//                     ),      Text(
-//                       "Okumaya Devam Et: ${data['lastReadEpisodeTitle'] ?? 'Bölüm'}",
-//                       style: TextStyle(color: Colors.grey[600], fontSize: 14),
-//                       maxLines: 1,
-//                       overflow: TextOverflow.ellipsis,
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//               const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 class _HistoryCard extends ConsumerWidget {
   final Map<String, dynamic> data;
   const _HistoryCard({required this.data});
@@ -124,6 +58,14 @@ class _HistoryCard extends ConsumerWidget {
     final episodesAsync = ref.watch(allEpisodesForSeriesProvider(seriesId));
 
     return Card(
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(
+          color: Colors.white30, // Kenar rengi
+          width: 2, // Kenar kalınlığı
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      color: Colors.transparent,
       margin: const EdgeInsets.only(bottom: 12.0),
       child: InkWell(
         onTap: () {
