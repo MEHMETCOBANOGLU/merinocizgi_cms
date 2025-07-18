@@ -55,6 +55,14 @@ class UserCard extends ConsumerWidget {
         }
         final userData = userDoc.data() as Map<String, dynamic>;
         return Card(
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(
+              color: Colors.white30, // Kenar rengi
+              width: 2, // Kenar kalınlığı
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          color: Colors.transparent,
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: ListTile(
             leading: CircleAvatar(
@@ -66,8 +74,8 @@ class UserCard extends ConsumerWidget {
                   : null,
             ),
             title: Text(userData['mahlas'] ?? 'İsimsiz'),
-            subtitle:
-                Text("@${userData['mahlas']?.toLowerCase() ?? 'kullanici'}"),
+            // subtitle:
+            // Text("@${userData['mahlas']?.toLowerCase() ?? 'kullanici'}"),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // Kullanıcının profil sayfasına yönlendir (eğer varsa)

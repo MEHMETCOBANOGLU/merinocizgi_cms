@@ -61,7 +61,11 @@ class UserProfilePage extends ConsumerWidget {
       child: Scaffold(
         // AppBar ve BottomNavigationBar artık MobileMainLayout'tan (ShellRoute) geliyor.
         // Bu sayfanın kendi AppBar'ına ihtiyacı var.
-        appBar: AppBar(),
+        appBar: AppBar(
+          actions: [
+            IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
+          ],
+        ),
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
@@ -131,11 +135,8 @@ class UserProfilePage extends ConsumerWidget {
           // 3. Sekmelere karşılık gelen içerik.
           body: TabBarView(
             children: [
-              const ReadingHistoryList(), // En Son
-              FollowingListWidget(
-                  userId: authStateAsync.value!.user!.uid), // Takip
-              FollowersListWidget(
-                  userId: authStateAsync.value!.user!.uid), // Takipçi
+              FollowingListWidget(userId: authorId), // Takip
+              FollowersListWidget(userId: authorId), // Takipçi
               MySeriesyList(userId: authorId),
               // AuthorSeriesDashboard(), // Serilerim
               // const UserCommentsWidget(), // Yorumlar

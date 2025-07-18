@@ -195,6 +195,19 @@ exports.onUserFollow = onDocumentWritten("users/{followerId}/following/{followed
                 followedAt: admin.firestore.FieldValue.serverTimestamp()
             });
 
+        // 1.2 Takip eden kişinin 'following' koleksiyonuna, takip edeni ekle.
+        const followedDoc = await admin.firestore().collection("users").doc(followedId).get();
+        const followedData = followedDoc.data() || {};
+        await admin.firestore()
+            .collection("users").doc(followerId)
+            .collection("following").doc(followedId)
+            .set({
+                followedName: followedData.mahlas || 'Bilinmeyen',
+                followedImageUrl: followedData.profileImageUrl || null,
+                followedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+
         // 2. İlgili sayaçları güncelle. (Atomik işlem için 'increment')
         const increment = admin.firestore.FieldValue.increment(1);
         const followerRef = admin.firestore().collection("users").doc(followerId);
