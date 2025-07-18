@@ -13,6 +13,7 @@ import 'package:merinocizgi/mobileFeatures/mobile_myAccount/controller/MyAccount
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/controller/myAccount_controller.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/followers_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/following_list_widget.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/my_series_list.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/reading_history_list.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/profile_header.dart';
@@ -135,6 +136,7 @@ class UserProfilePage extends ConsumerWidget {
                   userId: authStateAsync.value!.user!.uid), // Takip
               FollowersListWidget(
                   userId: authStateAsync.value!.user!.uid), // Takipçi
+              MySeriesyList(userId: authorId),
               // AuthorSeriesDashboard(), // Serilerim
               // const UserCommentsWidget(), // Yorumlar
               // const UserSuperLikesWidget(),

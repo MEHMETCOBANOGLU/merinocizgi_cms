@@ -9,7 +9,8 @@ class ProfileHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userProfile = ref.watch(currentUserProfileProvider);
+    // final userProfile = ref.watch(currentUserProfileProvider);
+    final userProfile = ref.watch(userProfileProvider(authorId));
     final userSeriesCount = ref.watch(userSeriesCountProvider(authorId));
 
     return userProfile.when(

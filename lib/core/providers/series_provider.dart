@@ -80,6 +80,16 @@ final userSeriesCountProvider =
       .map((snapshot) => snapshot.size); // belge sayısını alıyoruz
 });
 
+/// YAZARLAR için: Bir kullanıcının kendi sahipği serilerini listeler.
+final userSeriesProvider =
+    StreamProvider.autoDispose.family<QuerySnapshot, String>((ref, userId) {
+  return FirebaseFirestore.instance
+      .collection('series')
+      .where('authorId', isEqualTo: userId)
+      .orderBy('createdAt', descending: true)
+      .snapshots();
+});
+
 /// YAZARLAR için: Oturum açmış kullanıcının kendi sahip olduğu tüm serileri listeler.
 final authorSeriesProvider = StreamProvider.autoDispose<QuerySnapshot>((ref) {
   final user = ref.watch(authStateProvider).value?.user;
