@@ -1,5 +1,8 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:merinocizgi/core/providers/account_providers.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 
@@ -47,21 +50,27 @@ class ProfileHeader extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _StatColumn(
-                      count: (userData['followersCount'] ?? 0).toString(),
-                      label: "Takipçi"),
+                    count: (userData['followersCount'] ?? 0).toString(),
+                    label: "Takipçi",
+                    onTap: () => context.push('/followers/$authorId'),
+                  ),
                   _StatColumn(
-                      count: (userData['followingCount'] ?? 0).toString(),
-                      label: "Takip Edilen"),
+                    count: (userData['followingCount'] ?? 0).toString(),
+                    label: "Takip Edilen",
+                    onTap: () => context.push('/following/$authorId'),
+                  ),
                   _StatColumn(
-                      count: userSeriesCount.when(
-                        data: (count) => count.toString(),
-                        loading: () => "...",
-                        error: (e, st) {
-                          print("Error: $e");
-                          return "e";
-                        },
-                      ),
-                      label: "Seriler"),
+                    count: userSeriesCount.when(
+                      data: (count) => count.toString(),
+                      loading: () => "...",
+                      error: (e, st) {
+                        print("Error: $e");
+                        return "e";
+                      },
+                    ),
+                    label: "Seriler",
+                    onTap: () => print("Seriler"),
+                  ),
                 ],
               )
             ],
@@ -83,16 +92,25 @@ class ProfileHeader extends ConsumerWidget {
 class _StatColumn extends StatelessWidget {
   final String count;
   final String label;
-  const _StatColumn({required this.count, required this.label});
+  final VoidCallback onTap;
+  const _StatColumn({
+    required this.count,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(count,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        Text(label, style: const TextStyle(color: Colors.grey)),
-      ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Text(count,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(label, style: const TextStyle(color: Colors.grey)),
+        ],
+      ),
     );
   }
 }

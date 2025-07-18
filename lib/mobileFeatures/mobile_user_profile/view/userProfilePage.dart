@@ -28,10 +28,8 @@ class UserProfilePage extends ConsumerWidget {
 
   // Sabit verileri build metodu dışında tanımlamak en iyi pratiktir.
   static const List<String> _tabs = [
-    'Takip',
-    'Takipçi',
     'Serilerim',
-    'Yorumlar',
+    'Okuma Listesi',
     'Süper Beğeni',
   ];
 
@@ -135,8 +133,6 @@ class UserProfilePage extends ConsumerWidget {
           // 3. Sekmelere karşılık gelen içerik.
           body: TabBarView(
             children: [
-              FollowingListWidget(userId: authorId), // Takip
-              FollowersListWidget(userId: authorId), // Takipçi
               MySeriesyList(userId: authorId),
               // AuthorSeriesDashboard(), // Serilerim
               // const UserCommentsWidget(), // Yorumlar

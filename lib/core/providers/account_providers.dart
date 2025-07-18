@@ -16,6 +16,6 @@ final currentUserProfileProvider =
 /// ID'si verilen HERHANGİ BİR kullanıcının profilini anlık olarak dinler.
 final userProfileProvider =
     StreamProvider.autoDispose.family<DocumentSnapshot?, String>((ref, userId) {
-  if (userId.isEmpty) return const Stream.empty();
+  if (userId.isEmpty) throw Exception("Kullanıcı ID'si boş olamaz.");
   return FirebaseFirestore.instance.collection('users').doc(userId).snapshots();
 });

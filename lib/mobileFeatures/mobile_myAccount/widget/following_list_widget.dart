@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:merinocizgi/core/providers/account_providers.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/controller/MyAccount_providers.dart'; // Provider'ların olduğu dosya
 
@@ -14,25 +15,29 @@ class FollowingListWidget extends ConsumerWidget {
     // İlgili kullanıcının takip ettiklerini dinle
     final followingAsync = ref.watch(followingProvider(userId));
 
-    return followingAsync.when(
-      data: (snapshot) {
-        if (snapshot.docs.isEmpty) {
-          return const Center(child: Text("Henüz kimseyi takip etmiyorsun."));
-        }
-        return ListView.builder(
-          itemCount: snapshot.docs.length,
-          itemBuilder: (context, index) {
-            final followedUserDoc = snapshot.docs[index];
-            final followedUserId = followedUserDoc.id;
+    return Scaffold(
+      appBar: AppBar(title: const Text("Takip Edilenler")),
+      body: followingAsync.when(
+        data: (snapshot) {
+          if (snapshot.docs.isEmpty) {
+            return const Center(child: Text("Henüz kimseyi takip etmiyorsun."));
+          }
+          return ListView.builder(
+            itemCount: snapshot.docs.length,
+            itemBuilder: (context, index) {
+              final followedUserDoc = snapshot.docs[index];
+              final followedUserId = followedUserDoc.id;
 
-            // Takip edilen her bir yazar için bir kart göster.
-            // Bu kartın verisini, yazarın kendi profilinden çekmeliyiz.
-            return UserCard(userId: followedUserId);
-          },
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Center(child: Text("Takip edilenler yüklenemedi: $e")),
+              // Takip edilen her bir yazar için bir kart göster.
+              // Bu kartın verisini, yazarın kendi profilinden çekmeliyiz.
+              return UserCard(userId: followedUserId);
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, st) =>
+            Center(child: Text("Takip edilenler yüklenemedi: $e")),
+      ),
     );
   }
 }
@@ -78,8 +83,7 @@ class UserCard extends ConsumerWidget {
             // Text("@${userData['mahlas']?.toLowerCase() ?? 'kullanici'}"),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
-              // Kullanıcının profil sayfasına yönlendir (eğer varsa)
-              // context.push('/profile/$userId');
+              context.push('/UserProfile/${userDoc.id}');
             },
           ),
         );

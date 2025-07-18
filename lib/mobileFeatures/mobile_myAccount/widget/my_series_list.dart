@@ -44,7 +44,7 @@ class MySeriesyList extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, st) {
         print("MySeriesyList Hata: $e");
-        return Center(child: Text("Seriler yüklenemedi: $e"));
+        return Center(child: Text("Seriler yüklenemedi1: $e"));
       },
     );
   }

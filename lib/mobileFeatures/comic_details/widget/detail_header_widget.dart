@@ -3,9 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
+import 'package:merinocizgi/mobileFeatures/comic_details/controller/library_controller.dart';
 
-class DetailHeaderWidget extends StatefulWidget {
+class DetailHeaderWidget extends ConsumerStatefulWidget {
   final String urlImage;
   final String authorName;
   final String authorId;
@@ -26,15 +28,26 @@ class DetailHeaderWidget extends StatefulWidget {
   });
 
   @override
-  State<DetailHeaderWidget> createState() => _DetailHeaderWidgetState();
+  ConsumerState<DetailHeaderWidget> createState() => _DetailHeaderWidgetState();
 }
 
-class _DetailHeaderWidgetState extends State<DetailHeaderWidget> {
+class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
   bool isLiked = false;
   int rating = 0;
   bool isReadMore = false;
+
+  // --- YENİ DİYALOG FONKSİYONU ---
+  void _showSaveToListDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => _SaveToListDialog(seriesId: widget.seriesId),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     final size = MediaQuery.of(context).size;
 
     // --- METİN HESAPLAMA MANTIĞI ---
@@ -186,25 +199,89 @@ class _DetailHeaderWidgetState extends State<DetailHeaderWidget> {
                           ),
                         ),
                         const Spacer(),
-                        ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.all(7),
-                              minimumSize: const Size.square(25),
-                              backgroundColor: Colors.transparent,
-                              overlayColor: AppColors.primary,
-                              side: const BorderSide(color: Colors.white24),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
+                        ref
+                            .watch(isComicInAnyLibraryProvider(widget.seriesId))
+                            .when(
+                              // data: provider'dan gelen 'true' veya 'false' sonucudur.
+                              data: (isSaved) {
+                                // Eğer çizgi roman ZATEN kayıtlıysa (isSaved == true)
+                                if (isSaved) {
+                                  // Farklı bir buton gösteriyoruz.
+                                  return ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.all(7),
+                                      minimumSize: const Size.square(25),
+                                      backgroundColor: AppColors.primary
+                                          .withOpacity(
+                                              0.2), // Rengi farklı olabilir
+                                      side:
+                                          BorderSide(color: AppColors.primary),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                    // Tıklandığında yine de listeleri yönetme diyaloğunu açabilir.
+                                    onPressed: _showSaveToListDialog,
+                                    icon: Icon(
+                                      Icons
+                                          .bookmark_added, // İkonu değiştiriyoruz
+                                      size: 15,
+                                      color: AppColors.primary,
+                                    ),
+                                    label: Text(
+                                      'Kaydedildi', // Yazıyı değiştiriyoruz
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          color: AppColors.primary),
+                                    ),
+                                  );
+                                }
+                                // Eğer çizgi roman kayıtlı DEĞİLSE (isSaved == false)
+                                else {
+                                  // Orijinal "Kaydet" butonunu gösteriyoruz.
+                                  return ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.all(7),
+                                      minimumSize: const Size.square(25),
+                                      backgroundColor: Colors.transparent,
+                                      overlayColor: AppColors.primary,
+                                      side: const BorderSide(
+                                          color: Colors.white24),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                    onPressed: _showSaveToListDialog,
+                                    icon: const Icon(
+                                      Icons.bookmark_add_outlined, // İkon
+                                      size: 15,
+                                    ),
+                                    label: const Text(
+                                      'Kaydet',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  );
+                                }
+                              },
+                              // Provider veriyi yüklerken gösterilecek widget.
+                              loading: () => const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  width: 15,
+                                  height: 15,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                              // Hata durumunda gösterilecek widget.
+                              error: (error, stack) => IconButton(
+                                icon: const Icon(Icons.error_outline,
+                                    color: Colors.red),
+                                onPressed: () {
+                                  // Hata detayını göstermek için bir SnackBar vb. kullanılabilir.
+                                },
                               ),
                             ),
-                            onPressed: () {},
-                            // icon: const Icon(Icons.add_circle),
-                            icon: const Icon(
-                              Icons.bookmark_add,
-                              size: 15,
-                            ),
-                            label: const Text('Kaydet',
-                                style: TextStyle(fontSize: 14))),
                       ],
                     ),
                     Text.rich(
@@ -311,4 +388,202 @@ Future<void> submitRating(String seriesId, int rating) async {
   });
 
   // Geri kalan her şeyi Cloud Function halledecek!
+}
+
+class _SaveToListDialog extends ConsumerStatefulWidget {
+  final String seriesId;
+  const _SaveToListDialog({required this.seriesId});
+
+  @override
+  ConsumerState<_SaveToListDialog> createState() => _SaveToListDialogState();
+}
+
+class _SaveToListDialogState extends ConsumerState<_SaveToListDialog> {
+  final _textController = TextEditingController();
+  // Seçilen kütüphane ID'lerini tutar
+  final Set<String> _selectedLibraryIds = {};
+  // "Yeni Liste" bölümünün görünürlüğünü tutar
+  bool _isCreatingNewList = false;
+  // Yeni listenin public olup olmayacağını tutar
+  bool _isPublic = false;
+  // Validasyon hatası için
+  bool _hasValidationError = false;
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  void _handleSave() {
+    if (_selectedLibraryIds.isEmpty) {
+      setState(() => _hasValidationError = true);
+      return;
+    }
+
+    ref.read(libraryControllerProvider.notifier).addSeriesToLibraries(
+          widget.seriesId,
+          _selectedLibraryIds.toList(),
+        );
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Seri, seçilen listelere eklendi.")));
+  }
+
+  void _handleCreateNewLibrary() {
+    final name = _textController.text.trim();
+    if (name.isEmpty) return;
+
+    ref
+        .read(libraryControllerProvider.notifier)
+        .createNewLibrary(name, _isPublic);
+
+    _textController.clear();
+    setState(() => _isCreatingNewList = false);
+  }
+
+  @override
+  // _SaveToListDialogState -> build metodu
+
+  @override
+  Widget build(BuildContext context) {
+    final librariesAsync = ref.watch(userLibrariesProvider);
+
+    return AlertDialog(
+      title: const Text("Bir Listeye Kaydet"),
+      content: librariesAsync.when(
+        data: (libraries) {
+          // --- GÜVENLİ HALE GETİRİLMİŞ YENİ KOD ---
+          // Eğer hiç kütüphane yoksa, kullanıcıya bilgi ver.
+          if (libraries.isEmpty) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text("Henüz hiç okuma listeniz yok."),
+                const SizedBox(height: 16),
+                _buildCreateNewListSection(), // Direkt yeni liste oluşturma bölümünü göster
+              ],
+            );
+          }
+
+          // 'firstWhere' yerine daha güvenli bir yöntem kullanalım.
+          DocumentSnapshot? defaultLibrary;
+          try {
+            defaultLibrary = libraries.firstWhere(
+              (doc) => doc['name'] == 'Daha Sonra Oku',
+            );
+          } catch (e) {
+            // "Daha Sonra Oku" listesi bulunamadı, sorun değil.
+            defaultLibrary = null;
+          }
+
+          final List<DocumentSnapshot> customLibraries;
+          if (defaultLibrary != null) {
+            customLibraries =
+                libraries.where((doc) => doc.id != defaultLibrary!.id).toList();
+          } else {
+            customLibraries = libraries;
+          }
+          // --- GÜVENLİ KODUN SONU ---
+
+          return SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // "Daha Sonra Oku" listesi (eğer varsa gösterilir)
+                if (defaultLibrary != null) ...[
+                  _buildLibraryTile(defaultLibrary, isDefault: true),
+                  const Divider(),
+                ],
+
+                // Diğer, kullanıcı tarafından oluşturulan listeler
+                ...customLibraries.map((lib) => _buildLibraryTile(lib)),
+
+                // Validasyon hatası mesajı
+                if (_hasValidationError)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: Text("Lütfen en az bir liste seçin.",
+                        style: TextStyle(color: Colors.red, fontSize: 12)),
+                  ),
+
+                const SizedBox(height: 16),
+
+                // Yeni liste oluşturma bölümü
+                if (_isCreatingNewList)
+                  _buildCreateNewListSection()
+                else
+                  TextButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text("Yeni Liste Oluştur"),
+                    onPressed: () => setState(() => _isCreatingNewList = true),
+                  ),
+              ],
+            ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, st) {
+          // Hata ayıklama için daha detaylı bilgi
+          print("SaveToListDialog Error: $e");
+          return const Text("Listeler yüklenemedi. Lütfen tekrar deneyin.");
+        },
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("İptal")),
+        ElevatedButton(onPressed: _handleSave, child: const Text("Kaydet")),
+      ],
+    );
+  }
+
+  Widget _buildLibraryTile(DocumentSnapshot doc, {bool isDefault = false}) {
+    final data = doc.data() as Map<String, dynamic>;
+    final isSelected = _selectedLibraryIds.contains(doc.id);
+
+    return CheckboxListTile(
+      title: Text(data['name']),
+      subtitle: Text(isDefault
+          ? "Özel Liste"
+          : (data['isPublic'] ? "Herkese Açık" : "Özel Liste")),
+      value: isSelected,
+      onChanged: (selected) {
+        setState(() {
+          if (selected == true) {
+            _selectedLibraryIds.add(doc.id);
+            _hasValidationError = false;
+          } else {
+            _selectedLibraryIds.remove(doc.id);
+          }
+        });
+      },
+    );
+  }
+
+  Widget _buildCreateNewListSection() {
+    return Column(
+      children: [
+        TextField(
+          controller: _textController,
+          decoration: const InputDecoration(labelText: "Yeni liste adı"),
+        ),
+        Row(
+          children: [
+            Text("Herkese Açık:"),
+            Switch(
+              value: _isPublic,
+              onChanged: (val) => setState(() => _isPublic = val),
+            ),
+            const Spacer(),
+            IconButton(
+              icon: const Icon(Icons.check, color: Colors.green),
+              onPressed: _handleCreateNewLibrary,
+            )
+          ],
+        )
+      ],
+    );
+  }
 }

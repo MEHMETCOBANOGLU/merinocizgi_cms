@@ -14,6 +14,7 @@ import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/followers_lis
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/following_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/my_series_list.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/reading_history_list.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/reading_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/profile_header.dart';
 
@@ -27,10 +28,8 @@ class MyAccountPage extends ConsumerWidget {
   // Sabit verileri build metodu dışında tanımlamak en iyi pratiktir.
   static const List<String> _tabs = [
     'Okumaya Devam Et',
-    'Takip',
-    'Takipçi',
     'Serilerim',
-    'Yorumlar',
+    'Okuma Listesi',
     'Süper Beğeni',
   ];
 
@@ -95,11 +94,9 @@ class MyAccountPage extends ConsumerWidget {
           body: TabBarView(
             children: [
               const ReadingHistoryList(), // En Son
-              FollowingListWidget(
-                  userId: authStateAsync.value!.user!.uid), // Takip
-              FollowersListWidget(
-                  userId: authStateAsync.value!.user!.uid), // Takipçi
               MySeriesyList(userId: authStateAsync.value!.user!.uid),
+              MyReadingListPage(),
+
               // const UserCommentsWidget(), // Yorumlar
               // const UserSuperLikesWidget(),
             ],

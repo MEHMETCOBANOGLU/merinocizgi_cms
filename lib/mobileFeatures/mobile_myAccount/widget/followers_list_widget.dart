@@ -16,24 +16,27 @@ class FollowersListWidget extends ConsumerWidget {
     // Bu sefer 'followersProvider'ı dinliyoruz.
     final followersAsync = ref.watch(followersProvider(userId));
 
-    return followersAsync.when(
-      data: (snapshot) {
-        if (snapshot.docs.isEmpty) {
-          return const Center(child: Text("Henüz hiç takipçin yok."));
-        }
-        return ListView.builder(
-          itemCount: snapshot.docs.length,
-          itemBuilder: (context, index) {
-            final followerDoc = snapshot.docs[index];
-            final followerId = followerDoc.id;
+    return Scaffold(
+      appBar: AppBar(title: const Text("Takipciler")),
+      body: followersAsync.when(
+        data: (snapshot) {
+          if (snapshot.docs.isEmpty) {
+            return const Center(child: Text("Henüz hiç takipçin yok."));
+          }
+          return ListView.builder(
+            itemCount: snapshot.docs.length,
+            itemBuilder: (context, index) {
+              final followerDoc = snapshot.docs[index];
+              final followerId = followerDoc.id;
 
-            // Aynı _UserCard'ı burada da yeniden kullanıyoruz.
-            return UserCard(userId: followerId);
-          },
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Center(child: Text("Takipçiler yüklenemedi: $e")),
+              // Aynı _UserCard'ı burada da yeniden kullanıyoruz.
+              return UserCard(userId: followerId);
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, st) => Center(child: Text("Takipçiler yüklenemedi: $e")),
+      ),
     );
   }
 }
