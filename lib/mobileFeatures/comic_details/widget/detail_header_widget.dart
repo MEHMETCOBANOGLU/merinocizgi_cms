@@ -1,11 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/comic_details/controller/library_controller.dart';
+import 'package:merinocizgi/mobileFeatures/comic_details/controller/userRatingProvider.dart';
 
 class DetailHeaderWidget extends ConsumerStatefulWidget {
   final String urlImage;
@@ -48,6 +51,9 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
   Widget build(
     BuildContext context,
   ) {
+    final seriesAsync = ref.watch(seriesProvider(widget.seriesId));
+    final userRating = ref.watch(userRatingProvider(widget.seriesId));
+
     final size = MediaQuery.of(context).size;
 
     // --- METİN HESAPLAMA MANTIĞI ---
@@ -160,17 +166,39 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                           ],
                         ),
                         const Spacer(),
-                        const Icon(
-                          Icons.star,
-                          color: Colors.yellow,
+                        userRating.when(
+                          data: (rating) => InkWell(
+                            onTap: () {
+                              showRatingDialog(context, widget.seriesId, ref);
+                            },
+                            child: Icon(
+                              rating != null ? Icons.star : Icons.star_border,
+                              color: Colors.yellow,
+                            ),
+                          ),
+                          loading: () =>
+                              const CircularProgressIndicator(strokeWidth: 1),
+                          error: (_, __) =>
+                              const Icon(Icons.error, color: Colors.red),
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          widget.rating.toStringAsFixed(1),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                          ),
+                        seriesAsync.when(
+                          data: (seriesDoc) {
+                            final data =
+                                seriesDoc.data() as Map<String, dynamic>;
+                            final averageRating =
+                                (data['averageRating'] ?? 0).toDouble();
+
+                            return Text(
+                              averageRating.toStringAsFixed(1),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 12),
+                            );
+                          },
+                          loading: () =>
+                              const CircularProgressIndicator(strokeWidth: 1),
+                          error: (e, _) => const Text('0.0',
+                              style: TextStyle(color: Colors.white)),
                         ),
                         const SizedBox(width: 16),
                         const Icon(
@@ -323,36 +351,14 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                         color: Colors.white,
                       ),
                     ),
-                    Row(
-                      children: [
-                        Material(
-                          color: Colors.transparent,
-                          shape: const CircleBorder(),
-                          child: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                isLiked = !isLiked;
-                                rating = isLiked ? 5 : 0;
-                              });
-                              submitRating(widget.seriesId, rating);
-                            },
-                            icon: Icon(
-                              isLiked ? Icons.favorite : Icons.favorite_border,
-                              size: 30,
-                              color: isLiked ? Colors.red : Colors.red,
-                            ),
-                          ),
-                        ),
-                        Material(
-                          color: Colors.transparent,
-                          shape: const CircleBorder(),
-                          child: IconButton(
-                            icon: const Icon(Icons.share_outlined, size: 30),
-                            onPressed: () => context.pop(),
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                        icon: const Icon(Icons.share_outlined, size: 30),
+                        onPressed: () => context.pop(),
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
@@ -365,7 +371,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
   }
 }
 
-Future<void> submitRating(String seriesId, int rating) async {
+Future<void> submitRating(String seriesId, double rating) async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) {
     // Kullanıcı giriş yapmamış, hata göster.
@@ -388,6 +394,51 @@ Future<void> submitRating(String seriesId, int rating) async {
   });
 
   // Geri kalan her şeyi Cloud Function halledecek!
+}
+
+Future<void> showRatingDialog(
+  BuildContext context,
+  String seriesId,
+  WidgetRef ref,
+) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final doc = await FirebaseFirestore.instance
+      .collection('series')
+      .doc(seriesId)
+      .collection('ratings')
+      .doc(user.uid)
+      .get();
+
+  final initialRating = (doc.data()?['rating'] ?? 3).toDouble();
+
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Center(child: Text('Puanla')),
+      content: RatingBar.builder(
+        initialRating: initialRating,
+        minRating: 1,
+        direction: Axis.horizontal,
+        allowHalfRating: true,
+        itemCount: 5,
+        itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+        itemBuilder: (context, _) =>
+            const Icon(Icons.star, color: Colors.amber),
+        onRatingUpdate: (rating) async {
+          await ref
+              .read(userRatingProvider(seriesId).notifier)
+              .submitRating(rating);
+
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Puanınız kaydedildi.")),
+          );
+        },
+      ),
+    ),
+  );
 }
 
 class _SaveToListDialog extends ConsumerStatefulWidget {
@@ -525,7 +576,7 @@ class _SaveToListDialogState extends ConsumerState<_SaveToListDialog> {
     return Theme(
       data: Theme.of(context).copyWith(
         checkboxTheme: const CheckboxThemeData(
-          shape: CircleBorder(), // <-- DAİRE checkbox
+          shape: CircleBorder(), // DAİRE checkbox
           side: BorderSide(color: Colors.white54),
         ),
       ),
