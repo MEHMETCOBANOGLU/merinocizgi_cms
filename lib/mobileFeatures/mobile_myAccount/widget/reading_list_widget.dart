@@ -23,7 +23,8 @@ class MyReadingListPage extends ConsumerWidget {
             ),
           );
         }
-        return ListView.builder(
+        return ListView.separated(
+          separatorBuilder: (context, index) => const SizedBox(height: 8),
           padding: const EdgeInsets.all(8.0),
           itemCount: libraries.length,
           itemBuilder: (context, index) {
@@ -41,7 +42,8 @@ class MyReadingListPage extends ConsumerWidget {
 }
 
 /// Her bir okuma listesi için genişleyebilir bir "tile" oluşturan widget.
-final expansionStateProvider = StateProvider<bool>((ref) => false);
+final expansionStateProvider =
+    StateProvider.autoDispose.family<bool, String>((ref, id) => false);
 
 class _LibraryExpansionTile extends ConsumerWidget {
   final DocumentSnapshot libraryDoc;
@@ -53,9 +55,11 @@ class _LibraryExpansionTile extends ConsumerWidget {
     final libraryData = libraryDoc.data() as Map<String, dynamic>;
     final libraryName = libraryData['name'] ?? 'İsimsiz Liste';
     final seriesCount = libraryData['seriesCount'] ?? 0;
+    final libraryId = libraryDoc.id;
 
-    final isExpanded = ref.watch(expansionStateProvider);
-    final isExpandedNotifier = ref.read(expansionStateProvider.notifier);
+    final isExpanded = ref.watch(expansionStateProvider(libraryId));
+    final isExpandedNotifier =
+        ref.read(expansionStateProvider(libraryId).notifier);
 
     return Container(
         decoration: BoxDecoration(
@@ -174,7 +178,7 @@ class _SeriesCard extends ConsumerWidget {
                     .read(libraryControllerProvider.notifier)
                     .removeSeriesFromLibrary(libraryId, seriesDoc.id);
               },
-              icon: const Icon(Icons.delete, color: Colors.white70)),
+              icon: const Icon(Icons.delete, size: 18, color: Colors.white70)),
           onTap: () {
             // Buraya tıklandığında serinin detay sayfasına gitme kodu eklenebilir.
             // Örneğin: context.push('/series/${seriesDoc.id}');

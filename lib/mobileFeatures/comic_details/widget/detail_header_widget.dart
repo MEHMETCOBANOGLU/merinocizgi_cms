@@ -394,20 +394,20 @@ class _SaveToListDialog extends ConsumerStatefulWidget {
   final String seriesId;
   const _SaveToListDialog({required this.seriesId});
 
+  // State'i oluşturan satır doğru.
   @override
   ConsumerState<_SaveToListDialog> createState() => _SaveToListDialogState();
 }
 
 class _SaveToListDialogState extends ConsumerState<_SaveToListDialog> {
   final _textController = TextEditingController();
-  // Seçilen kütüphane ID'lerini tutar
   final Set<String> _selectedLibraryIds = {};
-  // "Yeni Liste" bölümünün görünürlüğünü tutar
   bool _isCreatingNewList = false;
-  // Yeni listenin public olup olmayacağını tutar
-  bool _isPublic = false;
-  // Validasyon hatası için
+  bool _isPrivate = false;
   bool _hasValidationError = false;
+
+  // "Daha Sonra Oku" listesinin ID'sini tutmak için bir değişken
+  String? _defaultLibraryId;
 
   @override
   void dispose() {
@@ -430,135 +430,127 @@ class _SaveToListDialogState extends ConsumerState<_SaveToListDialog> {
         const SnackBar(content: Text("Seri, seçilen listelere eklendi.")));
   }
 
-  void _handleCreateNewLibrary() {
+  void _handleCreateNewLibrary() async {
     final name = _textController.text.trim();
     if (name.isEmpty) return;
 
-    ref
+    // Controller'dan yeni liste oluşturmasını iste.
+    final newLibraryId = await ref
         .read(libraryControllerProvider.notifier)
-        .createNewLibrary(name, _isPublic);
+        .createNewLibrary(name, _isPrivate);
 
     _textController.clear();
-    setState(() => _isCreatingNewList = false);
+    setState(() {
+      _isCreatingNewList = false;
+      // Yeni oluşturulan listeyi otomatik olarak seçili hale getir.
+      if (newLibraryId != null) {
+        _selectedLibraryIds.add(newLibraryId);
+      }
+    });
   }
-
-  @override
-  // _SaveToListDialogState -> build metodu
 
   @override
   Widget build(BuildContext context) {
     final librariesAsync = ref.watch(userLibrariesProvider);
 
     return AlertDialog(
-      title: const Text("Bir Listeye Kaydet"),
-      content: librariesAsync.when(
-        data: (libraries) {
-          // --- GÜVENLİ HALE GETİRİLMİŞ YENİ KOD ---
-          // Eğer hiç kütüphane yoksa, kullanıcıya bilgi ver.
-          if (libraries.isEmpty) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text("Henüz hiç okuma listeniz yok."),
-                const SizedBox(height: 16),
-                _buildCreateNewListSection(), // Direkt yeni liste oluşturma bölümünü göster
-              ],
-            );
-          }
+      title: const Center(child: Text("Listeye Ekle")),
+      content: SizedBox(
+        width:
+            400, // Diyaloğa sabit bir genişlik vermek daha iyi bir görünüm sağlar
+        child: librariesAsync.when(
+          data: (libraries) {
+            // Kullanıcının oluşturduğu diğer listeler
+            final customLibraries =
+                libraries.where((doc) => doc.id != _defaultLibraryId).toList();
 
-          // 'firstWhere' yerine daha güvenli bir yöntem kullanalım.
-          DocumentSnapshot? defaultLibrary;
-          try {
-            defaultLibrary = libraries.firstWhere(
-              (doc) => doc['name'] == 'Daha Sonra Oku',
-            );
-          } catch (e) {
-            // "Daha Sonra Oku" listesi bulunamadı, sorun değil.
-            defaultLibrary = null;
-          }
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // --- DİNAMİK "DİĞER LİSTELER" BÖLÜMÜ ---
 
-          final List<DocumentSnapshot> customLibraries;
-          if (defaultLibrary != null) {
-            customLibraries =
-                libraries.where((doc) => doc.id != defaultLibrary!.id).toList();
-          } else {
-            customLibraries = libraries;
-          }
-          // --- GÜVENLİ KODUN SONU ---
+                  if (customLibraries.isEmpty && !_isCreatingNewList)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                      child: Text("Henüz bir listeniz yok.",
+                          style: TextStyle(fontStyle: FontStyle.italic)),
+                    ),
 
-          return SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // "Daha Sonra Oku" listesi (eğer varsa gösterilir)
-                if (defaultLibrary != null) ...[
-                  _buildLibraryTile(defaultLibrary, isDefault: true),
-                  const Divider(),
+                  ...customLibraries.map((lib) => _buildLibraryTile(lib)),
+
+                  if (_hasValidationError)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8.0),
+                      child: Text("Lütfen en az bir liste seçin.",
+                          style: TextStyle(color: Colors.red, fontSize: 12)),
+                    ),
+
+                  const SizedBox(height: 16),
+
+                  if (_isCreatingNewList)
+                    _buildCreateNewListSection()
+                  else
+                    TextButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text("Yeni Liste Oluştur"),
+                      onPressed: () =>
+                          setState(() => _isCreatingNewList = true),
+                    ),
                 ],
-
-                // Diğer, kullanıcı tarafından oluşturulan listeler
-                ...customLibraries.map((lib) => _buildLibraryTile(lib)),
-
-                // Validasyon hatası mesajı
-                if (_hasValidationError)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8.0),
-                    child: Text("Lütfen en az bir liste seçin.",
-                        style: TextStyle(color: Colors.red, fontSize: 12)),
-                  ),
-
-                const SizedBox(height: 16),
-
-                // Yeni liste oluşturma bölümü
-                if (_isCreatingNewList)
-                  _buildCreateNewListSection()
-                else
-                  TextButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text("Yeni Liste Oluştur"),
-                    onPressed: () => setState(() => _isCreatingNewList = true),
-                  ),
-              ],
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) {
-          // Hata ayıklama için daha detaylı bilgi
-          print("SaveToListDialog Error: $e");
-          return const Text("Listeler yüklenemedi. Lütfen tekrar deneyin.");
-        },
+              ),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, st) => const Text("Listeler yüklenemedi."),
+        ),
       ),
       actions: [
-        TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text("İptal")),
-        ElevatedButton(onPressed: _handleSave, child: const Text("Kaydet")),
+        ElevatedButton(
+          onPressed: _handleSave,
+          child: const Text("Kaydet"),
+        ),
       ],
     );
   }
 
-  Widget _buildLibraryTile(DocumentSnapshot doc, {bool isDefault = false}) {
+  // --- GÜNCELLENMİŞ 'buildLibraryTile' METODU ---
+  Widget _buildLibraryTile(
+    DocumentSnapshot doc,
+  ) {
     final data = doc.data() as Map<String, dynamic>;
     final isSelected = _selectedLibraryIds.contains(doc.id);
 
-    return CheckboxListTile(
-      title: Text(data['name']),
-      subtitle: Text(isDefault
-          ? "Özel Liste"
-          : (data['isPublic'] ? "Herkese Açık" : "Özel Liste")),
-      value: isSelected,
-      onChanged: (selected) {
-        setState(() {
-          if (selected == true) {
-            _selectedLibraryIds.add(doc.id);
-            _hasValidationError = false;
-          } else {
-            _selectedLibraryIds.remove(doc.id);
-          }
-        });
-      },
+    return Theme(
+      data: Theme.of(context).copyWith(
+        checkboxTheme: const CheckboxThemeData(
+          shape: CircleBorder(), // <-- DAİRE checkbox
+          side: BorderSide(color: Colors.white54),
+        ),
+      ),
+      child: CheckboxListTile(
+        title: Row(
+          children: [
+            Text(data['name']),
+            const SizedBox(width: 8),
+            // Sadece 'private' olanlar için kilit ikonu göster
+            if ((data['isPrivate'] ?? true))
+              Icon(Icons.lock, size: 14, color: Colors.grey[600]),
+          ],
+        ),
+        value: isSelected,
+        onChanged: (selected) {
+          setState(() {
+            if (selected == true) {
+              _selectedLibraryIds.add(doc.id);
+              _hasValidationError = false;
+            } else {
+              _selectedLibraryIds.remove(doc.id);
+            }
+          });
+        },
+      ),
     );
   }
 
@@ -569,19 +561,43 @@ class _SaveToListDialogState extends ConsumerState<_SaveToListDialog> {
           controller: _textController,
           decoration: const InputDecoration(labelText: "Yeni liste adı"),
         ),
-        Row(
-          children: [
-            Text("Herkese Açık:"),
-            Switch(
-              value: _isPublic,
-              onChanged: (val) => setState(() => _isPublic = val),
-            ),
-            const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.check, color: Colors.green),
-              onPressed: _handleCreateNewLibrary,
-            )
-          ],
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: Row(
+            children: [
+              const Text(
+                "Özel",
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.lock, size: 14, color: Colors.grey[600]),
+              const SizedBox(width: 12),
+              Transform.scale(
+                scale: 0.7,
+                child: Switch(
+                  activeTrackColor: AppColors.primary,
+                  activeColor: AppColors.accent,
+                  inactiveThumbColor: AppColors.primary,
+                  value: _isPrivate,
+                  onChanged: (val) => setState(() => _isPrivate = val),
+                ),
+              ),
+              const Spacer(),
+              Transform.scale(
+                scale: 0.7,
+                child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                        side: const BorderSide(color: Colors.white30),
+                        backgroundColor: Colors.transparent),
+                    onPressed: _handleCreateNewLibrary,
+                    label: const Text("Ekle"),
+                    icon: const Icon(Icons.add)),
+              ),
+              // IconButton(
+              //   icon: const Icon(Icons.check, color: Colors.green),
+              //   onPressed: _handleCreateNewLibrary,
+              // )
+            ],
+          ),
         )
       ],
     );

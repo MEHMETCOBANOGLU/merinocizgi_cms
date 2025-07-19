@@ -34,20 +34,23 @@ class LibraryController extends StateNotifier<AsyncValue<void>> {
   LibraryController(this._ref) : super(const AsyncData(null));
 
   // Yeni bir kütüphane listesi oluşturur.
-  Future<void> createNewLibrary(String name, bool isPublic) async {
+  Future<String?> createNewLibrary(String name, bool isPrivate) async {
     final user = _ref.read(authStateProvider).value?.user;
-    if (user == null) return;
+    if (user == null) return null;
 
-    await _firestore
+    // add() metodu bir DocumentReference döndürür.
+    final docRef = await _firestore
         .collection('users')
         .doc(user.uid)
         .collection('libraries')
         .add({
       'name': name,
-      'isPublic': isPublic,
+      'isPrivate': isPrivate,
       'seriesCount': 0,
       'createdAt': FieldValue.serverTimestamp(),
     });
+    // Oluşturulan dökümanın ID'sini geri döndür.
+    return docRef.id;
   }
 
   // Bir seriyi, seçilen bir veya daha fazla listeye ekler.

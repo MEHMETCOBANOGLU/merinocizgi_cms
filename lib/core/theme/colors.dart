@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // static const primary = Color(0xFFB4EEDF);
-  static final primary = HSLColor.fromColor(const Color(0xFFB4EEDF))
-      .withLightness(
-          (HSLColor.fromColor(const Color(0xFFB4EEDF)).lightness - 0.05)
-              .clamp(0.0, 1.0))
-      .toColor();
-
+  // static final primary = HSLColor.fromColor(const Color(0xFFB4EEDF))
+  //     .withLightness(
+  //         (HSLColor.fromColor(const Color(0xFFB4EEDF)).lightness - 0.05)
+  //             .clamp(0.0, 1.0))
+  //     .toColor();
+  static const primary = Color.fromARGB(255, 134, 201, 187);
   static const accent = Color.fromARGB(255, 255, 201, 189);
   static const card = Color.fromARGB(255, 134, 201, 187);
   static const bg = Color.fromARGB(255, 240, 255, 251);
