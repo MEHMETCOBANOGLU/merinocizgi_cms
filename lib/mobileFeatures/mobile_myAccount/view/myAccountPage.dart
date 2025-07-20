@@ -9,7 +9,7 @@ import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_auth/view/loginPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/bottom_bar_widget.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_home/widget/home_app_bar_widget.dart';
+import 'package:merinocizgi/mobileFeatures/shared/widget.dart/home_app_bar_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/followers_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/following_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/my_series_list.dart';
@@ -56,7 +56,6 @@ class MyAccountPage extends ConsumerWidget {
       child: Scaffold(
         // AppBar ve BottomNavigationBar artık MobileMainLayout'tan (ShellRoute) geliyor.
         // Bu sayfanın kendi AppBar'ına ihtiyacı var.
-
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [

@@ -126,26 +126,6 @@ class _MobileComicDetailsPageState
                 ),
               ],
             ),
-            // BottomBarWidget(
-            //   items: [
-            //     BottomBarItem(
-            //       icon: Icons.home_outlined,
-            //       onTap: () {},
-            //     ),
-            //     BottomBarItem(
-            //       icon: Icons.favorite_border,
-            //       onTap: () {},
-            //     ),
-            //     BottomBarItem(
-            //       icon: Icons.search_outlined,
-            //       onTap: () {},
-            //     ),
-            //     BottomBarItem(
-            //       icon: Icons.explore_outlined,
-            //       onTap: () {},
-            //     ),
-            //   ],
-            // )
           ],
         ),
       );

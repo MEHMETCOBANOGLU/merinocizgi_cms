@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/bottom_bar_widget.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_home/widget/home_app_bar_widget.dart';
+import 'package:merinocizgi/mobileFeatures/shared/widget.dart/home_app_bar_widget.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
 
 class MobileMainLayout extends ConsumerWidget {
@@ -84,7 +84,7 @@ class MobileMainLayout extends ConsumerWidget {
               onItemSelected: (index) => onItemTapped(index, ref, context),
               items: [
                 BottomBarItem(
-                    icon: Icons.home_outlined,
+                    icon: Icons.home_sharp,
                     activeColor: AppColors.accent,
                     inactiveColor: Colors.white),
                 BottomBarItem(
@@ -96,7 +96,7 @@ class MobileMainLayout extends ConsumerWidget {
                     activeColor: AppColors.accent,
                     inactiveColor: Colors.white),
                 BottomBarItem(
-                    icon: Icons.person_outlined,
+                    icon: Icons.person_sharp,
                     activeColor: AppColors.accent,
                     inactiveColor: Colors.white),
               ],

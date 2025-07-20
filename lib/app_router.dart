@@ -18,6 +18,7 @@ import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/accountSettin
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/followers_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/following_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/reading_list_widget.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_search/view/search_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_user_profile/view/userProfilePage.dart';
 import 'package:merinocizgi/mobileFeatures/shared/view/mobile_main_layout.dart'; // Mobil için yeni layout
 
@@ -129,6 +130,9 @@ List<RouteBase> _getMobileRoutes() {
             path: '/myAccount',
             builder: (context, state) =>
                 const MyAccountPage()), // Myaccountpages mobil profili de olabilir
+        GoRoute(
+            path: '/search',
+            builder: (context, state) => const MobileSearchPage()),
       ],
     ),
     // Okuma ekranı gibi tam ekran olacak, kabuk dışında kalacak sayfalar
