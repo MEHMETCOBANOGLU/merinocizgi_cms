@@ -46,40 +46,44 @@ class _MobileSearchPageState extends ConsumerState<MobileSearchPage> {
     final searchQuery = ref.watch(searchQueryProvider);
     final searchResultAsync = ref.watch(searchResultProvider);
 
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _searchController,
-              autofocus: true,
-              decoration: InputDecoration(
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                prefixIcon: const Icon(Icons.search),
-                hintText: 'Eser veya yazar arayın...',
-                suffixIcon: searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () => _searchController.clear(),
-                      )
-                    : null,
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            children: [
+              TextField(
+                controller: _searchController,
+                // autofocus: true,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: 'Eser veya yazar arayın...',
+                  suffixIcon: searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () => _searchController.clear(),
+                        )
+                      : null,
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: searchQuery.isEmpty
-                  ? const Center(child: Text("Aramak için yazmaya başlayın..."))
-                  : searchResultAsync.when(
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (err, st) =>
-                          Center(child: Text('Bir hata oluştu: $err')),
-                      data: (data) => _buildResultsList(data),
-                    ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              Expanded(
+                child: searchQuery.isEmpty
+                    ? const Center(
+                        child: Text("Aramak için yazmaya başlayın..."))
+                    : searchResultAsync.when(
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (err, st) =>
+                            Center(child: Text('Bir hata oluştu: $err')),
+                        data: (data) => _buildResultsList(data),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );

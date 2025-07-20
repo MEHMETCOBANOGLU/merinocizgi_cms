@@ -38,6 +38,7 @@ class MobileMainLayout extends ConsumerWidget {
 
     return Scaffold(
       appBar: MobileHomeAppBar(actions: getAppBarActions(context)),
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           // 1. Katman: Ana İçerik
@@ -75,6 +76,7 @@ class MobileMainLayout extends ConsumerWidget {
 
           // 2. Katman: Süzülen Alt Bar
           // Konumlandırma sorumluluğu artık burada.
+
           Positioned(
             left: 34.0,
             right: 34.0,
@@ -89,6 +91,10 @@ class MobileMainLayout extends ConsumerWidget {
                     inactiveColor: Colors.white),
                 BottomBarItem(
                     icon: Icons.people_alt_sharp,
+                    activeColor: AppColors.accent,
+                    inactiveColor: Colors.white),
+                BottomBarItem(
+                    icon: Icons.add_box_outlined,
                     activeColor: AppColors.accent,
                     inactiveColor: Colors.white),
                 BottomBarItem(

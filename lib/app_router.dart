@@ -133,6 +133,9 @@ List<RouteBase> _getMobileRoutes() {
         GoRoute(
             path: '/search',
             builder: (context, state) => const MobileSearchPage()),
+        GoRoute(
+            path: '/more',
+            builder: (context, state) => const MobileLibraryPage()),
       ],
     ),
     // Okuma ekranı gibi tam ekran olacak, kabuk dışında kalacak sayfalar

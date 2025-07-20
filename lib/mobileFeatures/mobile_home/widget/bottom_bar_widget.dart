@@ -40,6 +40,10 @@ class BottomBarWidget extends StatelessWidget {
           final item = items[index];
           final isSelected = (selectedIndex == index);
 
+          final prioritizedCodePoint = 0xE758;
+
+          final isPrioritized = item.icon.codePoint == prioritizedCodePoint;
+
           // --- ANA DEĞİŞİKLİK BURADA ---
           // IconButton'ı AnimatedContainer ile sarmalıyoruz.
           return AnimatedContainer(
@@ -59,7 +63,10 @@ class BottomBarWidget extends StatelessWidget {
               icon: Icon(item.icon),
               iconSize: 28,
               color: isSelected ? item.activeColor : item.inactiveColor,
-              onPressed: () => onItemSelected(index),
+              onPressed: () {
+                print(item.icon);
+                onItemSelected(index);
+              },
               splashColor: item.activeColor.withOpacity(0.2),
               highlightColor: item.activeColor.withOpacity(0.1),
             ),
@@ -96,9 +103,70 @@ void onItemTapped(int index, WidgetRef ref, BuildContext context) {
       context.go('/library'); // Örnek bir rota
       break;
     case 2:
-      context.go('/search'); // Örnek bir rota
+      showModalBottomSheet<void>(
+        context: context,
+        backgroundColor:
+            Colors.transparent, // Arka plan tamamen transparan olmalı
+        isScrollControlled: true,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.3,
+        ),
+        builder: (BuildContext context) {
+          // --- 1. DIŞ SARMALAYICI: KAPATMA ALANI ---
+          // Bu dış GestureDetector, tüm modal alanını kaplar.
+          // Boş bir alana dokunulduğunda modal'ı kapatır.
+          return GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              // GestureDetector'ın dokunmaları algılayabilmesi için
+              // bir renge sahip olması gerekir. Transparan renk işimizi görür.
+              color: Colors.transparent,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                // --- 2. İÇ SARMALAYICI: DOKUNMAYI ENGELLEYİCİ ---
+                // Bu iç GestureDetector, görünen içeriğin üzerindedir.
+                // Görevi, içeriğe yapılan dokunmaları "tüketmek" ve
+                // dıştaki kapatma GestureDetector'ına ulaşmasını engellemektir.
+                child: GestureDetector(
+                  onTap: () {}, // Hiçbir şey yapma, sadece dokunmayı yut.
+                  child: Container(
+                    // Görünen modal içeriğimiz.
+                    margin: const EdgeInsets.fromLTRB(20, 0, 20, 75),
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                      color: AppColors.primary,
+                    ),
+                    width: 305,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          const Text('Modal BottomSheet'),
+                          ElevatedButton(
+                            child: const Text('Close BottomSheet'),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+      ;
+      ;
       break;
     case 3:
+      context.go('/search');
+      break;
+    case 4:
       context.go('/myAccount');
       break;
   }
