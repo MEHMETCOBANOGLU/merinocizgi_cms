@@ -5,10 +5,13 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
-import 'package:merinocizgi/mobileFeatures/comic_details/controller/library_controller.dart';
-import 'package:merinocizgi/mobileFeatures/comic_details/controller/userRatingProvider.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_comic_details/controller/library_controller.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_comic_details/controller/userRatingProvider.dart';
+import 'dart:ui' as ui;
 
 class DetailHeaderWidget extends ConsumerStatefulWidget {
   final String urlImage;
@@ -51,8 +54,12 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
   Widget build(
     BuildContext context,
   ) {
+    // Serinin tüm verisini (viewCount dahil) anlık olarak dinler.
     final seriesAsync = ref.watch(seriesProvider(widget.seriesId));
+    // Kullanıcının bu seriye verdiği oyu dinler.
     final userRating = ref.watch(userRatingProvider(widget.seriesId));
+
+    final authStateAsync = ref.watch(authStateProvider);
 
     final size = MediaQuery.of(context).size;
 
@@ -65,7 +72,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
     );
     final textPainter = TextPainter(
       text: textSpan,
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr,
       maxLines:
           isReadMore ? 1000 : 3, // "Daha fazla" modunda satır limiti olmasın
     )..layout(maxWidth: size.width * 0.9 - 32); // Container genişliği - padding
@@ -77,7 +84,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
     final textPainterForCheck = TextPainter(
       text: textSpan,
       maxLines: 3, // <-- ANA DEĞİŞİKLİK BURADA: Limiti belirtiyoruz.
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr,
     )..layout(maxWidth: size.width * 0.9 - 32); // Container genişliği - padding
 
     // 'didExceedMaxLines', şimdi metnin 3 satırdan uzun olup olmadığını doğru bir şekilde kontrol edecek.
@@ -169,6 +176,11 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                         userRating.when(
                           data: (rating) => InkWell(
                             onTap: () {
+                              if (authStateAsync.value?.user == null) {
+                                context.push('/mobileLogin');
+                                return;
+                              }
+                              print('Rating: $rating');
                               showRatingDialog(context, widget.seriesId, ref);
                             },
                             child: Icon(
@@ -188,30 +200,42 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                                 seriesDoc.data() as Map<String, dynamic>;
                             final averageRating =
                                 (data['averageRating'] ?? 0).toDouble();
+                            final viewCount = data?['viewCount'] as int? ?? 0;
 
-                            return Text(
-                              averageRating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 12),
+                            // Formatted view count
+                            final formattedViewCount =
+                                NumberFormat.compact().format(viewCount);
+
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Ortalama Puan
+                                Text(
+                                  averageRating.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 12),
+                                ),
+                                const SizedBox(width: 16),
+                                // Görüntülenme İkonu
+                                const Icon(Icons.visibility,
+                                    color: Colors.white, size: 16),
+                                const SizedBox(width: 4),
+                                // Görüntülenme Sayısı
+                                Text(
+                                  formattedViewCount, // '89,2K' gibi formatlanmış
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 12),
+                                ),
+                              ],
                             );
                           },
-                          loading: () =>
-                              const CircularProgressIndicator(strokeWidth: 1),
-                          error: (e, _) => const Text('0.0',
+                          loading: () => const SizedBox(
+                              width: 50,
+                              child: Center(
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 1))),
+                          error: (e, _) => const Text('N/A',
                               style: TextStyle(color: Colors.white)),
-                        ),
-                        const SizedBox(width: 16),
-                        const Icon(
-                          Icons.visibility,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          '89,200',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                          ),
                         ),
                         const SizedBox(width: 16),
                       ],
@@ -230,9 +254,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                         ref
                             .watch(isComicInAnyLibraryProvider(widget.seriesId))
                             .when(
-                              // data: provider'dan gelen 'true' veya 'false' sonucudur.
                               data: (isSaved) {
-                                // Eğer çizgi roman ZATEN kayıtlıysa (isSaved == true)
                                 if (isSaved) {
                                   // Farklı bir buton gösteriyoruz.
                                   return ElevatedButton.icon(
@@ -250,13 +272,13 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                                     ),
                                     // Tıklandığında yine de listeleri yönetme diyaloğunu açabilir.
                                     onPressed: _showSaveToListDialog,
-                                    icon: Icon(
+                                    icon: const Icon(
                                       Icons
                                           .bookmark_added, // İkonu değiştiriyoruz
                                       size: 15,
                                       color: AppColors.primary,
                                     ),
-                                    label: Text(
+                                    label: const Text(
                                       'Kaydedildi', // Yazıyı değiştiriyoruz
                                       style: TextStyle(
                                           fontSize: 14,
@@ -279,7 +301,13 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                     ),
-                                    onPressed: _showSaveToListDialog,
+                                    onPressed: () {
+                                      if (authStateAsync.value?.user == null) {
+                                        context.push('/mobileLogin');
+                                        return;
+                                      }
+                                      _showSaveToListDialog();
+                                    },
                                     icon: const Icon(
                                       Icons.bookmark_add_outlined, // İkon
                                       size: 15,

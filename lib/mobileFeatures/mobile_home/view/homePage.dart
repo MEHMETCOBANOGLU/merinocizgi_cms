@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
-import 'package:merinocizgi/mobileFeatures/comic_details/view/comicDetailsPage.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_comic_details/view/comicDetailsPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/controller/new_series_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/carouselTop_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/carousel_widget.dart';
@@ -27,7 +27,7 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
     final size = MediaQuery.of(context).size;
 
     // --- Gerekli tüm provider'ları en başta izle. ---
-    final popularSeriesAsync = ref.watch(approvedSeriesProvider);
+    final popularSeriesAsync = ref.watch(mostViewedSeriesProvider);
     // Yeni provider'ımızı doğru isimle (`newSeriesControllerProvider`) izliyoruz.
     final newSeriesAsync = ref.watch(newSeriesControllerProvider);
     final completedSeriesAsync = ref.watch(completedSeriesProvider);
@@ -51,23 +51,21 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                 if (series.docs.isEmpty) return const SizedBox.shrink();
 
                 return CarouselWidget(
-                  title: "En Popüler(eksik)",
+                  title: "En Popüler",
                   height: size.height * 0.28, // Yüksekliği biraz artıralım
                   children: series.docs
                       .map((seriesDoc) => MostPopularCardWidget(
                             imageUrl: seriesDoc['squareImageUrl'],
                             title: seriesDoc['title'],
                             chapters: seriesDoc['totalEpisodes'],
-                            // rating: 4.5, // Bu değer dinamik olmalı
                             rating: (seriesDoc['averageRating'] as num?)
                                     ?.toDouble() ??
-                                0.0, // Bu değer dinamik olmalı
+                                0.0,
                             onTap: () => onTapCard(
                               context,
                               arguments: DetailPageArguments(
                                 seriesId: seriesDoc.id,
-                                authorName:
-                                    seriesDoc['authorName'], // authorName
+                                authorName: seriesDoc['authorName'],
                                 authorId: seriesDoc['authorId'],
                                 title: seriesDoc['title'],
                                 synopsis: seriesDoc['summary'],

@@ -2,7 +2,9 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:merinocizgi/features/auth/controller/auth_methods.dart';
 
 // Bu provider, AuthController'ın bir örneğini oluşturur ve yönetir.
@@ -96,6 +98,7 @@ class AuthController extends StateNotifier<AsyncValue<UserCredential?>> {
         }
       }
       state = AsyncData(userCredential);
+      // if (context.mounted) context.go('/myAccount');
     } on FirebaseAuthException catch (e, st) {
       state = AsyncError(_mapAuthExceptionToMessage(e), st);
       rethrow;

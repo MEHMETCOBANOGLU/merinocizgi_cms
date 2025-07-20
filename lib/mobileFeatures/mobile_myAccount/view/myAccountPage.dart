@@ -56,15 +56,7 @@ class MyAccountPage extends ConsumerWidget {
       child: Scaffold(
         // AppBar ve BottomNavigationBar artık MobileMainLayout'tan (ShellRoute) geliyor.
         // Bu sayfanın kendi AppBar'ına ihtiyacı var.
-        appBar: MobileHomeAppBar(
-          // title: authStateAsync.value?.user?.displayName ?? 'Profilim',
-          actions: [
-            IconButton(
-              onPressed: () => context.push('/settings'),
-              icon: const Icon(Icons.settings_outlined),
-            ),
-          ],
-        ),
+
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
@@ -102,50 +94,6 @@ class MyAccountPage extends ConsumerWidget {
             ],
           ),
         ),
-        bottomNavigationBar: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 18),
-            child: BottomBarWidget(
-              items: [
-                BottomBarItem(
-                  icon: Icons.home_outlined,
-                  color: selectedBottomBarIndex == 0
-                      ? AppColors.primary
-                      : Colors.white,
-                  onTap: () {
-                    ref.read(selectedBottomBarIndexProvider.notifier).state = 0;
-                    context.go('/');
-                  },
-                ),
-                BottomBarItem(
-                  icon: Icons.favorite_border,
-                  color: selectedBottomBarIndex == 1
-                      ? AppColors.primary
-                      : Colors.white,
-                  onTap: () {
-                    ref.read(selectedBottomBarIndexProvider.notifier).state = 1;
-                  },
-                ),
-                BottomBarItem(
-                  icon: Icons.search_outlined,
-                  color: selectedBottomBarIndex == 2
-                      ? AppColors.primary
-                      : Colors.white,
-                  onTap: () {
-                    ref.read(selectedBottomBarIndexProvider.notifier).state = 2;
-                  },
-                ),
-                BottomBarItem(
-                  icon: Icons.person_outlined,
-                  color: selectedBottomBarIndex == 3
-                      ? AppColors.primary
-                      : Colors.white,
-                  onTap: () {
-                    ref.read(selectedBottomBarIndexProvider.notifier).state = 3;
-                    context.push('/myAccount');
-                  },
-                ),
-              ],
-            )),
       ),
     );
   }

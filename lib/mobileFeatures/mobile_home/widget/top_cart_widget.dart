@@ -5,6 +5,7 @@ class TopCardWidget extends StatelessWidget {
   final String imageUrl;
   final String title;
   final int rank; // Sıralama numarası (1, 2, 3...)
+  final int viewCount;
   final VoidCallback onTap;
 
   const TopCardWidget({
@@ -12,6 +13,7 @@ class TopCardWidget extends StatelessWidget {
     required this.imageUrl,
     required this.title,
     required this.rank,
+    required this.viewCount,
     required this.onTap,
   });
 
@@ -82,17 +84,17 @@ class TopCardWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            const Row(
+            Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.visibility,
                   size: 18,
                   color: Colors.white70,
                 ),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Text(
-                  '7.2M',
-                  style: TextStyle(
+                  '$viewCount',
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,

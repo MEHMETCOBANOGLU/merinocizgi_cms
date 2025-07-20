@@ -242,3 +242,54 @@ exports.onUserFollow = onDocumentWritten("users/{followerId}/following/{followed
 
     return null;
 });
+
+
+
+
+
+
+/**
+ * YENİ FONKSİYON: Okuma Olayı Gerçekleştiğinde Görüntülenme Sayısını Artırma
+ * 'readEvents' koleksiyonuna yeni bir döküman eklendiğinde tetiklenir.
+ * İlgili serinin ve bölümün 'viewCount' sayaçlarını bir artırır.
+ */
+exports.incrementViewCounts = onDocumentWritten("readEvents/{eventId}", async(event) => {
+    // Sadece yeni bir döküman oluşturulduğunda çalış.
+    if (!event.data.after.exists || event.data.before.exists) {
+        return null;
+    }
+
+    const eventData = event.data.after.data();
+    const { userId, seriesId, episodeId } = eventData;
+
+    // Gerekli veriler yoksa işlemi durdur.
+    if (!userId || !seriesId || !episodeId) {
+        logger.error("Okuma olayında eksik veri: ", event.data.after.id);
+        return null;
+    }
+
+    // Hem seri hem de bölüm dökümanlarının referanslarını al.
+    const seriesRef = admin.firestore().collection("series").doc(seriesId);
+    const episodeRef = seriesRef.collection("episodes").doc(episodeId);
+
+    // Sayaçları bir artırmak için 'increment' operatörünü kullan.
+    // Bu, birden fazla isteğin aynı anda gelmesi durumunda bile doğru sonucu verir.
+    const increment = admin.firestore.FieldValue.increment(1);
+
+    try {
+        // İki güncellemeyi de bir batch işlemi içinde yapmak en iyisidir.
+        const batch = admin.firestore().batch();
+
+        batch.update(seriesRef, { viewCount: increment });
+        batch.update(episodeRef, { viewCount: increment });
+
+        await batch.commit();
+
+        logger.info(`Görüntülenme sayısı artırıldı. Seri: ${seriesId}, Bölüm: ${episodeId}`);
+        return null;
+
+    } catch (error) {
+        logger.error(`Görüntülenme sayısı artırılırken hata oluştu:`, error);
+        return null;
+    }
+});

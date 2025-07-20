@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
-import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/features/auth/controller/auth_controller.dart';
 
 /// E-posta ile giriş/kayıt işlemlerini yapan diyalog
@@ -24,6 +23,8 @@ class _EmailLoginDialogState extends ConsumerState<EmailLoginPage> {
   late bool _isLoginMode;
   bool _isPrivacyChecked = false;
   bool _isTermsChecked = false;
+  bool _obscureText = true; // Şifre gizli mi?
+
   @override
   void initState() {
     super.initState();
@@ -195,7 +196,7 @@ class _EmailLoginDialogState extends ConsumerState<EmailLoginPage> {
               children: [
                 TextSpan(
                   text: text,
-                  style: TextStyle(
+                  style: const TextStyle(
                       decoration: TextDecoration.underline,
                       fontSize: 15,
                       color: AppColors.primary),
@@ -242,8 +243,8 @@ class _EmailLoginDialogState extends ConsumerState<EmailLoginPage> {
                 if (!_isLoginMode) ...[
                   TextFormField(
                       controller: _mahlasCtrl,
-                      decoration: const InputDecoration(
-                          labelText: 'Mahlas (Kullanıcı Adı)'),
+                      decoration:
+                          const InputDecoration(labelText: 'Kullanıcı Adı'),
                       validator: (v) => v!.isEmpty ? 'Mahlas gerekli' : null),
                   const SizedBox(height: 30),
                 ],
@@ -257,8 +258,15 @@ class _EmailLoginDialogState extends ConsumerState<EmailLoginPage> {
                 const SizedBox(height: 30),
                 TextFormField(
                     controller: _passwordCtrl,
-                    decoration: const InputDecoration(labelText: 'Şifre'),
-                    obscureText: true,
+                    obscureText: _obscureText,
+                    decoration: InputDecoration(
+                        labelText: 'Şifre',
+                        suffixIcon: IconButton(
+                            icon: Icon(_obscureText
+                                ? Icons.visibility
+                                : Icons.visibility_off),
+                            onPressed: () =>
+                                setState(() => _obscureText = !_obscureText))),
                     validator: (v) => (v!.length < 6)
                         ? 'Şifre en az 6 karakter olmalı'
                         : null),

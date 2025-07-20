@@ -129,35 +129,6 @@ class LibraryController extends StateNotifier<AsyncValue<void>> {
   }
 }
 
-/// Belirli bir çizgi romanın, kullanıcının HERHANGİ bir kütüphanesine (okuma listesine)
-/// eklenip eklenmediğini kontrol eden provider.
-final isComicInAnyLibraryProvider =
-    FutureProvider.family<bool, String>((ref, comicId) async {
-  final user = ref.watch(authStateProvider).value?.user;
-
-  // Kullanıcı giriş yapmamışsa veya comicId boşsa, işlem yapma.
-  if (user == null || comicId.isEmpty) {
-    return false;
-  }
-
-  // Collection Group sorgusu: 'users' koleksiyonu altındaki TÜM 'comics'
-  // koleksiyonlarını sorgulamamızı sağlar.
-  final querySnapshot = await FirebaseFirestore.instance
-      .collectionGroup(
-          'comics') // ÖNEMLİ: Bu koleksiyonun adının 'comics' olduğundan emin olun.
-      // Sadece mevcut kullanıcıya ait olanları filtrele
-      .where('userId', isEqualTo: user.uid)
-      // ve sadece aradığımız çizgi romanı filtrele
-      .where('comicId',
-          isEqualTo: comicId) // Dokümanlarınızda 'comicId' alanı olmalı
-      .limit(1) // Sadece 1 tane bulmamız yeterli, daha fazla aramaya gerek yok.
-      .get();
-
-  // Eğer sorgu sonucu boş değilse (yani en az 1 eşleşme varsa),
-  // çizgi roman bir kütüphaneye eklenmiş demektir.
-  return querySnapshot.docs.isNotEmpty;
-});
-
 /// Belirli bir kütüphanenin (okuma listesinin) içindeki serileri getiren provider.
 final seriesInLibraryProvider = StreamProvider.autoDispose
     .family<List<DocumentSnapshot>, String>((ref, libraryId) {
@@ -175,4 +146,53 @@ final seriesInLibraryProvider = StreamProvider.autoDispose
       .orderBy('addedAt', descending: true)
       .snapshots()
       .map((snapshot) => snapshot.docs);
+});
+
+/// Belirli bir çizgi romanın, kullanıcının HERHANGİ bir kütüphanesine (okuma listesine)
+/// eklenip eklenmediğini kontrol eden provider.
+/// '.family' ile dışarıdan 'seriesId' parametresi alır.
+final isComicInAnyLibraryProvider =
+    StreamProvider.autoDispose.family<bool, String>((ref, seriesId) {
+  // 1. Mevcut kullanıcıyı al. Giriş yapmamışsa, seri kayıtlı değildir (false).
+  final user = ref.watch(authStateProvider).value?.user;
+  if (user == null) {
+    return Stream.value(false);
+  }
+
+  // 2. Kullanıcının TÜM kütüphanelerini (okuma listelerini) dinle.
+  final librariesStream = FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .collection('libraries')
+      .snapshots();
+
+  // 3. Bu stream'i, asenkron bir map'e dönüştürerek işliyoruz.
+  return librariesStream.asyncMap((librariesSnapshot) async {
+    // Eğer kullanıcının hiç kütüphanesi yoksa, seri kayıtlı olamaz.
+    if (librariesSnapshot.docs.isEmpty) {
+      return false;
+    }
+
+    // 4. Her bir kütüphanenin içinde, aradığımız serinin olup olmadığını KONTROL ET.
+    // Bu kontrol işlemlerini paralel olarak yapmak performansı artırır.
+    final checks = librariesSnapshot.docs.map((libraryDoc) {
+      return FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('libraries')
+          .doc(libraryDoc.id)
+          .collection('series')
+          .doc(seriesId)
+          .get()
+          .then((seriesDoc) =>
+              seriesDoc.exists); // Sadece var olup olmadığına (true/false) bak.
+    }).toList();
+
+    // 5. Tüm bu kontrol işlemlerinin (Future'ların) sonuçlarını bekle.
+    final results = await Future.wait(checks);
+
+    // 6. Sonuçlardan HERHANGİ BİRİ 'true' ise, seri en az bir listeye kaydedilmiştir.
+    // 'any' metodu, listedeki elemanlardan en az biri koşulu sağlıyorsa 'true' döner.
+    return results.any((isFound) => isFound == true);
+  });
 });

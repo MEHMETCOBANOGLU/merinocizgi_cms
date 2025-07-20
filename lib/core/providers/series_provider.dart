@@ -224,5 +224,24 @@ final topSeriesByCategoryProvider = StreamProvider.autoDispose
   return stream.map((snapshot) => snapshot.docs);
 });
 
-// ÖNEMLİ: Bu sorgunun çalışması için Firebase Console'da bir "Bileşik Dizin" (Composite Index)
-// oluşturmanız gerekecektir. Hata mesajındaki linke tıklayarak bunu kolayca yapabilirsiniz.
+/// [POPÜLERLİK] En YÜKSEK PUANA sahip serileri listeler.
+final highestRatedSeriesProvider =
+    StreamProvider.autoDispose<QuerySnapshot>((ref) {
+  return FirebaseFirestore.instance
+      .collection('series')
+      .where('hasPublishedEpisodes', isEqualTo: true)
+      .orderBy('averageRating', descending: true) // Ana sıralama kriteri
+      .limit(10) // Performans için bir limit koyalım
+      .snapshots();
+});
+
+/// [POPÜLERLİK] En ÇOK GÖRÜNTÜLENEN serileri listeler.
+final mostViewedSeriesProvider =
+    StreamProvider.autoDispose<QuerySnapshot>((ref) {
+  return FirebaseFirestore.instance
+      .collection('series')
+      .where('hasPublishedEpisodes', isEqualTo: true)
+      .orderBy('viewCount', descending: true) // Ana sıralama kriteri
+      .limit(10)
+      .snapshots();
+});

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
-import 'package:merinocizgi/mobileFeatures/comic_details/widget/chapter_card_widget.dart';
-import 'package:merinocizgi/mobileFeatures/comic_details/widget/detail_header_widget.dart';
-import 'package:merinocizgi/mobileFeatures/comic_details/widget/title_chapters_witget.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/chapter_card_widget.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/detail_header_widget.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/title_chapters_witget.dart';
 // import 'package:manga_webtoon/src/detail/components/detail_header_widget.dart';
 
 // import '../home/components/bottom_bar_widget.dart';

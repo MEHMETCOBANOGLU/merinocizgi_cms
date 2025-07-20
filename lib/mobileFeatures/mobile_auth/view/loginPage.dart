@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:merinocizgi/features/auth/controller/auth_controller.dart';
-import 'package:merinocizgi/features/auth/widgets/email_login_dialog.dart';
 
 class MobileLoginPage extends ConsumerWidget {
   const MobileLoginPage({super.key});
@@ -26,7 +25,7 @@ class MobileLoginPage extends ConsumerWidget {
               size: 30,
             ),
             onPressed: () {
-              Navigator.of(context).pop();
+              context.pop();
             },
           ),
         ],
@@ -70,8 +69,7 @@ class MobileLoginPage extends ConsumerWidget {
                   ),
                 ),
                 onPressed: () {
-                  // Navigator.of(context).pop(); // Bu diyaloğu kapat
-                  context.push('/EmailLoginPage');
+                  context.push('/emailLogin');
                 },
               ),
               const SizedBox(height: 12),
@@ -95,10 +93,6 @@ class MobileLoginPage extends ConsumerWidget {
                   await ref
                       .read(authControllerProvider.notifier)
                       .signInWithGoogle();
-                  // Başarılı olursa, AuthStateProvider bunu algılayıp UI'ı güncelleyecek.
-                  // Bu yüzden burada Navigator.pop() yapmaya gerek kalmayabilir,
-                  // veya işlemden sonra kapatılabilir. Şimdilik kapatalım.
-                  if (context.mounted) Navigator.of(context).pop();
                 },
               ),
               const SizedBox(height: 12),
@@ -125,8 +119,6 @@ class MobileLoginPage extends ConsumerWidget {
                       .signInWithFacebook();
                 },
               ),
-
-              // const SizedBox(height: 80),
               const Spacer(),
               Padding(
                 padding:

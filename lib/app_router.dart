@@ -11,6 +11,7 @@ import 'package:merinocizgi/core/widgets/main_layout.dart';
 import 'package:merinocizgi/features/legal/view/cookie_policy_page.dart';
 import 'package:merinocizgi/features/legal/view/kvkk_page.dart';
 import 'package:merinocizgi/features/legal/view/terms_of_service_page.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_auth/view/loginPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_auth/widgets/email_login_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/view/myAccountPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/accountSettings.dart';
@@ -30,7 +31,7 @@ import 'package:merinocizgi/features/adminPanel/view/admin_dashboard_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/view/homePage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_library/view/libraryPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_reader/view/readerPage.dart';
-import 'package:merinocizgi/mobileFeatures/comic_details/view/comicDetailsPage.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_comic_details/view/comicDetailsPage.dart';
 
 ///router provider
 /// GoRouter örneğini oluşturur ve state değişikliklerine göre yönlendirmeyi yönetir.
@@ -125,9 +126,9 @@ List<RouteBase> _getMobileRoutes() {
             path: '/library',
             builder: (context, state) => const MobileLibraryPage()),
         GoRoute(
-            path: '/profile',
+            path: '/myAccount',
             builder: (context, state) =>
-                const Myaccountpages()), // Myaccountpages mobil profili de olabilir
+                const MyAccountPage()), // Myaccountpages mobil profili de olabilir
       ],
     ),
     // Okuma ekranı gibi tam ekran olacak, kabuk dışında kalacak sayfalar
@@ -157,11 +158,15 @@ List<RouteBase> _getMobileRoutes() {
     GoRoute(
         path: '/myAccount',
         builder: (context, state) {
-          // final seriesId = state.pathParameters['seriesId']!;
           return const MyAccountPage();
         }),
     GoRoute(
-        path: '/EmailLoginPage',
+        path: '/mobileLogin',
+        builder: (context, state) {
+          return const MobileLoginPage();
+        }),
+    GoRoute(
+        path: '/emailLogin',
         builder: (context, state) {
           // final seriesId = state.pathParameters['seriesId']!;
           return const EmailLoginPage(isLoginMode: true);
@@ -256,6 +261,11 @@ class RouterNotifier extends ChangeNotifier {
     if (isLoggedIn && !isAdmin && location.startsWith('/admin')) {
       return '/';
     }
+
+    // Mobilde giriş yapmışsa ve ana sayfaya gitmeye çalışıyorsa
+    // if (!kIsWeb && isLoggedIn && location == '/') {
+    //   return '/myAccount';
+    // }
 
     return null;
   }

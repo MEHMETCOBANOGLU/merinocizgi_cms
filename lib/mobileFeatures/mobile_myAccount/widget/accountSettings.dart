@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:merinocizgi/core/providers/account_providers.dart';
+import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
-import 'package:merinocizgi/features/auth/controller/auth_controller.dart'; // showSignOutDialog için
+import 'package:merinocizgi/features/auth/controller/auth_controller.dart';
+import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart'; // showSignOutDialog için
 
 class AccountSettingsPage extends ConsumerWidget {
   const AccountSettingsPage({super.key});
@@ -149,11 +151,13 @@ Future<void> _showSignOutConfirmationDialog(
 
                 // Sonra çıkış işlemini gerçekleştir.
                 await FirebaseAuth.instance.signOut();
+                ref.invalidate(authStateProvider); // auth provider'ı reset
+                ref.invalidate(
+                    selectedBottomBarIndexProvider); // bottom bar'ı sıfırla
 
-                // İsteğe bağlı: Çıkış sonrası kullanıcıya bir bildirim gösterilebilir.
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   const SnackBar(content: Text("Başarıyla çıkış yapıldı.")),
-                // );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Başarıyla çıkış yapıldı.")),
+                );
               },
               child: const Text('Çıkış Yap'))
         ],

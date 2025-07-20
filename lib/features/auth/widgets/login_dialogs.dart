@@ -65,10 +65,6 @@ class LoginSelectionDialog extends ConsumerWidget {
               await ref
                   .read(authControllerProvider.notifier)
                   .signInWithGoogle();
-              // Başarılı olursa, AuthStateProvider bunu algılayıp UI'ı güncelleyecek.
-              // Bu yüzden burada Navigator.pop() yapmaya gerek kalmayabilir,
-              // veya işlemden sonra kapatılabilir. Şimdilik kapatalım.
-              if (context.mounted) Navigator.of(context).pop();
             },
           ),
           const SizedBox(height: 12),
