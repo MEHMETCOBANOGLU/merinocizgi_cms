@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:icons_plus/icons_plus.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
 
@@ -145,11 +147,40 @@ void onItemTapped(int index, WidgetRef ref, BuildContext context) {
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          const Text('Modal BottomSheet'),
-                          ElevatedButton(
-                            child: const Text('Close BottomSheet'),
-                            onPressed: () => Navigator.pop(context),
+                          // const Text('Modal BottomSheet'),
+                          // ElevatedButton(
+                          //   child: const Text('Close BottomSheet'),
+                          //   onPressed: () => Navigator.pop(context),
+                          // ),
+                          const Divider(
+                            color: Colors.white38,
+                            thickness: 2,
+                            indent: 100,
+                            endIndent: 100,
                           ),
+                          ListView(shrinkWrap: true, children: [
+                            ListTile(
+                              leading: const Icon(BoxIcons.bx_book_add,
+                                  color: AppColors.accent),
+                              title: const Text('Yeni Çizgi Roman Ekle'),
+                              onTap: () {},
+                            ),
+                            ListTile(
+                              leading: const Icon(BoxIcons.bxs_book_add,
+                                  color: AppColors.accent),
+                              title: const Text('Yeni Kitap Ekle'),
+                              onTap: () {},
+                            ),
+                            ListTile(
+                              leading: const Icon(
+                                MingCute.quill_pen_fill,
+                                // MingCute.quill_pen_line,
+                                color: AppColors.accent,
+                              ),
+                              title: const Text('Durum Paylaş'),
+                              onTap: () {},
+                            ),
+                          ])
                         ],
                       ),
                     ),
