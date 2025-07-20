@@ -21,11 +21,12 @@ class _MobileSearchPageState extends ConsumerState<MobileSearchPage> {
   @override
   void initState() {
     super.initState();
+    // Arama kutusundaki her değişikliği dinle.
     _searchController.addListener(_onSearchChanged);
   }
 
-  // Kullanıcı yazmayı bıraktıktan kısa bir süre sonra arama yapmak için (debounce)
-  _onSearchChanged() {
+  // Kullanıcı yazmayı bıraktıktan 500ms sonra arama yaparak gereksiz sorguları engeller.
+  void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
       ref.read(searchQueryProvider.notifier).state = _searchController.text;
@@ -42,16 +43,10 @@ class _MobileSearchPageState extends ConsumerState<MobileSearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Provider'ları izle
     final searchQuery = ref.watch(searchQueryProvider);
     final searchResultAsync = ref.watch(searchResultProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Ara"),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
@@ -60,32 +55,27 @@ class _MobileSearchPageState extends ConsumerState<MobileSearchPage> {
               controller: _searchController,
               autofocus: true,
               decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                labelText: 'Ara',
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 prefixIcon: const Icon(Icons.search),
-                hintText: 'Seri veya Yazar Ara',
-                // Temizleme butonu ekle
+                hintText: 'Eser veya yazar arayın...',
                 suffixIcon: searchQuery.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                        },
+                        onPressed: () => _searchController.clear(),
                       )
                     : null,
               ),
             ),
-            const SizedBox(height: 16),
-            // Arama sonuçlarını gösterecek alan
+            const SizedBox(height: 20),
             Expanded(
               child: searchQuery.isEmpty
-                  ? _buildInitialView() // Arama başlamadan önceki görünüm
+                  ? const Center(child: Text("Aramak için yazmaya başlayın..."))
                   : searchResultAsync.when(
                       loading: () =>
                           const Center(child: CircularProgressIndicator()),
-                      error: (err, stack) => Center(child: Text('Hata: $err')),
+                      error: (err, st) =>
+                          Center(child: Text('Bir hata oluştu: $err')),
                       data: (data) => _buildResultsList(data),
                     ),
             ),
@@ -95,62 +85,34 @@ class _MobileSearchPageState extends ConsumerState<MobileSearchPage> {
     );
   }
 
-  // Arama yapılmadığında gösterilecek başlangıç widget'ı
-  Widget _buildInitialView() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search_off_rounded, size: 80, color: Colors.grey),
-          SizedBox(height: 16),
-          Text(
-            "Ne okumak istersin?",
-            style: TextStyle(color: Colors.grey, fontSize: 18),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Arama sonuçlarını listeleyen widget
   Widget _buildResultsList(Map<String, List<DocumentSnapshot>> data) {
     final series = data['series']!;
     final authors = data['authors']!;
 
     if (series.isEmpty && authors.isEmpty) {
-      return const Center(
-        child: Text("Sonuç bulunamadı."),
-      );
+      return const Center(child: Text("Sonuç bulunamadı."));
     }
 
     return ListView(
       children: [
-        // Seriler bölümü
         if (series.isNotEmpty) ...[
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Text("Seriler",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          ),
-          ...series.map((doc) => _SeriesResultTile(seriesDoc: doc)).toList(),
-          const Divider(),
+          const Text("Seriler",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ...series.map((doc) => _SeriesResultTile(seriesDoc: doc)),
+          const Divider(height: 30),
         ],
-
-        // Yazarlar bölümü
         if (authors.isNotEmpty) ...[
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Text("Yazarlar",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          ),
-          ...authors.map((doc) => _AuthorResultTile(authorDoc: doc)).toList(),
+          const Text("Yazarlar",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ...authors.map((doc) => _AuthorResultTile(authorDoc: doc)),
         ],
       ],
     );
   }
 }
 
-// Seri sonuçları için özel ListTile
+// --- Arayüz için yardımcı alt-widget'lar ---
+
 class _SeriesResultTile extends StatelessWidget {
   final DocumentSnapshot seriesDoc;
   const _SeriesResultTile({required this.seriesDoc});
@@ -166,16 +128,13 @@ class _SeriesResultTile extends StatelessWidget {
                   width: 50, height: 50, fit: BoxFit.cover),
             )
           : const Icon(Icons.book),
-      title: Text(data['title'] ?? 'İsimsiz Seri'),
+      title: Text(data['title'] ?? ''),
       subtitle: Text(data['authorName'] ?? ''),
-      onTap: () {
-        context.push('/series/${seriesDoc.id}');
-      },
+      onTap: () => context.push('/series/${seriesDoc.id}'),
     );
   }
 }
 
-// Yazar sonuçları için özel ListTile
 class _AuthorResultTile extends StatelessWidget {
   final DocumentSnapshot authorDoc;
   const _AuthorResultTile({required this.authorDoc});
@@ -185,14 +144,10 @@ class _AuthorResultTile extends StatelessWidget {
     final data = authorDoc.data() as Map<String, dynamic>;
     return ListTile(
       leading: data['profileImageUrl'] != null
-          ? CircleAvatar(
-              backgroundImage: NetworkImage(data['profileImageUrl']),
-            )
+          ? CircleAvatar(backgroundImage: NetworkImage(data['profileImageUrl']))
           : const Icon(Icons.person),
-      title: Text(data['mahlas'] ?? 'İsimsiz Yazar'),
-      onTap: () {
-        context.push('/UserProfile/${authorDoc.id}');
-      },
+      title: Text(data['mahlas'] ?? ''),
+      onTap: () => context.push('/UserProfile/${authorDoc.id}'),
     );
   }
 }

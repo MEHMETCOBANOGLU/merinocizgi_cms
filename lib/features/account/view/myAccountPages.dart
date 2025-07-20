@@ -107,11 +107,13 @@ class _MyaccountpagesState extends ConsumerState<Myaccountpages> {
             if (user == null || !user.exists || user.data() == null) {
               return const Center(child: Text("Profil bilgileri yüklenemedi."));
             }
+            final userData = user.data() as Map<String, dynamic>;
+
             return AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: _isEditing
-                  ? _buildEditProfileView(user as Map<String, dynamic>)
-                  : _buildViewProfileView(user as Map<String, dynamic>),
+                  ? _buildEditProfileView(userData)
+                  : _buildViewProfileView(userData),
             );
           },
           error: (error, stackTrace) => Center(child: Text(error.toString())),
