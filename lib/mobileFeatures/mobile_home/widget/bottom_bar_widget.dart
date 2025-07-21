@@ -120,9 +120,10 @@ void onItemTapped(int index, WidgetRef ref, BuildContext context) {
           return GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              // GestureDetector'ın dokunmaları algılayabilmesi için
+              // GestureDetector'ın dokunmaları algılayabilmesi içins
               // bir renge sahip olması gerekir. Transparan renk işimizi görür.
               color: Colors.transparent,
+
               child: Align(
                 alignment: Alignment.bottomCenter,
                 // --- 2. İÇ SARMALAYICI: DOKUNMAYI ENGELLEYİCİ ---
@@ -147,11 +148,6 @@ void onItemTapped(int index, WidgetRef ref, BuildContext context) {
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          // const Text('Modal BottomSheet'),
-                          // ElevatedButton(
-                          //   child: const Text('Close BottomSheet'),
-                          //   onPressed: () => Navigator.pop(context),
-                          // ),
                           const Divider(
                             color: Colors.white38,
                             thickness: 2,
@@ -163,7 +159,9 @@ void onItemTapped(int index, WidgetRef ref, BuildContext context) {
                               leading: const Icon(BoxIcons.bx_book_add,
                                   color: AppColors.accent),
                               title: const Text('Yeni Çizgi Roman Ekle'),
-                              onTap: () {},
+                              onTap: () {
+                                context.push('/addWebtoon');
+                              },
                             ),
                             ListTile(
                               leading: const Icon(BoxIcons.bxs_book_add,

@@ -11,6 +11,7 @@ import 'package:merinocizgi/core/widgets/main_layout.dart';
 import 'package:merinocizgi/features/legal/view/cookie_policy_page.dart';
 import 'package:merinocizgi/features/legal/view/kvkk_page.dart';
 import 'package:merinocizgi/features/legal/view/terms_of_service_page.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_add_webtoon/view/add_webtoon_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_auth/view/loginPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_auth/widgets/email_login_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/view/myAccountPage.dart';
@@ -221,6 +222,10 @@ List<RouteBase> _getMobileRoutes() {
     GoRoute(
       path: '/settings',
       builder: (context, state) => const AccountSettingsPage(),
+    ),
+    GoRoute(
+      path: '/addWebtoon',
+      builder: (context, state) => const MobileAddWebtoonPage(),
     ),
   ];
 }
