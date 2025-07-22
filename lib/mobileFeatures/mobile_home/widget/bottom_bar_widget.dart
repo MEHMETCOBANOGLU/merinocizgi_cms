@@ -167,7 +167,9 @@ void onItemTapped(int index, WidgetRef ref, BuildContext context) {
                               leading: const Icon(BoxIcons.bxs_book_add,
                                   color: AppColors.accent),
                               title: const Text('Yeni Kitap Ekle'),
-                              onTap: () {},
+                              onTap: () {
+                                context.push('/create-book');
+                              },
                             ),
                             ListTile(
                               leading: const Icon(

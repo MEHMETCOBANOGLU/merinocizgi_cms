@@ -9,6 +9,7 @@ import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_auth/view/loginPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/bottom_bar_widget.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/my_books_list.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/home_app_bar_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/followers_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/following_list_widget.dart';
@@ -29,6 +30,7 @@ class MyAccountPage extends ConsumerWidget {
   static const List<String> _tabs = [
     'Okumaya Devam Et',
     'Serilerim',
+    'Kitaplarım',
     'Okuma Listesi',
     'Süper Beğeni',
   ];
@@ -86,6 +88,7 @@ class MyAccountPage extends ConsumerWidget {
             children: [
               const ReadingHistoryList(), // En Son
               MySeriesyList(userId: authStateAsync.value!.user!.uid),
+              const MyBooksList(),
               MyReadingListPage(),
 
               // const UserCommentsWidget(), // Yorumlar
