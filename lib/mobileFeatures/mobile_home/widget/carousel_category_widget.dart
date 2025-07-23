@@ -148,20 +148,7 @@ class _CarouselCategoryWidgetState
                     imageUrl: seriesDoc['squareImageUrl'],
                     title: seriesDoc['title'],
                     rank: index + 1,
-                    onTap: () => onTapCard(
-                      context,
-                      arguments: DetailPageArguments(
-                        seriesId: seriesDoc.id,
-                        authorName: seriesDoc['authorName'],
-                        authorId: seriesDoc['authorId'],
-                        title: seriesDoc['title'],
-                        synopsis: seriesDoc['summary'],
-                        urlImage: seriesDoc['squareImageUrl'],
-                        rating:
-                            (seriesDoc['averageRating'] as num?)?.toDouble() ??
-                                0.0,
-                      ),
-                    ),
+                    onTap: () => context.go('/detail/${seriesDoc.id}'),
                   );
                 },
               ),
@@ -194,10 +181,5 @@ class _CarouselCategoryWidgetState
         ),
       ),
     );
-  }
-
-  void onTapCard(BuildContext context,
-      {required DetailPageArguments arguments}) {
-    context.push('/detail', extra: arguments);
   }
 }

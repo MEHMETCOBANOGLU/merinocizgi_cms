@@ -61,20 +61,8 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                             rating: (seriesDoc['averageRating'] as num?)
                                     ?.toDouble() ??
                                 0.0,
-                            onTap: () => onTapCard(
-                              context,
-                              arguments: DetailPageArguments(
-                                seriesId: seriesDoc.id,
-                                authorName: seriesDoc['authorName'],
-                                authorId: seriesDoc['authorId'],
-                                title: seriesDoc['title'],
-                                synopsis: seriesDoc['summary'],
-                                urlImage: seriesDoc['squareImageUrl'],
-                                rating: (seriesDoc['averageRating'] as num?)
-                                        ?.toDouble() ??
-                                    0.0,
-                              ),
-                            ),
+                            onTap: () =>
+                                context.push('/detail/${seriesDoc.id}'),
                           ))
                       .toList(),
                 );
@@ -95,20 +83,8 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                       .map((seriesDoc) => CardWidget(
                             imageUrl: seriesDoc['squareImageUrl'],
                             title: seriesDoc['title'],
-                            onTap: () => onTapCard(
-                              context,
-                              arguments: DetailPageArguments(
-                                seriesId: seriesDoc.id,
-                                authorName: seriesDoc['authorName'],
-                                authorId: seriesDoc['authorId'],
-                                title: seriesDoc['title'],
-                                synopsis: seriesDoc['summary'],
-                                urlImage: seriesDoc['squareImageUrl'],
-                                rating: (seriesDoc['averageRating'] as num?)
-                                        ?.toDouble() ??
-                                    0.0,
-                              ),
-                            ),
+                            onTap: () =>
+                                context.push('/detail/${seriesDoc.id}'),
                           ))
                       .toList(),
                 );
@@ -163,20 +139,8 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                               imageUrl: data['squareImageUrl'] ?? '',
                               title: data['title'] ?? 'Başlık Yok',
                               category: data['category1'] ?? 'Kategori Yok',
-                              onTap: () => onTapCard(
-                                context,
-                                arguments: DetailPageArguments(
-                                  seriesId: seriesDoc.id,
-                                  authorName: seriesDoc['authorName'],
-                                  authorId: seriesDoc['authorId'],
-                                  title: seriesDoc['title'],
-                                  synopsis: seriesDoc['summary'],
-                                  urlImage: seriesDoc['squareImageUrl'],
-                                  rating: (seriesDoc['averageRating'] as num?)
-                                          ?.toDouble() ??
-                                      0.0,
-                                ),
-                              ),
+                              onTap: () =>
+                                  context.push('/detail/${seriesDoc.id}'),
                             );
                           }).toList(),
                         );
@@ -205,21 +169,8 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                               imageUrl: seriesDoc['squareImageUrl'],
                               title: seriesDoc['title'],
                               category: data['category1'] ?? 'Kategori Yok',
-
-                              onTap: () => onTapCard(
-                                context,
-                                arguments: DetailPageArguments(
-                                  seriesId: seriesDoc.id,
-                                  authorName: seriesDoc['authorName'],
-                                  authorId: seriesDoc['authorId'],
-                                  title: seriesDoc['title'],
-                                  synopsis: seriesDoc['summary'],
-                                  urlImage: seriesDoc['squareImageUrl'],
-                                  rating: (seriesDoc['averageRating'] as num?)
-                                          ?.toDouble() ??
-                                      0.0,
-                                ),
-                              ),
+                              onTap: () =>
+                                  context.push('/detail/${seriesDoc.id}'),
                             );
                           }).toList(),
                         );
@@ -257,20 +208,8 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                       .map((seriesDoc) => CardWidget(
                             imageUrl: seriesDoc['squareImageUrl'],
                             title: seriesDoc['title'],
-                            onTap: () => onTapCard(
-                              context,
-                              arguments: DetailPageArguments(
-                                seriesId: seriesDoc.id,
-                                authorName: seriesDoc['authorName'],
-                                authorId: seriesDoc['authorId'],
-                                title: seriesDoc['title'],
-                                synopsis: seriesDoc['summary'],
-                                urlImage: seriesDoc['squareImageUrl'],
-                                rating: (seriesDoc['averageRating'] as num?)
-                                        ?.toDouble() ??
-                                    0.0,
-                              ),
-                            ),
+                            onTap: () =>
+                                context.push('/detail/${seriesDoc.id}'),
                           ))
                       .toList(),
                 );
@@ -320,10 +259,5 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
         ),
       ],
     );
-  }
-
-  void onTapCard(BuildContext context,
-      {required DetailPageArguments arguments}) {
-    context.push('/detail', extra: arguments);
   }
 }

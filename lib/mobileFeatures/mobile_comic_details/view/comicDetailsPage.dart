@@ -10,32 +10,11 @@ import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/title_cha
 // import 'components/chapter_card_widget.dart';
 // import 'components/title_chapters_witget.dart';
 
-class DetailPageArguments {
-  final String seriesId;
-  final String authorName;
-  final String authorId;
-  final String urlImage;
-  final String title;
-  final String synopsis;
-  final double rating;
-
-  DetailPageArguments({
-    required this.seriesId,
-    required this.authorName,
-    required this.authorId,
-    required this.urlImage,
-    required this.title,
-    required this.synopsis,
-    required this.rating,
-  });
-}
-
 class MobileComicDetailsPage extends ConsumerStatefulWidget {
-  final DetailPageArguments arguments;
-
+  final String seriesOrBookId;
   const MobileComicDetailsPage({
     super.key,
-    required this.arguments,
+    required this.seriesOrBookId,
     // required String seriesId,
   });
 
@@ -49,7 +28,7 @@ class _MobileComicDetailsPageState
   @override
   Widget build(BuildContext context) {
     final approvedEpisodesAsync =
-        ref.watch(approvedEpisodesProvider(widget.arguments.seriesId));
+        ref.watch(approvedEpisodesProvider(widget.seriesOrBookId));
 
     return approvedEpisodesAsync.when(data: (episodes) {
       if (episodes.isEmpty) {
@@ -64,13 +43,7 @@ class _MobileComicDetailsPageState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DetailHeaderWidget(
-                  authorName: widget.arguments.authorName,
-                  authorId: widget.arguments.authorId,
-                  urlImage: widget.arguments.urlImage,
-                  title: widget.arguments.title,
-                  synopsis: widget.arguments.synopsis,
-                  rating: widget.arguments.rating,
-                  seriesId: widget.arguments.seriesId,
+                  seriesOrBookId: widget.seriesOrBookId,
                 ),
                 const TitleChaptersWidget(),
                 Expanded(
@@ -86,7 +59,7 @@ class _MobileComicDetailsPageState
 
                       return ChapterCardWidget(
                         episodeId: episodesDoc.id,
-                        seriesId: widget.arguments.seriesId,
+                        seriesId: widget.seriesOrBookId,
                         title: episodesDoc['title'],
                         chapter: (index + 1)
                             .toString(), // 👈 sadece sayıyı gönderiyoruz

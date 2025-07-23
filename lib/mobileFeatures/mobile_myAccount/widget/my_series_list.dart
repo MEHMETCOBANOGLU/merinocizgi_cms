@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 
 // Bu widget, "Serilerim" sekmesinin içeriğini çizer.
@@ -37,7 +38,9 @@ class MySeriesyList extends ConsumerWidget {
             final data = doc.data() as Map<String, dynamic>;
 
             // Her bir seri kartı için özel bir kart widget'ı
-            return _HistoryCard(data: data);
+            return _HistoryCard(
+              data: data,
+            );
           },
         );
       },
@@ -68,7 +71,10 @@ class _HistoryCard extends ConsumerWidget {
       color: Colors.transparent,
       margin: const EdgeInsets.only(bottom: 12.0),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          final seriesId = data['id'];
+          context.push('/detail/$seriesId');
+        },
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(

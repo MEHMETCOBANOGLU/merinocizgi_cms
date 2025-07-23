@@ -204,12 +204,12 @@ List<RouteBase> _getMobileRoutes() {
       },
     ),
     GoRoute(
-        path: '/detail',
+        path: '/detail/:seriesOrBookId',
         builder: (context, state) {
-          // final seriesId = state.pathParameters['seriesId']!;
+          final seriesOrBookId = state.pathParameters['seriesOrBookId']!;
           return MobileComicDetailsPage(
-              // seriesId: seriesId,
-              arguments: state.extra as DetailPageArguments);
+            seriesOrBookId: seriesOrBookId,
+          );
         }),
     GoRoute(
         path: '/myAccount',
