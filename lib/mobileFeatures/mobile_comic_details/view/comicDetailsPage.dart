@@ -43,6 +43,7 @@ class _MobileComicDetailsPageState
           SliverToBoxAdapter(
             child: DetailHeaderWidget(
               seriesOrBookId: widget.seriesOrBookId,
+              isBook: false,
             ),
           ),
 

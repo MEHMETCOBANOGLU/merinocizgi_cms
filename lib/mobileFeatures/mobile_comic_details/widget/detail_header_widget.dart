@@ -18,9 +18,11 @@ import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/save_to_l
 
 class DetailHeaderWidget extends ConsumerStatefulWidget {
   final String seriesOrBookId;
+  final bool isBook;
   const DetailHeaderWidget({
     super.key,
     required this.seriesOrBookId,
+    this.isBook = false, // false ise seri (çizgi roman), true ise kitap
   });
 
   @override
@@ -101,7 +103,8 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
     final formattedViewCount = NumberFormat.compact().format(viewCount);
 
     // Kullanıcının bu seriye verdiği oyu dinler.
-    final userRating = ref.watch(userRatingProvider(widget.seriesOrBookId));
+    final userRating = ref.watch(userRatingProvider(
+        (id: widget.seriesOrBookId, type: widget.isBook ? 'books' : 'series')));
 
     // --- METİN HESAPLAMA MANTIĞI ---
     // TextPainter'ı build metodunun en başında oluşturup,
@@ -123,7 +126,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
     // Bunun için metni, olması gereken maksimum satır limitiyle ölçüyoruz.
     final textPainterForCheck = TextPainter(
       text: textSpan,
-      maxLines: 3, // <-- ANA DEĞİŞİKLİK BURADA: Limiti belirtiyoruz.
+      maxLines: 3,
       textDirection: ui.TextDirection.ltr,
     )..layout(maxWidth: size.width * 0.9 - 32); // Container genişliği - padding
 
@@ -213,20 +216,26 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                           ],
                         ),
                         const Spacer(),
-                        InkWell(
-                          onTap: () {
-                            if (authStateAsync.value?.user == null) {
-                              context.push('/mobileLogin');
-                              return;
-                            }
-                            print('Rating: $rating');
-                            showRatingDialog(
-                                context, widget.seriesOrBookId, ref);
-                          },
-                          child: Icon(
-                            rating != null ? Icons.star : Icons.star_border,
-                            color: Colors.yellow,
+                        userRating.when(
+                          data: (ratingvalue) => InkWell(
+                            onTap: () {
+                              if (authStateAsync.value?.user == null) {
+                                context.push('/mobileLogin');
+                                return;
+                              }
+                              print('Rating: $rating');
+                              showRatingDialog(
+                                  context, widget.seriesOrBookId, ref);
+                            },
+                            child: Icon(
+                              rating != null ? Icons.star : Icons.star_border,
+                              color: Colors.yellow,
+                            ),
                           ),
+                          loading: () =>
+                              const CircularProgressIndicator(strokeWidth: 1),
+                          error: (_, __) =>
+                              const Icon(Icons.error, color: Colors.red),
                         ),
                         Row(
                           mainAxisSize: MainAxisSize.min,
@@ -444,18 +453,27 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
+    // İçerik tipini belirle
+    final contentType = widget.isBook ? 'books' : 'series';
+    final contentId = widget.seriesOrBookId;
+
+    // Veritabanından mevcut oyu çek
     final doc = await FirebaseFirestore.instance
-        .collection('series')
-        .doc(seriesId)
+        .collection(contentType) // Dinamik koleksiyon yolu
+        .doc(contentId)
         .collection('ratings')
         .doc(user.uid)
         .get();
 
-    final initialRating = (doc.data()?['rating'] ?? 3).toDouble();
+    final initialRating = (doc.data()?['rating'] as num?)?.toDouble() ??
+        0.0; // Varsayılan 0 olsun
+
+    // showDialog'u çağırmadan önce 'mounted' kontrolü yapmak en güvenlisidir.
+    if (!mounted) return;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Center(child: Text('Puanla')),
         content: RatingBar.builder(
           initialRating: initialRating,
@@ -466,12 +484,21 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
           itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
           itemBuilder: (context, _) =>
               const Icon(Icons.star, color: Colors.amber),
+
+          // --- 'onRatingUpdate' İÇİNDEKİ ANA DÜZELTME ---
           onRatingUpdate: (rating) async {
+            // Doğru provider'ı, doğru parametrelerle çağır.
             await ref
-                .read(userRatingProvider(seriesId).notifier)
+                .read(userRatingProvider((id: contentId, type: contentType))
+                    .notifier)
                 .submitRating(rating);
 
-            Navigator.of(context).pop();
+            // Diyaloğu kapatırken 'dialogContext' kullanmak daha güvenlidir.
+            if (Navigator.of(dialogContext).canPop()) {
+              Navigator.of(dialogContext).pop();
+            }
+
+            // Ana context ile SnackBar'ı göster.
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Puanınız kaydedildi.")),
             );

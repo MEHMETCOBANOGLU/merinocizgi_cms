@@ -111,64 +111,88 @@ exports.createReviewTaskForNewEpisode = onDocumentWritten("series/{seriesId}/epi
 
 
 
+/////////////////////////////////////////////////////////////////////////
 
 
 
 /**
- * YENİ FONKSİYON: Oylama Değişikliğinde Seri Puanını Yeniden Hesaplama
- * Bir serinin 'ratings' alt koleksiyonunda bir döküman oluşturulduğunda,
- * güncellendiğinde veya silindiğinde tetiklenir.
- * Ana 'series' dökümanındaki rating istatistiklerini günceller.
+ * FONKSİYON 1: Çizgi Roman (Series) için Puanları Yeniden Hesaplama
+ * 'series/{seriesId}/ratings' koleksiyonunda bir değişiklik olduğunda tetiklenir.
  */
 exports.recalculateSeriesRating = onDocumentWritten("series/{seriesId}/ratings/{ratingId}", async(event) => {
-    // ratingId burada kullanıcının UID'si olacak.
     const seriesId = event.params.seriesId;
-    const seriesRef = admin.firestore().collection("series").doc(seriesId);
+    const collectionPath = "series"; // Bu fonksiyonun çalıştığı koleksiyon
 
-    logger.info(`Rating değişikliği algılandı. Seri (${seriesId}) için puan yeniden hesaplanıyor.`);
+    logger.info(`Rating değişikliği algılandı. TÜR: ${collectionPath}, ID: ${seriesId}`);
+
+    // Geri kalan tüm mantık, jenerik bir fonksiyona devredilecek.
+    return _recalculateRating(collectionPath, seriesId);
+});
+
+
+/**
+ * FONKSİYON 2: Kitap (Books) için Puanları Yeniden Hesaplama
+ * 'books/{bookId}/ratings' koleksiyonunda bir değişiklik olduğunda tetiklenir.
+ */
+exports.recalculateBookRating = onDocumentWritten("books/{bookId}/ratings/{ratingId}", async(event) => {
+    const bookId = event.params.bookId;
+    const collectionPath = "books"; // Bu fonksiyonun çalıştığı koleksiyon
+
+    logger.info(`Rating değişikliği algılandı. TÜR: ${collectionPath}, ID: ${bookId}`);
+
+    // Geri kalan tüm mantık, aynı jenerik fonksiyona devredilecek.
+    return _recalculateRating(collectionPath, bookId);
+});
+
+
+/**
+ * YARDIMCI (JENERİK) FONKSİYON: Puan Hesaplama Mantığı
+ * Bu fonksiyon, kod tekrarını önlemek için hem seriler hem de kitaplar tarafından kullanılır.
+ * Kendisi bir Cloud Function değildir, sadece bir yardımcıdır.
+ */
+async function _recalculateRating(collectionPath, contentId) {
+    const contentRef = admin.firestore().collection(collectionPath).doc(contentId);
 
     try {
-        // İlgili serinin tüm 'ratings' alt koleksiyonunu çek.
-        const ratingsSnapshot = await seriesRef.collection("ratings").get();
-
+        const ratingsSnapshot = await contentRef.collection("ratings").get();
         const allDocs = ratingsSnapshot.docs;
         const ratingCount = allDocs.length;
 
-        // Eğer hiç oy kalmadıysa, puanları sıfırla.
         if (ratingCount === 0) {
-            logger.info(`Seri (${seriesId}) için hiç oy kalmadı, puanlar sıfırlanıyor.`);
-            return seriesRef.update({
+            logger.info(`İçerik (${contentId}) için hiç oy kalmadı, puanlar sıfırlanıyor.`);
+            return contentRef.update({
                 averageRating: 0,
                 ratingCount: 0,
             });
         }
 
-        // Tüm puanları topla.
-        const totalRatingPoints = allDocs.reduce((sum, doc) => {
-            // Her dökümandaki 'rating' alanını toplama ekle.
-            // Güvenlik için, eğer 'rating' alanı yoksa veya sayı değilse 0 ekle.
-            return sum + (doc.data().rating || 0);
-        }, 0);
-
-        // Ortalamayı hesapla ve virgülden sonra bir basamağa yuvarla.
+        const totalRatingPoints = allDocs.reduce((sum, doc) => sum + (doc.data().rating || 0), 0);
         const averageRating = totalRatingPoints / ratingCount;
-        const roundedAverage = Math.round(averageRating * 10) / 10; // Örn: 4.76 -> 4.8
+        const roundedAverage = Math.round(averageRating * 10) / 10;
 
-        logger.info(`Hesaplama tamamlandı. Seri (${seriesId}): Puan=${roundedAverage}, Oy Sayısı=${ratingCount}`);
+        logger.info(`Hesaplama tamamlandı. İçerik (${contentId}): Puan=${roundedAverage}, Oy Sayısı=${ratingCount}`);
 
-        // Ana seri dökümanını yeni, doğru istatistiklerle güncelle.
-        return seriesRef.update({
+        return contentRef.update({
             averageRating: roundedAverage,
             ratingCount: ratingCount,
         });
 
     } catch (error) {
-        logger.error(`Seri puanı yeniden hesaplanırken hata oluştu (${seriesId}):`, error);
+        logger.error(`Puan yeniden hesaplanırken hata oluştu (${contentId}):`, error);
         return null;
     }
-});
+}
 
 
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////
 
 
 /**

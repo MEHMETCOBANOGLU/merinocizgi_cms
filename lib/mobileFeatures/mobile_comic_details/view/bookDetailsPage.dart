@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/chapter_card_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/detail_header_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/title_chapters_witget.dart';
-// import 'package:manga_webtoon/src/detail/components/detail_header_widget.dart';
-
-// import '../home/components/bottom_bar_widget.dart';
-// import 'components/chapter_card_widget.dart';
-// import 'components/title_chapters_witget.dart';
 
 class MobileBookDetailsPage extends ConsumerStatefulWidget {
   final String seriesOrBookId;
@@ -31,33 +25,60 @@ class _MobileComicDetailsPageState
     final publishedChaptersAsync =
         ref.watch(publishedChaptersProvider(widget.seriesOrBookId));
 
-    return publishedChaptersAsync.when(data: (episodes) {
-      if (episodes.isEmpty) {
-        return const Center(child: Text("Hiç seri bulunamadı."));
-      }
+    // return publishedChaptersAsync.when(data: (episodes) {
+    //   if (episodes.isEmpty) {
+    //     return const Center(child: Text("Hiç seri bulunamadı."));
+    //   }
 
-      return Scaffold(
-        body: Stack(
-          alignment: Alignment.center,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DetailHeaderWidget(
-                  seriesOrBookId: widget.seriesOrBookId,
-                ),
-                const TitleChaptersWidget(),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      bottom: 80,
-                    ),
-                    children: episodes.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final episodesDoc = entry.value;
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          // 1. Sliver: Header Bölümü
+          // SliverToBoxAdapter, normal bir widget'ı sliver'a dönüştürür.
+          // kaydırılabilir listenin bir parçası yapar.
+          SliverToBoxAdapter(
+            child: DetailHeaderWidget(
+              seriesOrBookId: widget.seriesOrBookId,
+              isBook: true,
+            ),
+          ),
 
+          // 2. Sliver: "Bölümler" Başlığı
+          // Bu, kaydırıldığında yukarıya yapışabilir (pinned) veya normal kayabilir.
+          // Şimdilik normal kayan bir başlık yapalım.
+          // const SliverToBoxAdapter(
+          //   child: TitleChaptersWidget(),
+          // ),
+          // 2. Sliver: "Bölümler" Başlığı (Artık Pinned)
+          SliverPersistentHeader(
+            // Delegate'imize TitleChaptersWidget'ı veriyoruz.
+            delegate: SliverChapterHeaderDelegate(
+              child: const TitleChaptersWidget(),
+            ),
+            // Bu, başlığın yukarıya yapışmasını sağlar.
+            pinned: true,
+          ),
+
+          // 3. Sliver: Bölümlerin Listesi
+          // 'chaptersAsync.when' bloğunu buraya taşıyoruz ve SliverList kullanıyoruz.
+
+          publishedChaptersAsync.when(
+            data: (episodes) {
+              if (episodes.isEmpty) {
+                // SliverFillRemaining, liste boş olduğunda kalan tüm alanı doldurur.
+                return const SliverFillRemaining(
+                  child: Center(
+                      child: Text("Henüz yayınlanmış bölüm bulunmuyor.")),
+                );
+              }
+              // ListView yerine SliverList kullanıyoruz. Bu, iç içe kaydırma sorunlarını önler.
+              return SliverPadding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final episodesDoc = episodes[index];
                       return ChapterCardWidget(
                         episodeId: episodesDoc.id,
                         seriesId: widget.seriesOrBookId,
@@ -67,18 +88,72 @@ class _MobileComicDetailsPageState
                         urlImage: (episodesDoc.data()
                             as Map<String, dynamic>)['imageUrl'],
                       );
-                    }).toList(),
+                    },
+                    childCount: episodes.length,
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }, error: (Object error, StackTrace stackTrace) {
-      return Center(child: Text(error.toString()));
-    }, loading: () {
-      return const Center(child: CircularProgressIndicator());
-    });
+              );
+            },
+            loading: () => const SliverToBoxAdapter(
+                child: Center(child: CircularProgressIndicator())),
+            error: (e, st) => SliverToBoxAdapter(
+                child: Center(child: Text("Bölümler yüklenemedi: $e"))),
+          ),
+        ],
+      ),
+    );
   }
 }
+
+
+
+      // body: Stack(
+      //   alignment: Alignment.center,
+      //   children: [
+      //     Column(
+      //       crossAxisAlignment: CrossAxisAlignment.start,
+      //       children: [
+      //         DetailHeaderWidget(
+      //             seriesOrBookId: widget.seriesOrBookId, isBook: true),
+      //         const TitleChaptersWidget(),
+      //         publishedChaptersAsync.when(
+      //           data: (episodes) {
+      //             if (episodes.isEmpty) {
+      //               return const Center(child: Text("Hiç seri bulunamadı."));
+      //             }
+      //             return Expanded(
+      //               child: ListView(
+      //                 padding: const EdgeInsets.only(
+      //                   left: 16,
+      //                   right: 16,
+      //                   bottom: 80,
+      //                 ),
+      //                 children: episodes.asMap().entries.map((entry) {
+      //                   final index = entry.key;
+      //                   final episodesDoc = entry.value;
+
+      //                   return ChapterCardWidget(
+      //                     episodeId: episodesDoc.id,
+      //                     seriesId: widget.seriesOrBookId,
+      //                     title: episodesDoc['title'],
+      //                     chapter: (index + 1)
+      //                         .toString(), // 👈 sadece sayıyı gönderiyoruz
+      //                     urlImage: (episodesDoc.data()
+      //                         as Map<String, dynamic>)['imageUrl'],
+      //                   );
+      //                 }).toList(),
+      //               ),
+      //             );
+      //           },
+      //           error: (Object error, StackTrace stackTrace) {
+      //             return Center(child: Text(error.toString()));
+      //           },
+      //           loading: () {
+      //             return const Center(child: CircularProgressIndicator());
+      //           },
+      //         ),
+      //       ],
+      //     ),
+      //   ],
+      // ),
+    

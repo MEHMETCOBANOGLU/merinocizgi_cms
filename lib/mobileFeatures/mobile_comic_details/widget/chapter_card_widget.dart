@@ -66,7 +66,7 @@ class ChapterCardWidget extends StatelessWidget {
                   ),
                   Text(
                     title,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.primary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
