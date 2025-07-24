@@ -211,6 +211,20 @@ final bookChaptersProvider =
       .snapshots();
 });
 
+/// OKUYUCULAR için: Bir kitabın sadece yayınlanmış bölümlerini listeler.
+final publishedChaptersProvider = StreamProvider.autoDispose
+    .family<List<QueryDocumentSnapshot>, String>((ref, bookId) {
+  final stream = FirebaseFirestore.instance
+      .collection('books')
+      .doc(bookId)
+      .collection('chapters')
+      .where('status', isEqualTo: 'published')
+      .orderBy('chapterNumber', descending: false)
+      .snapshots();
+
+  return stream.map((snapshot) => snapshot.docs);
+});
+
 // --- BÖLÜM VERİSİNİ ÇEKMEK İÇİN YENİ PROVIDER ---
 /// ID'si verilen tek bir bölümün verisini anlık olarak getirir.
 final chapterProvider = StreamProvider.autoDispose
@@ -223,4 +237,11 @@ final chapterProvider = StreamProvider.autoDispose
       .collection('chapters')
       .doc(ids.chapterId)
       .snapshots();
+});
+
+// Tek bir kitabın verisini getirir.
+final bookProvider =
+    StreamProvider.autoDispose.family<DocumentSnapshot, String>((ref, bookId) {
+  if (bookId.isEmpty) return const Stream.empty();
+  return FirebaseFirestore.instance.collection('books').doc(bookId).snapshots();
 });

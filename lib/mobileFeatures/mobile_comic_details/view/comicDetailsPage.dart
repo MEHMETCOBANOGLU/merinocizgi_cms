@@ -30,82 +30,103 @@ class _MobileComicDetailsPageState
     final approvedEpisodesAsync =
         ref.watch(approvedEpisodesProvider(widget.seriesOrBookId));
 
-    return approvedEpisodesAsync.when(data: (episodes) {
-      if (episodes.isEmpty) {
-        return const Center(child: Text("Hiç seri bulunamadı."));
-      }
+    // return approvedEpisodesAsync.when(data: (episodes) {
+    //   if (episodes.isEmpty) {
+    //     return const Center(child: Text("Hiç seri bulunamadı."));
+    //   }
 
-      return Scaffold(
-        body: Stack(
-          alignment: Alignment.center,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DetailHeaderWidget(
-                  seriesOrBookId: widget.seriesOrBookId,
-                ),
-                const TitleChaptersWidget(),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      bottom: 80,
-                    ),
-                    children: episodes.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final episodesDoc = entry.value;
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          // 1. Sliver: Header Bölümü
+          // SliverToBoxAdapter, normal bir widget'ı sliver'a dönüştürür.
+          SliverToBoxAdapter(
+            child: DetailHeaderWidget(
+              seriesOrBookId: widget.seriesOrBookId,
+            ),
+          ),
 
+          // 2. Sliver: "Bölümler" Başlığı
+          // Bu, kaydırıldığında yukarıya yapışabilir veya normal kayabilir.
+
+          SliverToBoxAdapter(
+            child: const TitleChaptersWidget(),
+          ),
+
+          // 3. Sliver: Bölümlerin Listesi
+          approvedEpisodesAsync.when(
+            data: (episodes) {
+              if (episodes.isEmpty) {
+                return const SliverFillRemaining(
+                    child: Center(
+                        child: Text("Henüz yayınlanmış bölüm bulunmuyor.")));
+              }
+              // ListView yerine SliverList kullanıyoruz.
+              return SliverPadding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final episodesDoc = episodes[index];
                       return ChapterCardWidget(
                         episodeId: episodesDoc.id,
                         seriesId: widget.seriesOrBookId,
                         title: episodesDoc['title'],
                         chapter: (index + 1)
                             .toString(), // 👈 sadece sayıyı gönderiyoruz
-                        urlImage: episodesDoc['imageUrl'],
+                        urlImage: episodesDoc['imageUrl'] ?? '',
                       );
-                    }).toList(),
-
-                    // return ChapterCardWidget(
-                    //   SeriesId: widget.arguments.seriesId,
-                    // ),
-                    // const ChapterCardWidget(
-                    //   title: 'Chapter 2',
-                    //   chapter: '1',
-                    //   urlImage: 'assets/comics/comic2.jpg',
-                    // ),
-                    // const ChapterCardWidget(
-                    //   title: 'Chapter 3',
-                    //   chapter: '1',
-                    //   urlImage: 'assets/comics/comic2.jpg',
-                    // ),
-                    // const ChapterCardWidget(
-                    //   title: 'Chapter 4',
-                    //   chapter: '1',
-                    //   urlImage: 'assets/comics/comic2.jpg',
-                    // ),
-                    // const ChapterCardWidget(
-                    //   title: 'Chapter 4',
-                    //   chapter: '1',
-                    //   urlImage: 'assets/comics/comic2.jpg',
-                    // ),
-                    // const ChapterCardWidget(
-                    //   title: 'Chapter 4',
-                    //   chapter: '1',
-                    //   urlImage: 'assets/comics/comic2.jpg',
-                    // ),
+                    },
+                    childCount: episodes.length,
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }, error: (Object error, StackTrace stackTrace) {
-      return Center(child: Text(error.toString()));
-    }, loading: () {
-      return const Center(child: CircularProgressIndicator());
-    });
+              );
+            },
+            loading: () => const SliverToBoxAdapter(
+                child: Center(child: CircularProgressIndicator())),
+            error: (e, st) => SliverToBoxAdapter(
+                child: Center(child: Text("Bölümler yüklenemedi: $e"))),
+          ),
+        ],
+      ),
+    );
   }
 }
+
+// body: Stack(
+//           alignment: Alignment.center,
+//           children: [
+//             Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 DetailHeaderWidget(
+//                   seriesOrBookId: widget.seriesOrBookId,
+//                 ),
+//                 const TitleChaptersWidget(),
+//                 Expanded(
+//                   child: ListView(
+//                     padding: const EdgeInsets.only(
+//                       left: 16,
+//                       right: 16,
+//                       bottom: 80,
+//                     ),
+//                     children: episodes.asMap().entries.map((entry) {
+//                       final index = entry.key;
+//                       final episodesDoc = entry.value;
+
+//                       return ChapterCardWidget(
+//                         episodeId: episodesDoc.id,
+//                         seriesId: widget.seriesOrBookId,
+//                         title: episodesDoc['title'],
+//                         chapter: (index + 1)
+//                             .toString(), // 👈 sadece sayıyı gönderiyoruz
+//                         urlImage: episodesDoc['imageUrl'] ?? '',
+//                       );
+//                     }).toList(),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ],
+//         )

@@ -7,7 +7,7 @@ class ChapterCardWidget extends StatelessWidget {
   final String title;
   final String chapter;
   final String episodeId;
-  final String urlImage;
+  final String? urlImage;
 
   const ChapterCardWidget({
     super.key,
@@ -15,7 +15,7 @@ class ChapterCardWidget extends StatelessWidget {
     required this.title,
     required this.chapter,
     required this.episodeId,
-    required this.urlImage,
+    this.urlImage,
   });
 
   @override
@@ -36,21 +36,22 @@ class ChapterCardWidget extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 8),
           child: Row(
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: Image.network(
-                      urlImage,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.image_not_supported),
-                    ).image,
-                    fit: BoxFit.cover,
+              if (urlImage != null)
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: Image.network(
+                        urlImage!,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.image_not_supported),
+                      ).image,
+                      fit: BoxFit.cover,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  borderRadius: BorderRadius.circular(16),
                 ),
-              ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -56,10 +56,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '483380386928',
     projectId: 'merino-cizgi',
     storageBucket: 'merino-cizgi.firebasestorage.app',
-    androidClientId:
-        '483380386928-09fcmvfrq522jmo10ucjq4f15lp8hj4i.apps.googleusercontent.com',
-    iosClientId:
-        '483380386928-dbsv1fpq1s4m8n7593notsi0tnqvges8.apps.googleusercontent.com',
+    androidClientId: '483380386928-09fcmvfrq522jmo10ucjq4f15lp8hj4i.apps.googleusercontent.com',
+    iosClientId: '483380386928-dbsv1fpq1s4m8n7593notsi0tnqvges8.apps.googleusercontent.com',
     iosBundleId: 'com.merinocizgi.app',
   );
 
@@ -69,15 +67,13 @@ class DefaultFirebaseOptions {
     messagingSenderId: '483380386928',
     projectId: 'merino-cizgi',
     storageBucket: 'merino-cizgi.firebasestorage.app',
-    androidClientId:
-        '483380386928-09fcmvfrq522jmo10ucjq4f15lp8hj4i.apps.googleusercontent.com',
-    iosClientId:
-        '483380386928-dbsv1fpq1s4m8n7593notsi0tnqvges8.apps.googleusercontent.com',
+    androidClientId: '483380386928-09fcmvfrq522jmo10ucjq4f15lp8hj4i.apps.googleusercontent.com',
+    iosClientId: '483380386928-dbsv1fpq1s4m8n7593notsi0tnqvges8.apps.googleusercontent.com',
     iosBundleId: 'com.merinocizgi.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBJnJ7GqgUf5Wt0oJbZToJErRMVwWb7FF8',
+    apiKey: 'AIzaSyAGWd2NBjBLl-MygCNZSA6y0UVGXf1_RF0',
     appId: '1:483380386928:android:8d0cd8c9bf5760ff0728b5',
     messagingSenderId: '483380386928',
     projectId: 'merino-cizgi',
@@ -93,4 +89,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'merino-cizgi.firebasestorage.app',
     measurementId: 'G-4QS4CJ9DJ8',
   );
+
 }

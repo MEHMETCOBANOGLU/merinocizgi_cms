@@ -1,39 +1,54 @@
 {
-    "project_info": {
-        "project_number": "483380386928",
-        "project_id": "merino-cizgi",
-        "storage_bucket": "merino-cizgi.firebasestorage.app"
-    },
-    "client": [{
-        "client_info": {
-            "mobilesdk_app_id": "1:483380386928:android:8d0cd8c9bf5760ff0728b5",
-            "android_client_info": {
-                "package_name": "com.merinocizgi.app"
-            }
-        },
-        "oauth_client": [{
-            "client_id": "483380386928-8dnbtnanurmlk16dt4mh3psb0ibod1bn.apps.googleusercontent.com",
-            "client_type": 3
-        }],
-        "api_key": [{
-            "current_key": "AIzaSyBJnJ7GqgUf5Wt0oJbZToJErRMVwWb7FF8"
-        }],
-        "services": {
-            "appinvite_service": {
-                "other_platform_oauth_client": [{
-                        "client_id": "483380386928-8dnbtnanurmlk16dt4mh3psb0ibod1bn.apps.googleusercontent.com",
-                        "client_type": 3
-                    },
-                    {
-                        "client_id": "483380386928-58cikqmerfqvm36bvfhnqpac0up8hnjc.apps.googleusercontent.com",
-                        "client_type": 2,
-                        "ios_info": {
-                            "bundle_id": "com.example.merinoCizgi"
-                        }
-                    }
-                ]
-            }
+  "project_info": {
+    "project_number": "483380386928",
+    "project_id": "merino-cizgi",
+    "storage_bucket": "merino-cizgi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:483380386928:android:8d0cd8c9bf5760ff0728b5",
+        "android_client_info": {
+          "package_name": "com.merinocizgi.app"
         }
-    }],
-    "configuration_version": "1"
+      },
+      "oauth_client": [
+        {
+          "client_id": "483380386928-mla0bnsg2nsis8biu1m0nq2mv22npipg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.merinocizgi.app",
+            "certificate_hash": "c465b818765b9b34eecee3193414cbc884bc3c24"
+          }
+        },
+        {
+          "client_id": "483380386928-8dnbtnanurmlk16dt4mh3psb0ibod1bn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGWd2NBjBLl-MygCNZSA6y0UVGXf1_RF0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "483380386928-8dnbtnanurmlk16dt4mh3psb0ibod1bn.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "483380386928-58cikqmerfqvm36bvfhnqpac0up8hnjc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.merinoCizgi"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
 }
