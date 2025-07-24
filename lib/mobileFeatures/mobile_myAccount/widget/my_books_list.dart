@@ -52,35 +52,45 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // InkWell ve Card yapısı zaten iyi.
-    return InkWell(
-      onTap: () => context.push('/book-detail/$bookId'),
+    return Material(
       borderRadius: BorderRadius.circular(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: AspectRatio(
-              // En-boy oranını korur
-              aspectRatio: 2 / 3, // Tipik kapak oranı
-              child: Image.network(
-                data['coverImageUrl'] ?? '',
-                fit: BoxFit.cover,
-                errorBuilder: (c, e, s) => Container(color: Colors.grey[200]),
+      color: Colors.transparent,
+      // InkWell ve Card yapısı zaten iyi.
+      child: InkWell(
+        onTap: () => context.push('/book-detail/$bookId'),
+        borderRadius: BorderRadius.circular(12),
+        splashColor:
+            Colors.white.withValues(alpha: 0.1), // Hafif bir beyaz dalga efekti
+        highlightColor:
+            Colors.grey.withValues(alpha: 0.05), // Basılı tutunca hafif renk
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: AspectRatio(
+                // En-boy oranını korur
+                aspectRatio: 2 / 3, // Tipik kapak oranı
+                child: Image.network(
+                  data['coverImageUrl'] ?? '',
+                  fit: BoxFit.cover,
+                  errorBuilder: (c, e, s) =>
+                      Container(width: 60, height: 80, color: Colors.grey[200]),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              data['title'] ?? 'Başlık Yok',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                data['title'] ?? 'Başlık Yok',
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

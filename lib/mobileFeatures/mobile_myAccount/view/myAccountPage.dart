@@ -29,7 +29,7 @@ class MyAccountPage extends ConsumerWidget {
   // Sabit verileri build metodu dışında tanımlamak en iyi pratiktir.
   static const List<String> _tabs = [
     'Okumaya Devam Et',
-    'Serilerim',
+    'Çizgi Romanlarım',
     'Kitaplarım',
     'Okuma Listesi',
     'Süper Beğeni',
