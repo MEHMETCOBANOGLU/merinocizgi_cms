@@ -54,34 +54,39 @@ class LibraryController extends StateNotifier<AsyncValue<void>> {
   }
 
   // Bir seriyi, seçilen bir veya daha fazla listeye ekler.
-  Future<void> addSeriesToLibraries(
-      String seriesId, List<String> libraryIds) async {
+  Future<void> addContentToLibraries({
+    required String contentId,
+    required List<String> libraryIds,
+    required String contentType, // 'series' veya 'books'
+  }) async {
     final user = _ref.read(authStateProvider).value?.user;
     if (user == null || libraryIds.isEmpty) return;
 
-    final seriesDoc = await _firestore.collection('series').doc(seriesId).get();
-    if (!seriesDoc.exists) return;
-    final seriesData = seriesDoc.data()!;
+    final contentDoc =
+        await _firestore.collection(contentType).doc(contentId).get();
 
+    if (!contentDoc.exists) return;
+
+    final contentData = contentDoc.data()!;
     final writeBatch = _firestore.batch();
 
     for (final libraryId in libraryIds) {
-      final seriesInLibraryRef = _firestore
+      final contentInLibraryRef = _firestore
           .collection('users')
           .doc(user.uid)
           .collection('libraries')
           .doc(libraryId)
-          .collection('series')
-          .doc(seriesId);
+          .collection(
+              'series') // ⚠️ İsteğe bağlı: kitaplar için 'books' alt koleksiyonu açmak istersen burayı da parametre yap
+          .doc(contentId);
 
-      writeBatch.set(seriesInLibraryRef, {
+      writeBatch.set(contentInLibraryRef, {
         'addedAt': FieldValue.serverTimestamp(),
-        'seriesTitle': seriesData['title'],
-        'seriesImageUrl': seriesData['squareImageUrl'],
+        'seriesTitle': contentData['title'],
+        'seriesImageUrl':
+            contentData['squareImageUrl'] ?? contentData['coverImageUrl'],
       });
 
-      // Sayaçları güncellemek için Cloud Function kullanmak en doğrusu,
-      // ama şimdilik istemciden yapalım.
       final libraryRef = _firestore
           .collection('users')
           .doc(user.uid)
@@ -89,6 +94,7 @@ class LibraryController extends StateNotifier<AsyncValue<void>> {
           .doc(libraryId);
       writeBatch.update(libraryRef, {'seriesCount': FieldValue.increment(1)});
     }
+
     await writeBatch.commit();
   }
 
@@ -148,51 +154,84 @@ final seriesInLibraryProvider = StreamProvider.autoDispose
       .map((snapshot) => snapshot.docs);
 });
 
-/// Belirli bir çizgi romanın, kullanıcının HERHANGİ bir kütüphanesine (okuma listesine)
-/// eklenip eklenmediğini kontrol eden provider.
-/// '.family' ile dışarıdan 'seriesId' parametresi alır.
-final isComicInAnyLibraryProvider =
-    StreamProvider.autoDispose.family<bool, String>((ref, seriesId) {
-  // 1. Mevcut kullanıcıyı al. Giriş yapmamışsa, seri kayıtlı değildir (false).
-  final user = ref.watch(authStateProvider).value?.user;
-  if (user == null) {
-    return Stream.value(false);
-  }
+// /// Belirli bir çizgi romanın, kullanıcının HERHANGİ bir kütüphanesine (okuma listesine)
+// /// eklenip eklenmediğini kontrol eden provider.
+// /// '.family' ile dışarıdan 'seriesId' parametresi alır.
+// final isComicInAnyLibraryProvider =
+//     StreamProvider.autoDispose.family<bool, String>((ref, seriesId) {
+//   // 1. Mevcut kullanıcıyı al. Giriş yapmamışsa, seri kayıtlı değildir (false).
+//   final user = ref.watch(authStateProvider).value?.user;
+//   if (user == null) {
+//     return Stream.value(false);
+//   }
 
-  // 2. Kullanıcının TÜM kütüphanelerini (okuma listelerini) dinle.
+//   // 2. Kullanıcının TÜM kütüphanelerini (okuma listelerini) dinle.
+//   final librariesStream = FirebaseFirestore.instance
+//       .collection('users')
+//       .doc(user.uid)
+//       .collection('libraries')
+//       .snapshots();
+
+//   // 3. Bu stream'i, asenkron bir map'e dönüştürerek işliyoruz.
+//   return librariesStream.asyncMap((librariesSnapshot) async {
+//     // Eğer kullanıcının hiç kütüphanesi yoksa, seri kayıtlı olamaz.
+//     if (librariesSnapshot.docs.isEmpty) {
+//       return false;
+//     }
+
+//     // 4. Her bir kütüphanenin içinde, aradığımız serinin olup olmadığını KONTROL ET.
+//     // Bu kontrol işlemlerini paralel olarak yapmak performansı artırır.
+//     final checks = librariesSnapshot.docs.map((libraryDoc) {
+//       return FirebaseFirestore.instance
+//           .collection('users')
+//           .doc(user.uid)
+//           .collection('libraries')
+//           .doc(libraryDoc.id)
+//           .collection('series')
+//           .doc(seriesId)
+//           .get()
+//           .then((seriesDoc) =>
+//               seriesDoc.exists); // Sadece var olup olmadığına (true/false) bak.
+//     }).toList();
+
+//     // 5. Tüm bu kontrol işlemlerinin (Future'ların) sonuçlarını bekle.
+//     final results = await Future.wait(checks);
+
+//     // 6. Sonuçlardan HERHANGİ BİRİ 'true' ise, seri en az bir listeye kaydedilmiştir.
+//     // 'any' metodu, listedeki elemanlardan en az biri koşulu sağlıyorsa 'true' döner.
+//     return results.any((isFound) => isFound == true);
+//   });
+// });
+
+final isContentInAnyLibraryProvider = StreamProvider.autoDispose
+    .family<bool, (String id, String type)>((ref, args) {
+  final (contentId, contentType) = args;
+  final user = ref.watch(authStateProvider).value?.user;
+  if (user == null) return Stream.value(false);
+
   final librariesStream = FirebaseFirestore.instance
       .collection('users')
       .doc(user.uid)
       .collection('libraries')
       .snapshots();
 
-  // 3. Bu stream'i, asenkron bir map'e dönüştürerek işliyoruz.
-  return librariesStream.asyncMap((librariesSnapshot) async {
-    // Eğer kullanıcının hiç kütüphanesi yoksa, seri kayıtlı olamaz.
-    if (librariesSnapshot.docs.isEmpty) {
-      return false;
-    }
+  return librariesStream.asyncMap((snapshot) async {
+    if (snapshot.docs.isEmpty) return false;
 
-    // 4. Her bir kütüphanenin içinde, aradığımız serinin olup olmadığını KONTROL ET.
-    // Bu kontrol işlemlerini paralel olarak yapmak performansı artırır.
-    final checks = librariesSnapshot.docs.map((libraryDoc) {
-      return FirebaseFirestore.instance
+    final checks = snapshot.docs.map((doc) async {
+      final docSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .collection('libraries')
-          .doc(libraryDoc.id)
-          .collection('series')
-          .doc(seriesId)
-          .get()
-          .then((seriesDoc) =>
-              seriesDoc.exists); // Sadece var olup olmadığına (true/false) bak.
-    }).toList();
+          .doc(doc.id)
+          .collection(
+              'series') // 👈 eğer kitapları da ayrı koleksiyonda tutmak istiyorsan 'books' olabilir
+          .doc(contentId)
+          .get();
+      return docSnapshot.exists;
+    });
 
-    // 5. Tüm bu kontrol işlemlerinin (Future'ların) sonuçlarını bekle.
     final results = await Future.wait(checks);
-
-    // 6. Sonuçlardan HERHANGİ BİRİ 'true' ise, seri en az bir listeye kaydedilmiştir.
-    // 'any' metodu, listedeki elemanlardan en az biri koşulu sağlıyorsa 'true' döner.
-    return results.any((isFound) => isFound == true);
+    return results.any((e) => e == true);
   });
 });

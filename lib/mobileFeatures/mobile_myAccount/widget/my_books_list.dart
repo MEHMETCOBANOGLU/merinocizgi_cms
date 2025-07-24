@@ -72,11 +72,13 @@ class _HistoryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            data['title'] ?? 'Başlık Yok',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Center(
+            child: Text(
+              data['title'] ?? 'Başlık Yok',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),

@@ -38,7 +38,10 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
   void _showSaveToListDialog() {
     showDialog(
       context: context,
-      builder: (context) => SaveToListDialog(seriesId: widget.seriesOrBookId),
+      builder: (context) => SaveToListDialog(
+        seriesId: widget.seriesOrBookId,
+        contentType: widget.isBook,
+      ),
     );
   }
 
@@ -273,8 +276,10 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                         ),
                         const Spacer(),
                         ref
-                            .watch(isComicInAnyLibraryProvider(
-                                widget.seriesOrBookId))
+                            .watch(isContentInAnyLibraryProvider((
+                              widget.seriesOrBookId,
+                              widget.isBook ? 'books' : 'series'
+                            )))
                             .when(
                               data: (isSaved) {
                                 if (isSaved) {

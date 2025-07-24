@@ -6,7 +6,8 @@ import 'package:merinocizgi/mobileFeatures/mobile_comic_details/controller/libra
 
 class SaveToListDialog extends ConsumerStatefulWidget {
   final String seriesId;
-  const SaveToListDialog({required this.seriesId});
+  final bool contentType;
+  const SaveToListDialog({required this.seriesId, required this.contentType});
 
   // State'i oluşturan satır doğru.
   @override
@@ -35,10 +36,12 @@ class SaveToListDialogState extends ConsumerState<SaveToListDialog> {
       return;
     }
 
-    ref.read(libraryControllerProvider.notifier).addSeriesToLibraries(
-          widget.seriesId,
-          _selectedLibraryIds.toList(),
+    ref.read(libraryControllerProvider.notifier).addContentToLibraries(
+          contentId: widget.seriesId,
+          libraryIds: _selectedLibraryIds.toList(),
+          contentType: widget.contentType ? 'books' : 'series',
         );
+
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Seri, seçilen listelere eklendi.")));
