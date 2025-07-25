@@ -77,6 +77,7 @@ class _MobileComicDetailsPageState
                         chapter: (index + 1)
                             .toString(), // 👈 sadece sayıyı gönderiyoruz
                         urlImage: episodesDoc['imageUrl'] ?? '',
+                        isBook: false,
                       );
                     },
                     childCount: episodes.length,
@@ -94,40 +95,3 @@ class _MobileComicDetailsPageState
     );
   }
 }
-
-// body: Stack(
-//           alignment: Alignment.center,
-//           children: [
-//             Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 DetailHeaderWidget(
-//                   seriesOrBookId: widget.seriesOrBookId,
-//                 ),
-//                 const TitleChaptersWidget(),
-//                 Expanded(
-//                   child: ListView(
-//                     padding: const EdgeInsets.only(
-//                       left: 16,
-//                       right: 16,
-//                       bottom: 80,
-//                     ),
-//                     children: episodes.asMap().entries.map((entry) {
-//                       final index = entry.key;
-//                       final episodesDoc = entry.value;
-
-//                       return ChapterCardWidget(
-//                         episodeId: episodesDoc.id,
-//                         seriesId: widget.seriesOrBookId,
-//                         title: episodesDoc['title'],
-//                         chapter: (index + 1)
-//                             .toString(), // 👈 sadece sayıyı gönderiyoruz
-//                         urlImage: episodesDoc['imageUrl'] ?? '',
-//                       );
-//                     }).toList(),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ],
-//         )

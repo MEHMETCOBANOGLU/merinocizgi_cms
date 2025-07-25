@@ -40,7 +40,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
       context: context,
       builder: (context) => SaveToListDialog(
         seriesId: widget.seriesOrBookId,
-        contentType: widget.isBook,
+        isBook: widget.isBook,
       ),
     );
   }

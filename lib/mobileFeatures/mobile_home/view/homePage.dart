@@ -94,7 +94,7 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
             ),
             const SizedBox(height: 24),
             SizedBox(
-              height: 500, // Yüksekliği sabit tutuyoruz
+              height: 580, // Yüksekliği sabit tutuyoruz
               child: PageView.builder(
                 // .builder constructor'ını kullanmak daha verimli
                 // Controller'ı burada oluşturuyoruz.

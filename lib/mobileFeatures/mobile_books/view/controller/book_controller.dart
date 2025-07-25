@@ -90,6 +90,7 @@ class BookController extends StateNotifier<AsyncValue<String?>> {
     required String bookId,
     required String title,
     required String content,
+    required String status,
   }) async {
     // Bu işlem, state'i doğrudan etkilemediği için loading ayarlamasına gerek yok.
     // UI kendi loading durumunu yönetebilir.
@@ -109,7 +110,7 @@ class BookController extends StateNotifier<AsyncValue<String?>> {
         chapterNumber: newChapterNumber,
         title: title,
         content: content,
-        status: 'draft', // Yeni bölümler taslak olarak başlar
+        status: status, // Yeni bölümler taslak olarak başlar
         publishedAt: null,
       );
 
@@ -135,6 +136,7 @@ class BookController extends StateNotifier<AsyncValue<String?>> {
     required String chapterId,
     required String title,
     required String content,
+    String? status, // status artık opsiyonel
   }) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception("Oturum açılmamış.");
@@ -144,11 +146,52 @@ class BookController extends StateNotifier<AsyncValue<String?>> {
       final chapterRef = bookRef.collection('chapters').doc(chapterId);
 
       final writeBatch = _firestore.batch();
+
+      // Güncellenecek alanlar
+      final Map<String, dynamic> updateData = {
+        'title': title,
+        'content': content,
+      };
+
+      if (status != null) {
+        updateData['status'] = status;
+      }
+
       // Bölümü güncelle
-      writeBatch.update(chapterRef, {'title': title, 'content': content});
-      // Ana kitaptaki son güncelleme tarihini güncelle
-      writeBatch
-          .update(bookRef, {'lastUpdatedAt': FieldValue.serverTimestamp()});
+      writeBatch.update(chapterRef, updateData);
+
+      // Kitabın son güncelleme tarihini güncelle
+      writeBatch.update(bookRef, {
+        'lastUpdatedAt': FieldValue.serverTimestamp(),
+      });
+
+      await writeBatch.commit();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> deleteChapter({
+    required String bookId,
+    required String chapterId,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception("Oturum açılmamış.");
+
+    try {
+      final bookRef = _firestore.collection('books').doc(bookId);
+      final chapterRef = bookRef.collection('chapters').doc(chapterId);
+
+      final writeBatch = _firestore.batch();
+
+      // 1. Bölümü sil
+      writeBatch.delete(chapterRef);
+
+      // 2. Kitaptaki bölüm sayısını azalt ve son güncellemeyi güncelle
+      writeBatch.update(bookRef, {
+        'chapterCount': FieldValue.increment(-1),
+        'lastUpdatedAt': FieldValue.serverTimestamp(),
+      });
 
       await writeBatch.commit();
     } catch (e) {

@@ -8,6 +8,8 @@ class ChapterCardWidget extends StatelessWidget {
   final String chapter;
   final String episodeId;
   final String? urlImage;
+  final bool isBook;
+  final bool? isOwner;
 
   const ChapterCardWidget({
     super.key,
@@ -16,6 +18,8 @@ class ChapterCardWidget extends StatelessWidget {
     required this.chapter,
     required this.episodeId,
     this.urlImage,
+    required this.isBook,
+    this.isOwner,
   });
 
   @override
@@ -32,9 +36,14 @@ class ChapterCardWidget extends StatelessWidget {
               color: AppColors.primary,
             ),
           ),
-          padding: const EdgeInsets.all(8),
+          padding: urlImage != null
+              ? const EdgeInsets.all(8)
+              : const EdgeInsets.all(14),
           margin: const EdgeInsets.only(bottom: 8),
           child: Row(
+            mainAxisAlignment: isBook
+                ? MainAxisAlignment.spaceBetween
+                : MainAxisAlignment.start,
             children: [
               if (urlImage != null)
                 Container(
@@ -52,7 +61,8 @@ class ChapterCardWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-              const SizedBox(width: 12),
+              if (urlImage != null)
+                const SizedBox(width: 12), // varsa boşluk bırak
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -74,6 +84,15 @@ class ChapterCardWidget extends StatelessWidget {
                   )
                 ],
               ),
+              if (isBook && isOwner == true)
+                IconButton(
+                  icon: const Icon(
+                    Icons.edit_note,
+                    color: Colors.white,
+                  ),
+                  onPressed: () => context.push(
+                      '/myAccount/books/$seriesId/chapters/${episodeId}/edit'),
+                ),
             ],
           )),
     );

@@ -1,10 +1,17 @@
 // lib/mobileFeatures/mobile_comic_details/widget/title_chapters_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 // Mevcut TitleChaptersWidget'ınız
 class TitleChaptersWidget extends StatelessWidget {
-  const TitleChaptersWidget({Key? key}) : super(key: key);
+  final String? seriesOrBookId;
+  final bool? isOwner;
+  final bool? isBook;
+
+  const TitleChaptersWidget(
+      {Key? key, this.isOwner, this.isBook, this.seriesOrBookId})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -13,12 +20,25 @@ class TitleChaptersWidget extends StatelessWidget {
       // Arka plan rengi, yapıştığında içeriğin arkasında kalmasın diye önemli.
       color: Theme.of(context).scaffoldBackgroundColor,
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      child: Text(
-        "Bölümler",
-        style: Theme.of(context)
-            .textTheme
-            .headlineSmall
-            ?.copyWith(fontWeight: FontWeight.bold),
+      child: Row(
+        children: [
+          Text(
+            "Bölümler",
+            style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const Spacer(),
+          if (isOwner == true || isBook == true)
+            TextButton.icon(
+              onPressed: () {
+                context.push('/myAccount/books/$seriesOrBookId/chapters');
+              },
+              icon: const Icon(Icons.edit),
+              label: const Text("Bölümleri Yönet"),
+            ),
+        ],
       ),
     );
   }

@@ -1,7 +1,9 @@
 // lib/features/books/view/edit_chapter_page.dart
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:icons_plus/icons_plus.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
 
 class EditChapterPage extends ConsumerStatefulWidget {
@@ -22,6 +24,7 @@ class _EditChapterPageState extends ConsumerState<EditChapterPage> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
+  final String status = "draft";
   bool _isLoading = false;
 
   // Modu belirle: "Yeni" mi, "Düzenleme" mi?
@@ -34,7 +37,7 @@ class _EditChapterPageState extends ConsumerState<EditChapterPage> {
     super.dispose();
   }
 
-  Future<void> _saveChapter() async {
+  Future<void> _saveChapter(String status) async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
@@ -49,6 +52,7 @@ class _EditChapterPageState extends ConsumerState<EditChapterPage> {
           chapterId: widget.chapterId!,
           title: _titleController.text.trim(),
           content: _contentController.text,
+          status: status,
         );
       } else {
         // Yeni bölüm modundaysak, oluştur
@@ -56,6 +60,7 @@ class _EditChapterPageState extends ConsumerState<EditChapterPage> {
           bookId: widget.bookId,
           title: _titleController.text.trim(),
           content: _contentController.text,
+          status: status,
         );
       }
 
@@ -121,14 +126,16 @@ class _EditChapterPageState extends ConsumerState<EditChapterPage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _saveChapter,
-              child: _isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text("Kaydet"),
+            child: IconButton(
+              icon: const Icon(MingCute.delete_3_line),
+              onPressed: () {
+                if (_isEditing) {
+                  // Düzenleme modundaysak, bölümü sil
+                  ref.read(bookControllerProvider.notifier).deleteChapter(
+                      bookId: widget.bookId, chapterId: widget.chapterId!);
+                  Navigator.of(context).pop();
+                }
+              },
             ),
           ),
         ],
@@ -161,6 +168,26 @@ class _EditChapterPageState extends ConsumerState<EditChapterPage> {
                 validator: (value) => (value == null || value.isEmpty)
                     ? "İçerik boş olamaz"
                     : null,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  OutlinedButton(
+                      onPressed:
+                          _isLoading ? null : () => _saveChapter('draft'),
+                      child: const Text("Taslak")),
+                  ElevatedButton(
+                    onPressed:
+                        _isLoading ? null : () => _saveChapter('published'),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Text("Kaydet"),
+                  ),
+                ],
               ),
             ],
           ),

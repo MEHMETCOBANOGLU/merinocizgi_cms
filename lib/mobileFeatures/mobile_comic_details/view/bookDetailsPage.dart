@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
@@ -27,10 +29,14 @@ class _MobileComicDetailsPageState
     final publishedChaptersAsync =
         ref.watch(publishedChaptersProvider(widget.seriesOrBookId));
 
-    // return publishedChaptersAsync.when(data: (episodes) {
-    //   if (episodes.isEmpty) {
-    //     return const Center(child: Text("Hiç seri bulunamadı."));
-    //   }
+    final bookAsync = ref.watch(bookProvider(widget.seriesOrBookId));
+
+    final authUser = FirebaseAuth.instance.currentUser;
+    final isOwner = bookAsync.when(
+      data: (book) => book['authorId'] == authUser?.uid,
+      loading: () => false,
+      error: (_, __) => false,
+    );
 
     return Scaffold(
         body: CustomScrollView(
@@ -55,7 +61,11 @@ class _MobileComicDetailsPageState
             SliverPersistentHeader(
               // Delegate'imize TitleChaptersWidget'ı veriyoruz.
               delegate: SliverChapterHeaderDelegate(
-                child: const TitleChaptersWidget(),
+                child: TitleChaptersWidget(
+                  seriesOrBookId: widget.seriesOrBookId,
+                  isOwner: isOwner,
+                  isBook: true,
+                ),
               ),
               // Bu, başlığın yukarıya yapışmasını sağlar.
               pinned: true,
@@ -89,6 +99,8 @@ class _MobileComicDetailsPageState
                               .toString(), // 👈 sadece sayıyı gönderiyoruz
                           urlImage: (episodesDoc.data()
                               as Map<String, dynamic>)['imageUrl'],
+                          isBook: true,
+                          isOwner: isOwner,
                         );
                       },
                       childCount: episodes.length,
@@ -103,82 +115,36 @@ class _MobileComicDetailsPageState
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton.small(
-          backgroundColor: AppColors.primary,
-          shape: const CircleBorder(),
-          onPressed: () {},
-          child: const Stack(
-            alignment: Alignment.center,
-            clipBehavior: Clip.none,
+        //bu kısım sadece kitabın sahibi kendisi ise göükecek kullanıcılar tarafından gözükmeyecek
+        floatingActionButton: isOwner
+            ? FloatingActionButton.small(
+                backgroundColor: AppColors.primary,
+                shape: const CircleBorder(),
+                onPressed: () {
+                  context.push(
+                      '/myAccount/books/${widget.seriesOrBookId}/chapters/new');
+                },
+                child: const Stack(
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.none,
 
-            children: [
-              Positioned(
-                  bottom: 6,
-                  right: 4,
-                  child: Icon(MingCute.quill_pen_line, color: Colors.white)),
-              Positioned(
-                  left: 7,
-                  top: 5,
-                  child: Icon(
-                    Icons.add,
-                    size: 16,
-                    color: Colors.white,
-                  )),
-            ], // Row(
-          ),
-        ));
+                  children: [
+                    Positioned(
+                        bottom: 6,
+                        right: 4,
+                        child:
+                            Icon(MingCute.quill_pen_line, color: Colors.white)),
+                    Positioned(
+                        left: 7,
+                        top: 5,
+                        child: Icon(
+                          Icons.add,
+                          size: 16,
+                          color: Colors.white,
+                        )),
+                  ], // Row(
+                ),
+              )
+            : null);
   }
 }
-
-
-
-      // body: Stack(
-      //   alignment: Alignment.center,
-      //   children: [
-      //     Column(
-      //       crossAxisAlignment: CrossAxisAlignment.start,
-      //       children: [
-      //         DetailHeaderWidget(
-      //             seriesOrBookId: widget.seriesOrBookId, isBook: true),
-      //         const TitleChaptersWidget(),
-      //         publishedChaptersAsync.when(
-      //           data: (episodes) {
-      //             if (episodes.isEmpty) {
-      //               return const Center(child: Text("Hiç seri bulunamadı."));
-      //             }
-      //             return Expanded(
-      //               child: ListView(
-      //                 padding: const EdgeInsets.only(
-      //                   left: 16,
-      //                   right: 16,
-      //                   bottom: 80,
-      //                 ),
-      //                 children: episodes.asMap().entries.map((entry) {
-      //                   final index = entry.key;
-      //                   final episodesDoc = entry.value;
-
-      //                   return ChapterCardWidget(
-      //                     episodeId: episodesDoc.id,
-      //                     seriesId: widget.seriesOrBookId,
-      //                     title: episodesDoc['title'],
-      //                     chapter: (index + 1)
-      //                         .toString(), // 👈 sadece sayıyı gönderiyoruz
-      //                     urlImage: (episodesDoc.data()
-      //                         as Map<String, dynamic>)['imageUrl'],
-      //                   );
-      //                 }).toList(),
-      //               ),
-      //             );
-      //           },
-      //           error: (Object error, StackTrace stackTrace) {
-      //             return Center(child: Text(error.toString()));
-      //           },
-      //           loading: () {
-      //             return const Center(child: CircularProgressIndicator());
-      //           },
-      //         ),
-      //       ],
-      //     ),
-      //   ],
-      // ),
-    
