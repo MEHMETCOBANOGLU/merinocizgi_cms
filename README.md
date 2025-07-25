@@ -111,7 +111,7 @@ Bu proje, ölçeklenebilir ve sürdürülebilir bir yapı için **Clean Architec
     - **Web (CMS):** `flutter run -d chrome`
     - **Mobil (Okuyucu):** `flutter run` (bağlı bir cihaz veya emülatör ile)
 
-## 👤 Yazar
+## 👤 Geliştirici
 
 **Mehmet Çobanoğlu**
 
