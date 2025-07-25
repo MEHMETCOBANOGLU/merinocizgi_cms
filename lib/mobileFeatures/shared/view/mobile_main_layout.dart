@@ -78,32 +78,32 @@ class MobileMainLayout extends ConsumerWidget {
           // Konumlandırma sorumluluğu artık burada.
 
           Positioned(
-            left: 34.0,
-            right: 34.0,
-            bottom: 16.0, // Alt kenardan boşluk
+            left: 24.0,
+            right: 24.0,
+            bottom: 8.0, // Alt kenardan boşluk
             child: BottomBarWidget(
               selectedIndex: selectedBottomBarIndex,
               onItemSelected: (index) => onItemTapped(index, ref, context),
               items: [
                 BottomBarItem(
                     icon: Icons.home_sharp,
-                    activeColor: AppColors.accent,
+                    activeColor: AppColors.primary,
                     inactiveColor: Colors.white),
                 BottomBarItem(
                     icon: Icons.people_alt_sharp,
-                    activeColor: AppColors.accent,
+                    activeColor: AppColors.primary,
                     inactiveColor: Colors.white),
                 BottomBarItem(
                     icon: Icons.add_box_outlined,
-                    activeColor: AppColors.accent,
+                    activeColor: AppColors.primary,
                     inactiveColor: Colors.white),
                 BottomBarItem(
                     icon: Icons.search_outlined,
-                    activeColor: AppColors.accent,
+                    activeColor: AppColors.primary,
                     inactiveColor: Colors.white),
                 BottomBarItem(
                     icon: Icons.person_sharp,
-                    activeColor: AppColors.accent,
+                    activeColor: AppColors.primary,
                     inactiveColor: Colors.white),
               ],
             ),

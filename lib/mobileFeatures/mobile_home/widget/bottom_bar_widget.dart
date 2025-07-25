@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,62 +22,134 @@ class BottomBarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 60, // Yüksekliği biraz artıralım
-      // margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      // padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.primary, // Hafif daha açık bir koyu ton
-        borderRadius: BorderRadius.circular(50),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.5),
-            blurRadius: 7,
-            spreadRadius: 1,
-            offset: const Offset(0, 5),
-          )
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround, // Eşit aralık bırak
-        children: List.generate(items.length, (index) {
-          final item = items[index];
-          final isSelected = (selectedIndex == index);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(50),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(
+            color: AppColors.primary.withOpacity(0.6),
+            width: 4,
+          ),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 40.0, sigmaY: 40.0),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceAround, // Eşit aralık bırak
+              children: List.generate(items.length, (index) {
+                final item = items[index];
+                final isSelected = (selectedIndex == index);
 
-          final prioritizedCodePoint = 0xE758;
+                final prioritizedCodePoint = 0xE758;
 
-          final isPrioritized = item.icon.codePoint == prioritizedCodePoint;
+                final isPrioritized =
+                    item.icon.codePoint == prioritizedCodePoint;
 
-          // --- ANA DEĞİŞİKLİK BURADA ---
-          // IconButton'ı AnimatedContainer ile sarmalıyoruz.
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOut,
-            width: 50, // Her ikon için sabit bir dokunma alanı
-            height: 50,
-            decoration: BoxDecoration(
-              // Eğer seçili ise arka plan rengini ayarla, değilse şeffaf yap.
-              color: isSelected
-                  ? Colors.white.withValues(alpha: 0.15)
-                  : Colors.transparent,
-              // Daire şeklini ver.
-              shape: BoxShape.circle,
+                // --- ANA DEĞİŞİKLİK BURADA ---
+                // IconButton'ı AnimatedContainer ile sarmalıyoruz.
+                return ClipOval(
+                  child: BackdropFilter(
+                    // Bu, arkasındaki her şeyi blurlayan sihirli kısımdır.
+                    filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      width: 50, // Her ikon için sabit bir dokunma alanı
+                      height: 50,
+                      decoration: BoxDecoration(
+                        // Eğer seçili ise arka plan rengini ayarla, değilse şeffaf yap.
+                        color: isSelected
+                            ? Colors.white.withValues(alpha: 0.15)
+                            : Colors.transparent,
+                        shape: BoxShape.circle,
+                        // (Opsiyonel) Dairenin kenarına ince bir parlama efekti
+                        border: isSelected
+                            ? Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.2),
+                                width: 1.5)
+                            : null,
+                      ),
+                      child: IconButton(
+                        icon: Icon(item.icon),
+                        iconSize: 28,
+                        color:
+                            isSelected ? item.activeColor : item.inactiveColor,
+                        onPressed: () {
+                          print(item.icon);
+                          onItemSelected(index);
+                        },
+                        splashColor: item.activeColor.withOpacity(0.2),
+                        highlightColor: item.activeColor.withOpacity(0.1),
+                      ),
+                    ),
+                  ),
+                );
+              }),
             ),
-            child: IconButton(
-              icon: Icon(item.icon),
-              iconSize: 28,
-              color: isSelected ? item.activeColor : item.inactiveColor,
-              onPressed: () {
-                print(item.icon);
-                onItemSelected(index);
-              },
-              splashColor: item.activeColor.withOpacity(0.2),
-              highlightColor: item.activeColor.withOpacity(0.1),
-            ),
-          );
-        }),
+          ),
+        ),
       ),
     );
+    // child: Container(
+    //   height: 60, // Yüksekliği biraz artıralım
+    //   // margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+    //   // padding: const EdgeInsets.symmetric(horizontal: 16),
+    //   decoration: BoxDecoration(
+    //     color: AppColors.primary, // Hafif daha açık bir koyu ton
+    //     borderRadius: BorderRadius.circular(50),
+    //     boxShadow: [
+    //       BoxShadow(
+    //         color: AppColors.primary.withOpacity(0.5),
+    //         blurRadius: 7,
+    //         spreadRadius: 1,
+    //         offset: const Offset(0, 5),
+    //       )
+    //     ],
+    //   ),
+    //   child: Row(
+    //     mainAxisAlignment: MainAxisAlignment.spaceAround, // Eşit aralık bırak
+    //     children: List.generate(items.length, (index) {
+    //       final item = items[index];
+    //       final isSelected = (selectedIndex == index);
+
+    //       final prioritizedCodePoint = 0xE758;
+
+    //       final isPrioritized = item.icon.codePoint == prioritizedCodePoint;
+
+    //       // --- ANA DEĞİŞİKLİK BURADA ---
+    //       // IconButton'ı AnimatedContainer ile sarmalıyoruz.
+    //       return AnimatedContainer(
+    //         duration: const Duration(milliseconds: 250),
+    //         curve: Curves.easeInOut,
+    //         width: 50, // Her ikon için sabit bir dokunma alanı
+    //         height: 50,
+    //         decoration: BoxDecoration(
+    //           // Eğer seçili ise arka plan rengini ayarla, değilse şeffaf yap.
+    //           color: isSelected
+    //               ? Colors.white.withValues(alpha: 0.15)
+    //               : Colors.transparent,
+    //           // Daire şeklini ver.
+    //           shape: BoxShape.circle,
+    //         ),
+    //         child: IconButton(
+    //           icon: Icon(item.icon),
+    //           iconSize: 28,
+    //           color: isSelected ? item.activeColor : item.inactiveColor,
+    //           onPressed: () {
+    //             print(item.icon);
+    //             onItemSelected(index);
+    //           },
+    //           splashColor: item.activeColor.withOpacity(0.2),
+    //           highlightColor: item.activeColor.withOpacity(0.1),
+    //         ),
+    //       );
+    //     }),
+    //   ),
+    // ),
   }
 }
 

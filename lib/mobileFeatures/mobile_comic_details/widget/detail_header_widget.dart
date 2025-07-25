@@ -15,6 +15,7 @@ import 'package:merinocizgi/mobileFeatures/mobile_comic_details/controller/userR
 import 'dart:ui' as ui;
 
 import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/save_to_list_dialog.dart';
+import 'package:merinocizgi/mobileFeatures/shared/widget.dart/liquid_glass_%C4%B1con_button.dart';
 
 class DetailHeaderWidget extends ConsumerStatefulWidget {
   final String seriesOrBookId;
@@ -394,28 +395,23 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
             child: SafeArea(
               child: SizedBox(
                 width: size.width,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 4.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      LiquidGlassIconButton(
+                        icon: Icons
+                            .arrow_back_ios_new_rounded, // Daha modern bir ikon
                         onPressed: () => context.pop(),
-                        color: Colors.white,
                       ),
-                    ),
-                    Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: IconButton(
-                        icon: const Icon(Icons.share_outlined, size: 30),
-                        onPressed: () => context.pop(),
-                        color: Colors.white,
+                      LiquidGlassIconButton(
+                        icon: Icons.share_outlined,
+                        onPressed: () {/* Paylaşma mantığı buraya */},
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
