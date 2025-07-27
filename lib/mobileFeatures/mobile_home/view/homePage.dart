@@ -39,191 +39,183 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
     final filteredSeriesAsync =
         ref.watch(topSeriesByCategoryProvider(selectedCategory));
 
-    return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // --- BÖLÜM 1: En Popüler ---
-            popularSeriesAsync.when(
-              data: (series) {
-                if (series.docs.isEmpty) return const SizedBox.shrink();
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // --- BÖLÜM 1: En Popüler ---
+          popularSeriesAsync.when(
+            data: (series) {
+              if (series.docs.isEmpty) return const SizedBox.shrink();
 
-                return CarouselWidget(
-                  title: "En Popüler",
-                  height: size.height * 0.28, // Yüksekliği biraz artıralım
-                  children: series.docs
-                      .map((seriesDoc) => MostPopularCardWidget(
-                            imageUrl: seriesDoc['squareImageUrl'],
-                            title: seriesDoc['title'],
-                            chapters: seriesDoc['totalEpisodes'],
-                            rating: (seriesDoc['averageRating'] as num?)
-                                    ?.toDouble() ??
-                                0.0,
-                            onTap: () =>
-                                context.push('/detail/${seriesDoc.id}'),
-                          ))
-                      .toList(),
-                );
-              },
-              loading: () => _buildSectionPlaceholder(size, isPopular: true),
-              error: (e, st) => Text("Popüler seriler yüklenemedi: $e"),
-            ),
-            const SizedBox(height: 24),
+              return CarouselWidget(
+                title: "En Popüler",
+                height: size.height * 0.28, // Yüksekliği biraz artıralım
+                children: series.docs
+                    .map((seriesDoc) => MostPopularCardWidget(
+                          imageUrl: seriesDoc['squareImageUrl'],
+                          title: seriesDoc['title'],
+                          chapters: seriesDoc['totalEpisodes'],
+                          rating: (seriesDoc['averageRating'] as num?)
+                                  ?.toDouble() ??
+                              0.0,
+                          onTap: () => context.push('/detail/${seriesDoc.id}'),
+                        ))
+                    .toList(),
+              );
+            },
+            loading: () => _buildSectionPlaceholder(size, isPopular: true),
+            error: (e, st) => Text("Popüler seriler yüklenemedi: $e"),
+          ),
+          const SizedBox(height: 24),
 
-            // --- BÖLÜM 2: Yeni Hikayeler ---
-            newSeriesAsync.when(
-              data: (newSeriesList) {
-                if (newSeriesList.isEmpty) return const SizedBox.shrink();
-                return CarouselWidget(
-                  title: "Yeni Seriler",
-                  height: size.height * 0.26,
-                  children: newSeriesList
-                      .map((seriesDoc) => CardWidget(
-                            imageUrl: seriesDoc['squareImageUrl'],
-                            title: seriesDoc['title'],
-                            onTap: () =>
-                                context.push('/detail/${seriesDoc.id}'),
-                          ))
-                      .toList(),
-                );
-              },
-              loading: () => _buildSectionPlaceholder(size),
-              error: (e, st) => Text("Yeni hikayeler yüklenemedi: $e"),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 580, // Yüksekliği sabit tutuyoruz
-              child: PageView.builder(
-                // .builder constructor'ını kullanmak daha verimli
-                // Controller'ı burada oluşturuyoruz.
-                controller: PageController(
-                  // viewportFraction'ı küçülterek sonraki sayfanın daha çok görünmesini sağla
-                  viewportFraction: 0.88, // Örneğin %75 yapalım
-                ),
-                // --- SOL BOŞLUĞU KALDIRAN AYAR ---
-                // PageView'ın içeriğinin, kendi sınırlarının dışına çizilmesine izin ver.
-                clipBehavior: Clip.none,
-                padEnds:
-                    false, // İlk elemanın başına ve son elemanın sonuna padding ekleme
-
-                // PageView'in çocuklarını bir listeyle tanımlayalım
-                itemCount:
-                    3, // Şimdilik 2 sayfamız var (Haftanın Serisi, Dramalar)
-                itemBuilder: (context, index) {
-                  Widget currentPage;
-
-                  // index'e göre doğru sayfayı oluştur
-                  if (index == 0) {
-                    // SAYFA 1: Haftanın Serisi
-                    currentPage = topFeaturedAsync.when(
-                      data: (featuredSeries) {
-                        if (featuredSeries.isEmpty) {
-                          return const Center(
-                              child: Text("Haftanın Serisi Yok"));
-                        }
-                        return CarouselTopWidget(
-                          title: "Haftanın Serisi",
-                          // children listesini oluştururken index'i de kullanıyoruz.
-                          children: featuredSeries.asMap().entries.map((entry) {
-                            int index = entry.key;
-                            DocumentSnapshot seriesDoc = entry.value;
-
-                            final data =
-                                seriesDoc.data() as Map<String, dynamic>;
-
-                            // Bu, her bir satır için yeni widget'ımızı oluşturur.
-                            return TopSeriesListItem(
-                              rank: index + 1, // Sıralama 1'den başlasın diye
-                              imageUrl: data['squareImageUrl'] ?? '',
-                              title: data['title'] ?? 'Başlık Yok',
-                              category: data['category1'] ?? 'Kategori Yok',
-                              onTap: () =>
-                                  context.push('/detail/${seriesDoc.id}'),
-                            );
-                          }).toList(),
-                        );
-                      },
-                      loading: () => _buildSectionPlaceholder(
-                        size,
-                      ),
-                      error: (e, st) => Center(child: Text("Hata: $e")),
-                    );
-                  } else if (index == 1) {
-                    // SAYFA 2: En İyi Dramalar
-                    currentPage = topDramaAsync.when(
-                      data: (dramaSeries) {
-                        if (dramaSeries.isEmpty) {
-                          return const Center(child: Text("Drama Serisi Yok"));
-                        }
-                        return CarouselTopWidget(
-                          title: "En İyi Dramalar",
-                          children: dramaSeries.asMap().entries.map((entry) {
-                            int index = entry.key;
-                            DocumentSnapshot seriesDoc = entry.value;
-                            final data =
-                                seriesDoc.data() as Map<String, dynamic>;
-                            return TopSeriesListItem(
-                              rank: index + 1, // Sıralama 1'den başlasın diye
-                              imageUrl: seriesDoc['squareImageUrl'],
-                              title: seriesDoc['title'],
-                              category: data['category1'] ?? 'Kategori Yok',
-                              onTap: () =>
-                                  context.push('/detail/${seriesDoc.id}'),
-                            );
-                          }).toList(),
-                        );
-                      },
-                      loading: () => _buildSectionPlaceholder(
-                        size,
-                      ),
-                      error: (e, st) =>
-                          Center(child: Text("Dramalar yüklenemedi: $e")),
-                    );
-                  } else {
-                    currentPage = const Text(
-                      "REKLAMM",
-                    );
-                  }
-
-                  // Her sayfaya, sayfalar arası boşluk için sağ tarafa padding ekle
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 16.0),
-                    child: currentPage,
-                  );
-                },
+          // --- BÖLÜM 2: Yeni Hikayeler ---
+          newSeriesAsync.when(
+            data: (newSeriesList) {
+              if (newSeriesList.isEmpty) return const SizedBox.shrink();
+              return CarouselWidget(
+                title: "Yeni Seriler",
+                height: size.height * 0.26,
+                children: newSeriesList
+                    .map((seriesDoc) => CardWidget(
+                          imageUrl: seriesDoc['squareImageUrl'],
+                          title: seriesDoc['title'],
+                          onTap: () => context.push('/detail/${seriesDoc.id}'),
+                        ))
+                    .toList(),
+              );
+            },
+            loading: () => _buildSectionPlaceholder(size),
+            error: (e, st) => Text("Yeni hikayeler yüklenemedi: $e"),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 580, // Yüksekliği sabit tutuyoruz
+            child: PageView.builder(
+              // .builder constructor'ını kullanmak daha verimli
+              // Controller'ı burada oluşturuyoruz.
+              controller: PageController(
+                // viewportFraction'ı küçülterek sonraki sayfanın daha çok görünmesini sağla
+                viewportFraction: 0.88, // Örneğin %75 yapalım
               ),
-            ),
-            // const SizedBox(height: 24),
+              // --- SOL BOŞLUĞU KALDIRAN AYAR ---
+              // PageView'ın içeriğinin, kendi sınırlarının dışına çizilmesine izin ver.
+              clipBehavior: Clip.none,
+              padEnds:
+                  false, // İlk elemanın başına ve son elemanın sonuna padding ekleme
 
-            // --- BÖLÜM 3: Tamamlanmış Hikayeler  ---
-            completedSeriesAsync.when(
-              data: (series) {
-                if (series.docs.isEmpty) return const SizedBox.shrink();
-                return CarouselWidget(
-                  title: "Tamamlanmış Seriler",
-                  height: size.height * 0.26,
-                  children: series.docs
-                      .map((seriesDoc) => CardWidget(
-                            imageUrl: seriesDoc['squareImageUrl'],
-                            title: seriesDoc['title'],
+              // PageView'in çocuklarını bir listeyle tanımlayalım
+              itemCount:
+                  3, // Şimdilik 2 sayfamız var (Haftanın Serisi, Dramalar)
+              itemBuilder: (context, index) {
+                Widget currentPage;
+
+                // index'e göre doğru sayfayı oluştur
+                if (index == 0) {
+                  // SAYFA 1: Haftanın Serisi
+                  currentPage = topFeaturedAsync.when(
+                    data: (featuredSeries) {
+                      if (featuredSeries.isEmpty) {
+                        return const Center(child: Text("Haftanın Serisi Yok"));
+                      }
+                      return CarouselTopWidget(
+                        title: "Haftanın Serisi",
+                        // children listesini oluştururken index'i de kullanıyoruz.
+                        children: featuredSeries.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          DocumentSnapshot seriesDoc = entry.value;
+
+                          final data = seriesDoc.data() as Map<String, dynamic>;
+
+                          // Bu, her bir satır için yeni widget'ımızı oluşturur.
+                          return TopSeriesListItem(
+                            rank: index + 1, // Sıralama 1'den başlasın diye
+                            imageUrl: data['squareImageUrl'] ?? '',
+                            title: data['title'] ?? 'Başlık Yok',
+                            category: data['category1'] ?? 'Kategori Yok',
                             onTap: () =>
                                 context.push('/detail/${seriesDoc.id}'),
-                          ))
-                      .toList(),
+                          );
+                        }).toList(),
+                      );
+                    },
+                    loading: () => _buildSectionPlaceholder(
+                      size,
+                    ),
+                    error: (e, st) => Center(child: Text("Hata: $e")),
+                  );
+                } else if (index == 1) {
+                  // SAYFA 2: En İyi Dramalar
+                  currentPage = topDramaAsync.when(
+                    data: (dramaSeries) {
+                      if (dramaSeries.isEmpty) {
+                        return const Center(child: Text("Drama Serisi Yok"));
+                      }
+                      return CarouselTopWidget(
+                        title: "En İyi Dramalar",
+                        children: dramaSeries.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          DocumentSnapshot seriesDoc = entry.value;
+                          final data = seriesDoc.data() as Map<String, dynamic>;
+                          return TopSeriesListItem(
+                            rank: index + 1, // Sıralama 1'den başlasın diye
+                            imageUrl: seriesDoc['squareImageUrl'],
+                            title: seriesDoc['title'],
+                            category: data['category1'] ?? 'Kategori Yok',
+                            onTap: () =>
+                                context.push('/detail/${seriesDoc.id}'),
+                          );
+                        }).toList(),
+                      );
+                    },
+                    loading: () => _buildSectionPlaceholder(
+                      size,
+                    ),
+                    error: (e, st) =>
+                        Center(child: Text("Dramalar yüklenemedi: $e")),
+                  );
+                } else {
+                  currentPage = const Text(
+                    "REKLAMM",
+                  );
+                }
+
+                // Her sayfaya, sayfalar arası boşluk için sağ tarafa padding ekle
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: currentPage,
                 );
               },
-              loading: () => const SizedBox.shrink(),
-              error: (e, st) => const SizedBox.shrink(),
             ),
+          ),
+          // const SizedBox(height: 24),
 
-            const SizedBox(height: 24),
-            // --- Kategorilerine göre popüler seriler ---
-            const CarouselCategoryWidget(),
-            const SizedBox(height: 100),
-          ],
-        ),
+          // --- BÖLÜM 3: Tamamlanmış Hikayeler  ---
+          completedSeriesAsync.when(
+            data: (series) {
+              if (series.docs.isEmpty) return const SizedBox.shrink();
+              return CarouselWidget(
+                title: "Tamamlanmış Seriler",
+                height: size.height * 0.26,
+                children: series.docs
+                    .map((seriesDoc) => CardWidget(
+                          imageUrl: seriesDoc['squareImageUrl'],
+                          title: seriesDoc['title'],
+                          onTap: () => context.push('/detail/${seriesDoc.id}'),
+                        ))
+                    .toList(),
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (e, st) => const SizedBox.shrink(),
+          ),
+
+          const SizedBox(height: 24),
+          // --- Kategorilerine göre popüler seriler ---
+          const CarouselCategoryWidget(),
+          const SizedBox(height: 100),
+        ],
       ),
     );
   }

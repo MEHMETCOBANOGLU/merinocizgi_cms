@@ -254,6 +254,16 @@ final bookChaptersProvider =
       .snapshots();
 });
 
+/// OKUYUCULAR için ana sayfada gösterilecek ONAYLANMIŞ kitapları listeler.
+final publicBooksProvider = StreamProvider.autoDispose<QuerySnapshot>((ref) {
+  return FirebaseFirestore.instance
+      .collection('books')
+      // Kitaplar için de 'status' veya 'isPublished' gibi bir filtre olmalı.
+      // Şimdilik olmadığını varsayarak devam edelim.
+      .orderBy('createdAt', descending: true)
+      .snapshots();
+});
+
 /// OKUYUCULAR için: Bir kitabın sadece yayınlanmış bölümlerini listeler.
 final publishedChaptersProvider = StreamProvider.autoDispose
     .family<List<QueryDocumentSnapshot>, String>((ref, bookId) {

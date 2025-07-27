@@ -3,9 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MobileHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
-  const MobileHomeAppBar({super.key, this.actions});
+  final PreferredSizeWidget? bottom;
+  const MobileHomeAppBar({super.key, this.actions, this.bottom});
+
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize {
+    final bottomHeight = bottom?.preferredSize.height ?? 0;
+    return Size.fromHeight(kToolbarHeight + bottomHeight);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,6 +21,7 @@ class MobileHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
         width: 55,
       ),
       actions: actions,
+      bottom: bottom,
     );
   }
 }
