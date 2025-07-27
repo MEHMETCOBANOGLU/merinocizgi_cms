@@ -176,7 +176,7 @@ final topFeaturedSeriesProvider =
       .where('hasPublishedEpisodes', isEqualTo: true)
       // 'averageRating' alanının Firestore'da olduğundan emin olun.
       .orderBy('averageRating', descending: true)
-      .limit(5) // Sadece ilk 5'i al
+      .limit(3) // Sadece ilk 3'i al
       .snapshots();
 
   return stream.map((snapshot) => snapshot.docs);
@@ -193,7 +193,7 @@ final topDramaSeriesProvider =
       // Firestore'da OR sorgusu yapmak zordur, bu yüzden genellikle tek bir kategori alanına odaklanılır.
       .where('category1', isEqualTo: 'DRAM')
       .orderBy('averageRating', descending: true)
-      .limit(5)
+      .limit(3)
       .snapshots();
 
   return stream.map((snapshot) => snapshot.docs);
@@ -244,4 +244,91 @@ final mostViewedSeriesProvider =
       .orderBy('viewCount', descending: true) // Ana sıralama kriteri
       .limit(10)
       .snapshots();
+});
+
+/// [POPÜLERLİK] En ÇOK KATEGORİLERDEN serileri listeler.  Popüler kategorileri belirle
+final popularCategoriesProvider =
+    FutureProvider.autoDispose<List<String>>((ref) async {
+  final snapshot = await FirebaseFirestore.instance
+      .collection('series')
+      .where('hasPublishedEpisodes', isEqualTo: true)
+      .orderBy('viewCount', descending: true)
+      .limit(100)
+      .get();
+
+  final categoryCount = <String, int>{};
+
+  for (final doc in snapshot.docs) {
+    final data = doc.data();
+    final category = data['category1'];
+    if (category != null && category is String) {
+      categoryCount[category] = (categoryCount[category] ?? 0) + 1;
+    }
+  }
+
+  final sorted = categoryCount.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
+
+  return sorted.take(4).map((e) => e.key).toList();
+});
+
+///  Bu kategorilere göre en iyi serileri çek
+final topSeriesGroupedByPopularCategoriesProvider =
+    FutureProvider.autoDispose<List<Map<String, List<DocumentSnapshot>>>>(
+        (ref) async {
+  final popularCategoriesAsync =
+      await ref.watch(popularCategoriesProvider.future);
+  final firestore = FirebaseFirestore.instance;
+
+  List<Map<String, List<DocumentSnapshot>>> result = [];
+
+  for (final category in popularCategoriesAsync) {
+    final snapshot = await firestore
+        .collection('series')
+        .where('hasPublishedEpisodes', isEqualTo: true)
+        .where('category1', isEqualTo: category)
+        .orderBy('averageRating', descending: true)
+        .limit(3)
+        .get();
+
+    result.add({category: snapshot.docs});
+  }
+
+  return result;
+});
+
+// kategory chiplerini göstermek için listeyi dişnamik hale getirmeye çalışıyoruz
+final nonEmptyCategoriesProvider = FutureProvider<List<String>>((ref) async {
+  final allCategories = [
+    'AKSİYON',
+    'FANTEZİ',
+    'KOMEDİ',
+    'DRAM',
+    'ROMANTİZM',
+    'BİLİMKURGU',
+    'SÜPER KAHRAMAN',
+    'GERİLİM',
+    'KORKU',
+    'ZOMBİ',
+    'OKUL',
+    'DOĞAÜSTÜ',
+    'HAYVAN',
+    'SUÇ/GİZEM',
+    'TARİHSEL',
+    'BİLGİLENDİRİCİ',
+    'SPOR',
+    'HER YAŞTAN',
+    'KIYAMET SONRASI',
+  ];
+
+  final List<String> nonEmpty = [];
+
+  for (final category in allCategories) {
+    final data = await ref.read(topSeriesByCategoryProvider(category).future);
+    if (data.isNotEmpty) {
+      nonEmpty.add(category);
+    }
+  }
+
+  return nonEmpty;
 });

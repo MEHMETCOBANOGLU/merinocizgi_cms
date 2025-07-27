@@ -33,7 +33,7 @@ abstract class Book with _$Book {
     DateTime? createdAt,
     @JsonKey(fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
     DateTime? lastUpdatedAt,
-
+    @Default(true) bool hasPublishedEpisodes,
     // Sayaçlar
     @Default(0) int viewCount,
     @Default(0) int voteCount,

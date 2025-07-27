@@ -32,7 +32,8 @@ mixin _$Book {
   @JsonKey(fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
   DateTime? get createdAt;
   @JsonKey(fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
-  DateTime? get lastUpdatedAt; // Sayaçlar
+  DateTime? get lastUpdatedAt;
+  bool get hasPublishedEpisodes; // Sayaçlar
   int get viewCount;
   int get voteCount;
   int get chapterCount;
@@ -72,6 +73,8 @@ mixin _$Book {
                 other.createdAt == createdAt) &&
             (identical(other.lastUpdatedAt, lastUpdatedAt) ||
                 other.lastUpdatedAt == lastUpdatedAt) &&
+            (identical(other.hasPublishedEpisodes, hasPublishedEpisodes) ||
+                other.hasPublishedEpisodes == hasPublishedEpisodes) &&
             (identical(other.viewCount, viewCount) ||
                 other.viewCount == viewCount) &&
             (identical(other.voteCount, voteCount) ||
@@ -96,13 +99,14 @@ mixin _$Book {
       status,
       createdAt,
       lastUpdatedAt,
+      hasPublishedEpisodes,
       viewCount,
       voteCount,
       chapterCount);
 
   @override
   String toString() {
-    return 'Book(bookId: $bookId, authorId: $authorId, authorName: $authorName, title: $title, description: $description, coverImageUrl: $coverImageUrl, category: $category, copyright: $copyright, tags: $tags, status: $status, createdAt: $createdAt, lastUpdatedAt: $lastUpdatedAt, viewCount: $viewCount, voteCount: $voteCount, chapterCount: $chapterCount)';
+    return 'Book(bookId: $bookId, authorId: $authorId, authorName: $authorName, title: $title, description: $description, coverImageUrl: $coverImageUrl, category: $category, copyright: $copyright, tags: $tags, status: $status, createdAt: $createdAt, lastUpdatedAt: $lastUpdatedAt, hasPublishedEpisodes: $hasPublishedEpisodes, viewCount: $viewCount, voteCount: $voteCount, chapterCount: $chapterCount)';
   }
 }
 
@@ -126,6 +130,7 @@ abstract mixin class $BookCopyWith<$Res> {
       DateTime? createdAt,
       @JsonKey(fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
       DateTime? lastUpdatedAt,
+      bool hasPublishedEpisodes,
       int viewCount,
       int voteCount,
       int chapterCount});
@@ -155,6 +160,7 @@ class _$BookCopyWithImpl<$Res> implements $BookCopyWith<$Res> {
     Object? status = null,
     Object? createdAt = freezed,
     Object? lastUpdatedAt = freezed,
+    Object? hasPublishedEpisodes = null,
     Object? viewCount = null,
     Object? voteCount = null,
     Object? chapterCount = null,
@@ -208,6 +214,10 @@ class _$BookCopyWithImpl<$Res> implements $BookCopyWith<$Res> {
           ? _self.lastUpdatedAt
           : lastUpdatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      hasPublishedEpisodes: null == hasPublishedEpisodes
+          ? _self.hasPublishedEpisodes
+          : hasPublishedEpisodes // ignore: cast_nullable_to_non_nullable
+              as bool,
       viewCount: null == viewCount
           ? _self.viewCount
           : viewCount // ignore: cast_nullable_to_non_nullable
@@ -242,6 +252,7 @@ class _Book implements Book {
       this.createdAt,
       @JsonKey(fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
       this.lastUpdatedAt,
+      this.hasPublishedEpisodes = true,
       this.viewCount = 0,
       this.voteCount = 0,
       this.chapterCount = 0})
@@ -287,6 +298,9 @@ class _Book implements Book {
   @override
   @JsonKey(fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
   final DateTime? lastUpdatedAt;
+  @override
+  @JsonKey()
+  final bool hasPublishedEpisodes;
 // Sayaçlar
   @override
   @JsonKey()
@@ -338,6 +352,8 @@ class _Book implements Book {
                 other.createdAt == createdAt) &&
             (identical(other.lastUpdatedAt, lastUpdatedAt) ||
                 other.lastUpdatedAt == lastUpdatedAt) &&
+            (identical(other.hasPublishedEpisodes, hasPublishedEpisodes) ||
+                other.hasPublishedEpisodes == hasPublishedEpisodes) &&
             (identical(other.viewCount, viewCount) ||
                 other.viewCount == viewCount) &&
             (identical(other.voteCount, voteCount) ||
@@ -362,13 +378,14 @@ class _Book implements Book {
       status,
       createdAt,
       lastUpdatedAt,
+      hasPublishedEpisodes,
       viewCount,
       voteCount,
       chapterCount);
 
   @override
   String toString() {
-    return 'Book(bookId: $bookId, authorId: $authorId, authorName: $authorName, title: $title, description: $description, coverImageUrl: $coverImageUrl, category: $category, copyright: $copyright, tags: $tags, status: $status, createdAt: $createdAt, lastUpdatedAt: $lastUpdatedAt, viewCount: $viewCount, voteCount: $voteCount, chapterCount: $chapterCount)';
+    return 'Book(bookId: $bookId, authorId: $authorId, authorName: $authorName, title: $title, description: $description, coverImageUrl: $coverImageUrl, category: $category, copyright: $copyright, tags: $tags, status: $status, createdAt: $createdAt, lastUpdatedAt: $lastUpdatedAt, hasPublishedEpisodes: $hasPublishedEpisodes, viewCount: $viewCount, voteCount: $voteCount, chapterCount: $chapterCount)';
   }
 }
 
@@ -393,6 +410,7 @@ abstract mixin class _$BookCopyWith<$Res> implements $BookCopyWith<$Res> {
       DateTime? createdAt,
       @JsonKey(fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
       DateTime? lastUpdatedAt,
+      bool hasPublishedEpisodes,
       int viewCount,
       int voteCount,
       int chapterCount});
@@ -422,6 +440,7 @@ class __$BookCopyWithImpl<$Res> implements _$BookCopyWith<$Res> {
     Object? status = null,
     Object? createdAt = freezed,
     Object? lastUpdatedAt = freezed,
+    Object? hasPublishedEpisodes = null,
     Object? viewCount = null,
     Object? voteCount = null,
     Object? chapterCount = null,
@@ -475,6 +494,10 @@ class __$BookCopyWithImpl<$Res> implements _$BookCopyWith<$Res> {
           ? _self.lastUpdatedAt
           : lastUpdatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      hasPublishedEpisodes: null == hasPublishedEpisodes
+          ? _self.hasPublishedEpisodes
+          : hasPublishedEpisodes // ignore: cast_nullable_to_non_nullable
+              as bool,
       viewCount: null == viewCount
           ? _self.viewCount
           : viewCount // ignore: cast_nullable_to_non_nullable

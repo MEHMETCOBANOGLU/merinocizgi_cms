@@ -22,6 +22,7 @@ _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
       createdAt: _dateTimeFromTimestamp(json['createdAt'] as Timestamp?),
       lastUpdatedAt:
           _dateTimeFromTimestamp(json['lastUpdatedAt'] as Timestamp?),
+      hasPublishedEpisodes: json['hasPublishedEpisodes'] as bool? ?? true,
       viewCount: (json['viewCount'] as num?)?.toInt() ?? 0,
       voteCount: (json['voteCount'] as num?)?.toInt() ?? 0,
       chapterCount: (json['chapterCount'] as num?)?.toInt() ?? 0,
@@ -40,6 +41,7 @@ Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
       'status': instance.status,
       'createdAt': _dateTimeToTimestamp(instance.createdAt),
       'lastUpdatedAt': _dateTimeToTimestamp(instance.lastUpdatedAt),
+      'hasPublishedEpisodes': instance.hasPublishedEpisodes,
       'viewCount': instance.viewCount,
       'voteCount': instance.voteCount,
       'chapterCount': instance.chapterCount,

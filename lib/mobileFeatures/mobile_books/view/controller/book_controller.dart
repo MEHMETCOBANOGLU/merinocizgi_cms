@@ -69,6 +69,7 @@ class BookController extends StateNotifier<AsyncValue<String?>> {
         tags: formState.tags,
         createdAt: DateTime.now(),
         lastUpdatedAt: DateTime.now(),
+        hasPublishedEpisodes: true,
       );
 
       // 4. Modeli JSON'a çevirip Firestore'a yaz.
@@ -254,30 +255,6 @@ final bookChaptersProvider =
       .snapshots();
 });
 
-/// OKUYUCULAR için ana sayfada gösterilecek ONAYLANMIŞ kitapları listeler.
-final publicBooksProvider = StreamProvider.autoDispose<QuerySnapshot>((ref) {
-  return FirebaseFirestore.instance
-      .collection('books')
-      // Kitaplar için de 'status' veya 'isPublished' gibi bir filtre olmalı.
-      // Şimdilik olmadığını varsayarak devam edelim.
-      .orderBy('createdAt', descending: true)
-      .snapshots();
-});
-
-/// OKUYUCULAR için: Bir kitabın sadece yayınlanmış bölümlerini listeler.
-final publishedChaptersProvider = StreamProvider.autoDispose
-    .family<List<QueryDocumentSnapshot>, String>((ref, bookId) {
-  final stream = FirebaseFirestore.instance
-      .collection('books')
-      .doc(bookId)
-      .collection('chapters')
-      .where('status', isEqualTo: 'published')
-      .orderBy('chapterNumber', descending: false)
-      .snapshots();
-
-  return stream.map((snapshot) => snapshot.docs);
-});
-
 // --- BÖLÜM VERİSİNİ ÇEKMEK İÇİN YENİ PROVIDER ---
 /// ID'si verilen tek bir bölümün verisini anlık olarak getirir.
 final chapterProvider = StreamProvider.autoDispose
@@ -297,4 +274,188 @@ final bookProvider =
     StreamProvider.autoDispose.family<DocumentSnapshot, String>((ref, bookId) {
   if (bookId.isEmpty) return const Stream.empty();
   return FirebaseFirestore.instance.collection('books').doc(bookId).snapshots();
+});
+
+/// OKUYUCULAR için: Bir kitabın sadece yayınlanmış bölümlerini listeler.
+final publishedChaptersProvider = StreamProvider.autoDispose
+    .family<List<QueryDocumentSnapshot>, String>((ref, bookId) {
+  final stream = FirebaseFirestore.instance
+      .collection('books')
+      .doc(bookId)
+      .collection('chapters')
+      .where('status', isEqualTo: 'published')
+      .orderBy('chapterNumber', descending: false)
+      .snapshots();
+
+  return stream.map((snapshot) => snapshot.docs);
+});
+
+///////////////////
+///
+/// OKUYUCULAR için ana sayfada gösterilecek ONAYLANMIŞ kitapları listeler.
+final publicBooksProvider = StreamProvider.autoDispose<QuerySnapshot>((ref) {
+  return FirebaseFirestore.instance
+      .collection('books')
+      // Kitaplar için 'hasPublishedChapters' gibi bir alan olmalı.
+      // Şimdilik olmadığını varsayarak devam edelim.
+      // .where('isPublished', isEqualTo: true)
+      .orderBy('createdAt', descending: true)
+      .snapshots();
+});
+
+/// En YÜKSEK PUANA sahip kitapları listeler.
+final highestRatedBooksProvider =
+    StreamProvider.autoDispose<List<DocumentSnapshot>>((ref) {
+  return FirebaseFirestore.instance
+      .collection('books')
+      .orderBy('averageRating', descending: true)
+      .limit(10)
+      .snapshots()
+      .map((snapshot) => snapshot.docs);
+});
+
+// 1. Haftanın Kitapları (En Yüksek Puanlı İlk 3)
+// Bu provider, 'averageRating' alanına göre sıralama yapar.
+final topFeaturedBooksProvider =
+    StreamProvider.autoDispose<List<DocumentSnapshot>>((ref) {
+  final stream = FirebaseFirestore.instance
+      .collection('books')
+      .where('hasPublishedEpisodes', isEqualTo: true)
+      // 'averageRating' alanının Firestore'da olduğundan emin olun.
+      .orderBy('averageRating', descending: true)
+      .limit(3) // Sadece ilk 3'i al
+      .snapshots();
+
+  return stream.map((snapshot) => snapshot.docs);
+});
+
+/// [POPÜLERLİK] En ÇOK KATEGORİLERDEN kitapları listeler.  Popüler kategorileri belirle
+final popularCategoriesProvider =
+    FutureProvider.autoDispose<List<String>>((ref) async {
+  final snapshot = await FirebaseFirestore.instance
+      .collection('books')
+      .where('hasPublishedEpisodes', isEqualTo: true)
+      .where('averageRating', isGreaterThan: 0)
+      .orderBy('viewCount', descending: true)
+      .limit(100)
+      .get();
+
+  final categoryCount = <String, int>{};
+
+  for (final doc in snapshot.docs) {
+    final data = doc.data();
+    final category = data['category'];
+    if (category != null && category is String) {
+      categoryCount[category] = (categoryCount[category] ?? 0) + 1;
+    }
+  }
+
+  final sorted = categoryCount.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
+
+  return sorted.take(4).map((e) => e.key).toList();
+});
+
+///  Bu kategorilere göre en iyi kitapları çek
+final topBooksGroupedByPopularCategoriesProvider =
+    FutureProvider.autoDispose<List<Map<String, List<DocumentSnapshot>>>>(
+        (ref) async {
+  final popularCategoriesAsync =
+      await ref.watch(popularCategoriesProvider.future);
+  final firestore = FirebaseFirestore.instance;
+
+  List<Map<String, List<DocumentSnapshot>>> result = [];
+
+  for (final category in popularCategoriesAsync) {
+    final snapshot = await firestore
+        .collection('books')
+        .where('hasPublishedEpisodes', isEqualTo: true)
+        .where('category', isEqualTo: category)
+        .orderBy('averageRating', descending: true)
+        .where('chapterCount', isGreaterThan: 0)
+        .limit(3)
+        .get();
+
+    result.add({category: snapshot.docs});
+  }
+
+  return result;
+});
+
+/// Sadece TAMAMLANMIŞ KITAPLARI listeler.
+final completedBooksProvider = StreamProvider.autoDispose<QuerySnapshot>((ref) {
+  return FirebaseFirestore.instance
+      .collection('books')
+      .where('hasPublishedEpisodes', isEqualTo: true) // En az bir bölümü olmalı
+      .where('status', isEqualTo: 'completed') // Durumu 'tamamlandı' olmalı
+      .orderBy('createdAt', descending: true)
+      .snapshots();
+});
+
+/// [DİNAMİK] Verilen bir kategoriye göre en yüksek puanlı 5 seriyi getirir.
+/// Bu, 'ref.watch(topSeriesByCategoryProvider("DRAMA"))' gibi çağrılır.
+final topBooksByCategoryProvider = StreamProvider.autoDispose
+    .family<List<DocumentSnapshot>, String>((ref, category) {
+  // Eğer kategori boşsa, sorgu yapma.
+  if (category.isEmpty) {
+    return const Stream.empty();
+  }
+
+  final stream = FirebaseFirestore.instance
+      .collection('books')
+      .where('hasPublishedEpisodes', isEqualTo: true)
+      // 'category1' veya 'category2' alanlarından birinin seçilen kategoriyle eşleşmesini kontrol et.
+      // Firestore, tek bir sorguda iki farklı alan için 'OR' koşulunu doğrudan desteklemez.
+      // En yaygın çözüm, 'tags' veya 'categories' adında bir dizi (array) alanı kullanmaktır.
+      // Örnek: .where('categories', arrayContains: category)
+      // Şimdilik, sadece 'category1'e göre filtreleyelim.
+      .where('category', isEqualTo: category)
+      .orderBy('averageRating', descending: true) // Puana göre sırala
+      .limit(5)
+      .snapshots();
+
+  return stream.map((snapshot) => snapshot.docs);
+});
+
+// kategory chiplerini göstermek için listeyi dişnamik hale getirmeye çalışıyoruz
+final nonEmptyCategoriesProvider = FutureProvider<List<String>>((ref) async {
+  final allCategories = [
+    'Aksiyon',
+    'Askeri',
+    'Bilim Kurgu',
+    'Deneme',
+    'Dini',
+    'Drama',
+    'Fantastik',
+    'Genel Kurgu',
+    'Genç Kurgu',
+    'Gerilim',
+    'Gizem',
+    'Kısa Hikaye',
+    'Klasikler',
+    'Korku',
+    'Macera',
+    'Polisiye',
+    'Roman',
+    'Romantik Gerilim',
+    'Senaryo',
+    'Siyasi',
+    'Spiritüel',
+    'Şiir',
+    'Tarih',
+    'Türk Klasikleri',
+    'Vampir',
+    'Diğer'
+  ];
+
+  final List<String> nonEmpty = [];
+
+  for (final category in allCategories) {
+    final data = await ref.read(topBooksByCategoryProvider(category).future);
+    if (data.isNotEmpty) {
+      nonEmpty.add(category);
+    }
+  }
+
+  return nonEmpty;
 });
