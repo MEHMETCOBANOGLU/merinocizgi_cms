@@ -3,73 +3,71 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
 
-class BookReaderPage extends ConsumerWidget {
+class BookReaderPage extends ConsumerStatefulWidget {
   final String bookId;
   final String chapterId;
 
-  const BookReaderPage(
-      {Key? key, required this.bookId, required this.chapterId})
-      : super(key: key);
+  const BookReaderPage({
+    Key? key,
+    required this.bookId,
+    required this.chapterId,
+  }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bookAsync = ref.watch(bookProvider(bookId));
-    final chaptersAsync = ref.watch(chaptersProvider(bookId));
-    final size = MediaQuery.of(context).size;
+  ConsumerState<BookReaderPage> createState() => _BookReaderPageState();
+}
+
+class _BookReaderPageState extends ConsumerState<BookReaderPage> {
+  final ScrollController _scrollController = ScrollController();
+  final Map<String, GlobalKey> _chapterKeys = {};
+  bool _didScroll = false;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToChapter() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final key = _chapterKeys[widget.chapterId];
+      print('Trying to scroll to: ${widget.chapterId}');
+      if (key == null) {
+        print('❌ GlobalKey not found for chapterId');
+      } else if (key.currentContext == null) {
+        print('❌ Key found, but context is null (not yet laid out?)');
+      } else {
+        print('✅ Scrolling to chapter ${widget.chapterId}');
+        Scrollable.ensureVisible(
+          key.currentContext!,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bookAsync = ref.watch(bookProvider(widget.bookId));
+    final chaptersAsync = ref.watch(chaptersProvider(widget.bookId));
+
     return Scaffold(
       appBar: AppBar(
+        title: bookAsync.when(
+          data: (data) => Text(data['title']),
+          loading: () => const Text("Yükleniyor..."),
+          error: (_, __) => const Text("Hata"),
+        ),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.bookmark_add))
+          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        controller: _scrollController,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(
           children: [
-            bookAsync.when(
-                data: (data) {
-                  return Column(
-                    children: [
-                      SizedBox(
-                        height: size.height * 0.3,
-                        child: Center(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: AspectRatio(
-                                aspectRatio: 2 / 3,
-                                child: Image.network(data['coverImageUrl'],
-                                    fit: BoxFit.cover)),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(data['title'], style: AppTextStyles.oswaldSubtitle),
-                      const SizedBox(height: 4),
-                      Text('@${data['authorName']}',
-                          style: AppTextStyles.oswaldText
-                              .copyWith(color: Colors.white54)),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                          color: Colors.grey[800],
-                        ),
-                        child: Text(
-                            data['status'] == 'ongoing'
-                                ? 'Devam Ediyor'
-                                : 'Tamamlandı',
-                            style: AppTextStyles.oswaldText
-                                .copyWith(color: Colors.white54)),
-                      ),
-                    ],
-                  );
-                },
-                error: (error, stackTrace) => const Text('Hata'),
-                loading: () => const CircularProgressIndicator()),
-
             // Bölümler
             chaptersAsync.when(
               data: (chapters) {
@@ -77,29 +75,56 @@ class BookReaderPage extends ConsumerWidget {
                   return const Text("Bu kitapta henüz bölüm yok.");
                 }
 
+                // Bölüm key'lerini oluştur (benzersiz anahtarlarla)
+                for (int i = 0; i < chapters.length; i++) {
+                  final chapter = chapters[i];
+                  final rawId = chapter['id'];
+                  final id = (rawId == null || rawId.toString().isEmpty)
+                      ? 'chapter_$i'
+                      : rawId.toString();
+
+                  _chapterKeys.putIfAbsent(id, () => GlobalKey());
+                }
+
+                // İlk build sonrasında yalnızca bir kez scroll
+                if (!_didScroll) {
+                  _didScroll = true;
+                  _scrollToChapter(); // Future.microtask gerek yok
+                }
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: chapters.map((chapter) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 32.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            chapter['title'],
+                  children: List.generate(chapters.length, (i) {
+                    final chapter = chapters[i];
+                    final rawId = chapter['id'];
+                    final id = (rawId == null || rawId.toString().isEmpty)
+                        ? 'chapter_$i'
+                        : rawId.toString();
+
+                    return Column(
+                      key: _chapterKeys[id], // güvenli şekilde key eklenmiş
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 32),
+                        Text(
+                          "${chapter['chapterNumber']}. Bölüm",
+                          style: AppTextStyles.text.copyWith(fontSize: 12),
+                        ),
+                        const SizedBox(height: 8),
+                        Center(
+                          child: Text(
+                            chapter['title'] ?? '',
                             style: Theme.of(context)
                                 .textTheme
                                 .titleLarge
                                 ?.copyWith(fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            chapter['content'],
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(chapter['content'] ?? ''),
+                      ],
                     );
-                  }).toList(),
+                  }),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),

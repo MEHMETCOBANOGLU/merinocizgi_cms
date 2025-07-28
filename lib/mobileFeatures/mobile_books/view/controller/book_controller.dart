@@ -282,7 +282,11 @@ final chaptersProvider =
       .orderBy('chapterNumber', descending: false)
       .get();
 
-  return snapshot.docs.map((doc) => doc.data()).toList();
+  return snapshot.docs.map((doc) {
+    final data = doc.data();
+    data['id'] = doc.id; // 🔥 ÖNEMLİ: doc id'yi ekle
+    return data;
+  }).toList();
 });
 
 // Tek bir kitabın verisini getirir.
