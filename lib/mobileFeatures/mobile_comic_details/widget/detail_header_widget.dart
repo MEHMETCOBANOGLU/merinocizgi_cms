@@ -105,6 +105,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
     final averageRating = (data['averageRating'] as num?)?.toDouble() ?? 0.0;
     final viewCount = data['viewCount'] as int? ?? 0;
     final formattedViewCount = NumberFormat.compact().format(viewCount);
+    final tags = data['tags'] as List<dynamic>? ?? [];
 
     // Kullanıcının bu seriye verdiği oyu dinler.
     final userRating = ref.watch(userRatingProvider(
@@ -122,7 +123,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
       textDirection: ui.TextDirection.ltr,
       maxLines:
           isReadMore ? 1000 : 3, // "Daha fazla" modunda satır limiti olmasın
-    )..layout(maxWidth: size.width * 0.9 - 32); // Container genişliği - padding
+    )..layout(maxWidth: size.width * 0.9); // Container genişliği - padding
 
     // Metnin kapladığı gerçek yüksekliği alıyoruz.
     final double textHeight = textPainter.size.height;
@@ -132,7 +133,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
       text: textSpan,
       maxLines: 3,
       textDirection: ui.TextDirection.ltr,
-    )..layout(maxWidth: size.width * 0.9 - 32); // Container genişliği - padding
+    )..layout(maxWidth: size.width * 0.9); // Container genişliği - padding
 
     // 'didExceedMaxLines', şimdi metnin 3 satırdan uzun olup olmadığını doğru bir şekilde kontrol edecek.
     final bool shouldShowReadMore = textPainterForCheck.didExceedMaxLines;
@@ -141,11 +142,12 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
     // Yüksekliği, metnin gerçek yüksekliğine göre hesaplıyoruz.
     // 'size.height * 0.22' gibi sabit değerler yerine,
     // (Başlık vb. için sabit yükseklik) + (Metnin dinamik yüksekliği) + (Padding'ler)
-    const double baseHeight =
-        121; // Başlık, ikonlar, boşluklar için tahmini sabit yükseklik
+    final double baseHeight = widget.isBook
+        ? 181
+        : 133; // Başlık, ikonlar, boşluklar için tahmini sabit yükseklik
     final double containerHeight = baseHeight +
         textHeight +
-        (shouldShowReadMore ? textHeight * 0.7 : textHeight * 0.5);
+        (shouldShowReadMore ? textHeight * 0.67 : textHeight * 0.6);
     final double totalHeaderHeight =
         (size.height * 0.38) - (size.height * 0.1) + containerHeight;
 
@@ -383,6 +385,23 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                             style: TextStyle(
                                 color: AppColors.primary, fontSize: 12),
                           ),
+                        ),
+                      ),
+                    // const SizedBox(height: 8.0),
+                    if (widget.isBook)
+                      Center(
+                        child: Wrap(
+                          spacing: 8.0,
+                          runSpacing: 4.0,
+                          children: tags
+                              .map((tag) => Transform.scale(
+                                    scale: 0.8,
+                                    child: Chip(
+                                      padding: EdgeInsets.zero,
+                                      label: Text(tag),
+                                    ),
+                                  ))
+                              .toList(),
                         ),
                       ),
                   ],

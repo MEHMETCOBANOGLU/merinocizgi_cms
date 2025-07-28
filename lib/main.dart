@@ -1,3 +1,6 @@
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,6 +38,19 @@ class MyApp extends ConsumerWidget {
       // darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       routerConfig: router,
+
+      // 👇 quill için gerekli ayarlar (bölüm düzenlemedeki font vs ayarları) 👇
+      supportedLocales: const [
+        Locale('en'), // English (add others if needed)
+        Locale('tr'), // Turkish
+      ],
+      localizationsDelegates: const [
+        FlutterQuillLocalizations
+            .delegate, // Crucial addition for flutter_quill
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
     );
   }
 }

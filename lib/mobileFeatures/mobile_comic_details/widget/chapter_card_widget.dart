@@ -4,7 +4,7 @@ import 'package:merinocizgi/core/theme/colors.dart';
 
 class ChapterCardWidget extends StatelessWidget {
   final String seriesId;
-  final String title;
+  final String? title;
   final String chapter;
   final String episodeId;
   final String? urlImage;
@@ -14,7 +14,7 @@ class ChapterCardWidget extends StatelessWidget {
   const ChapterCardWidget({
     super.key,
     required this.seriesId,
-    required this.title,
+    this.title,
     required this.chapter,
     required this.episodeId,
     this.urlImage,
@@ -26,7 +26,6 @@ class ChapterCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        print('SeriesId: $seriesId , title: $title, chapter: $episodeId');
         context.push('/book-reader/$seriesId/$episodeId');
       },
       child: Container(
@@ -74,14 +73,15 @@ class ChapterCardWidget extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
+                  if (isBook == false)
+                    Text(
+                      title ?? 'Başlıksız',
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
                 ],
               ),
               if (isBook && isOwner == true)

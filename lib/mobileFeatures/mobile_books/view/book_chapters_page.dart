@@ -19,7 +19,13 @@ class BookChaptersPage extends ConsumerWidget {
     final BooksAsync = ref.watch(bookProvider(bookId));
 
     return Scaffold(
-        appBar: AppBar(title: const Text("Bölümleri Yönet")),
+        appBar: AppBar(
+          title: const Text("Bölümleri Yönet"),
+          leading: IconButton(
+            onPressed: () => context.go('/'),
+            icon: const Icon(Icons.arrow_back),
+          ),
+        ),
         body: chaptersAsync.when(
           data: (snapshot) {
             if (snapshot.docs.isEmpty) {

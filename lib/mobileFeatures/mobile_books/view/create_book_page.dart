@@ -142,7 +142,9 @@ class CreateBookPage extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Yeni Kitap Oluştur")),
+      appBar: AppBar(
+        title: const Text("Yeni Kitap Oluştur"),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Center(

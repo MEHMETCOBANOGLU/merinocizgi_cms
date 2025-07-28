@@ -18,7 +18,6 @@ abstract class Chapter with _$Chapter {
   const factory Chapter({
     @JsonKey(includeIfNull: false) String? chapterId,
     required int chapterNumber,
-    required String title,
     required String content,
     @Default('draft') String status, // Varsayılan olarak 'taslak'
 

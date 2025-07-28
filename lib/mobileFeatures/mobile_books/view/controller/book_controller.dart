@@ -89,7 +89,6 @@ class BookController extends StateNotifier<AsyncValue<String?>> {
   /// Bir kitap için yeni bir bölüm oluşturur.
   Future<void> createChapter({
     required String bookId,
-    required String title,
     required String content,
     required String status,
   }) async {
@@ -109,7 +108,6 @@ class BookController extends StateNotifier<AsyncValue<String?>> {
       // Yeni bölüm dökümanı oluştur.
       final newChapter = Chapter(
         chapterNumber: newChapterNumber,
-        title: title,
         content: content,
         status: status, // Yeni bölümler taslak olarak başlar
         publishedAt: null,
@@ -135,7 +133,6 @@ class BookController extends StateNotifier<AsyncValue<String?>> {
   Future<void> updateChapter({
     required String bookId,
     required String chapterId,
-    required String title,
     required String content,
     String? status, // status artık opsiyonel
   }) async {
@@ -150,7 +147,6 @@ class BookController extends StateNotifier<AsyncValue<String?>> {
 
       // Güncellenecek alanlar
       final Map<String, dynamic> updateData = {
-        'title': title,
         'content': content,
       };
 

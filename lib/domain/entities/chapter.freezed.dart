@@ -18,7 +18,6 @@ mixin _$Chapter {
   @JsonKey(includeIfNull: false)
   String? get chapterId;
   int get chapterNumber;
-  String get title;
   String get content;
   String get status; // Varsayılan olarak 'taslak'
   @JsonKey(fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
@@ -44,7 +43,6 @@ mixin _$Chapter {
                 other.chapterId == chapterId) &&
             (identical(other.chapterNumber, chapterNumber) ||
                 other.chapterNumber == chapterNumber) &&
-            (identical(other.title, title) || other.title == title) &&
             (identical(other.content, content) || other.content == content) &&
             (identical(other.status, status) || other.status == status) &&
             (identical(other.publishedAt, publishedAt) ||
@@ -55,12 +53,12 @@ mixin _$Chapter {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, chapterId, chapterNumber, title,
+  int get hashCode => Object.hash(runtimeType, chapterId, chapterNumber,
       content, status, publishedAt, wordCount);
 
   @override
   String toString() {
-    return 'Chapter(chapterId: $chapterId, chapterNumber: $chapterNumber, title: $title, content: $content, status: $status, publishedAt: $publishedAt, wordCount: $wordCount)';
+    return 'Chapter(chapterId: $chapterId, chapterNumber: $chapterNumber, content: $content, status: $status, publishedAt: $publishedAt, wordCount: $wordCount)';
   }
 }
 
@@ -72,7 +70,6 @@ abstract mixin class $ChapterCopyWith<$Res> {
   $Res call(
       {@JsonKey(includeIfNull: false) String? chapterId,
       int chapterNumber,
-      String title,
       String content,
       String status,
       @JsonKey(fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
@@ -94,7 +91,6 @@ class _$ChapterCopyWithImpl<$Res> implements $ChapterCopyWith<$Res> {
   $Res call({
     Object? chapterId = freezed,
     Object? chapterNumber = null,
-    Object? title = null,
     Object? content = null,
     Object? status = null,
     Object? publishedAt = freezed,
@@ -109,10 +105,6 @@ class _$ChapterCopyWithImpl<$Res> implements $ChapterCopyWith<$Res> {
           ? _self.chapterNumber
           : chapterNumber // ignore: cast_nullable_to_non_nullable
               as int,
-      title: null == title
-          ? _self.title
-          : title // ignore: cast_nullable_to_non_nullable
-              as String,
       content: null == content
           ? _self.content
           : content // ignore: cast_nullable_to_non_nullable
@@ -139,7 +131,6 @@ class _Chapter implements Chapter {
   const _Chapter(
       {@JsonKey(includeIfNull: false) this.chapterId,
       required this.chapterNumber,
-      required this.title,
       required this.content,
       this.status = 'draft',
       @JsonKey(fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
@@ -153,8 +144,6 @@ class _Chapter implements Chapter {
   final String? chapterId;
   @override
   final int chapterNumber;
-  @override
-  final String title;
   @override
   final String content;
   @override
@@ -192,7 +181,6 @@ class _Chapter implements Chapter {
                 other.chapterId == chapterId) &&
             (identical(other.chapterNumber, chapterNumber) ||
                 other.chapterNumber == chapterNumber) &&
-            (identical(other.title, title) || other.title == title) &&
             (identical(other.content, content) || other.content == content) &&
             (identical(other.status, status) || other.status == status) &&
             (identical(other.publishedAt, publishedAt) ||
@@ -203,12 +191,12 @@ class _Chapter implements Chapter {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, chapterId, chapterNumber, title,
+  int get hashCode => Object.hash(runtimeType, chapterId, chapterNumber,
       content, status, publishedAt, wordCount);
 
   @override
   String toString() {
-    return 'Chapter(chapterId: $chapterId, chapterNumber: $chapterNumber, title: $title, content: $content, status: $status, publishedAt: $publishedAt, wordCount: $wordCount)';
+    return 'Chapter(chapterId: $chapterId, chapterNumber: $chapterNumber, content: $content, status: $status, publishedAt: $publishedAt, wordCount: $wordCount)';
   }
 }
 
@@ -221,7 +209,6 @@ abstract mixin class _$ChapterCopyWith<$Res> implements $ChapterCopyWith<$Res> {
   $Res call(
       {@JsonKey(includeIfNull: false) String? chapterId,
       int chapterNumber,
-      String title,
       String content,
       String status,
       @JsonKey(fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
@@ -243,7 +230,6 @@ class __$ChapterCopyWithImpl<$Res> implements _$ChapterCopyWith<$Res> {
   $Res call({
     Object? chapterId = freezed,
     Object? chapterNumber = null,
-    Object? title = null,
     Object? content = null,
     Object? status = null,
     Object? publishedAt = freezed,
@@ -258,10 +244,6 @@ class __$ChapterCopyWithImpl<$Res> implements _$ChapterCopyWith<$Res> {
           ? _self.chapterNumber
           : chapterNumber // ignore: cast_nullable_to_non_nullable
               as int,
-      title: null == title
-          ? _self.title
-          : title // ignore: cast_nullable_to_non_nullable
-              as String,
       content: null == content
           ? _self.content
           : content // ignore: cast_nullable_to_non_nullable

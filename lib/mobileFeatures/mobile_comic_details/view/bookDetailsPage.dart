@@ -91,14 +91,15 @@ class _MobileComicDetailsPageState
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final episodesDoc = episodes[index];
+                        final data =
+                            episodesDoc.data() as Map<String, dynamic>?;
+
                         return ChapterCardWidget(
                           episodeId: episodesDoc.id,
                           seriesId: widget.seriesOrBookId,
-                          title: episodesDoc['title'],
-                          chapter: (index + 1)
-                              .toString(), // 👈 sadece sayıyı gönderiyoruz
-                          urlImage: (episodesDoc.data()
-                              as Map<String, dynamic>)['imageUrl'],
+                          title: data?['title'],
+                          chapter: (index + 1).toString(),
+                          urlImage: data?['imageUrl'],
                           isBook: true,
                           isOwner: isOwner,
                         );
