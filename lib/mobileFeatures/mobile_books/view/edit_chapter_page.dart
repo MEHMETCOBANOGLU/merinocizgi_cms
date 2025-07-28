@@ -87,7 +87,7 @@ class _EditChapterPageState extends ConsumerState<EditChapterPage> {
   Widget build(BuildContext context) {
     // Eğer düzenleme modundaysak, mevcut bölüm verisini çek ve form alanlarını doldur.
     if (_isEditing) {
-      final chapterAsync = ref.watch(chapterProvider(
+      final chapterAsync = ref.watch(singleChapterProvider(
           (bookId: widget.bookId, chapterId: widget.chapterId!)));
 
       return chapterAsync.when(

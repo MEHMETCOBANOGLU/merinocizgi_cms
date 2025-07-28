@@ -257,7 +257,7 @@ final bookChaptersProvider =
 
 // --- BÖLÜM VERİSİNİ ÇEKMEK İÇİN YENİ PROVIDER ---
 /// ID'si verilen tek bir bölümün verisini anlık olarak getirir.
-final chapterProvider = StreamProvider.autoDispose
+final singleChapterProvider = StreamProvider.autoDispose
     .family<DocumentSnapshot, ({String bookId, String chapterId})>((ref, ids) {
   if (ids.bookId.isEmpty || ids.chapterId.isEmpty) return const Stream.empty();
 
@@ -267,6 +267,22 @@ final chapterProvider = StreamProvider.autoDispose
       .collection('chapters')
       .doc(ids.chapterId)
       .snapshots();
+});
+
+//bölüm listesi
+final chaptersProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, bookId) async {
+  // Firestore'dan chapter listesi getir
+  final snapshot = await FirebaseFirestore.instance
+      .collection('books')
+      .doc(bookId)
+      .collection('chapters')
+      .where('status', isEqualTo: 'published')
+      .orderBy('chapterNumber', descending: false)
+      .get();
+
+  return snapshot.docs.map((doc) => doc.data()).toList();
 });
 
 // Tek bir kitabın verisini getirir.

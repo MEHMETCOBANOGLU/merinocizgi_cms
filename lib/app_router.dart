@@ -23,6 +23,7 @@ import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/accountSettin
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/followers_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/following_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/reading_list_widget.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_reader/view/book_reader_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_search/view/search_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_user_profile/view/userProfilePage.dart';
 import 'package:merinocizgi/mobileFeatures/shared/view/mobile_main_layout.dart'; // Mobil için yeni layout
@@ -36,7 +37,7 @@ import 'package:merinocizgi/features/adminPanel/view/admin_dashboard_page.dart';
 // Mobil Sayfaları (Bunları oluşturman gerekecek)
 import 'package:merinocizgi/mobileFeatures/mobile_home/view/homePage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_library/view/libraryPage.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_reader/view/readerPage.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_reader/view/comic_reader_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comic_details/view/comicDetailsPage.dart';
 
 ///router provider
@@ -135,34 +136,6 @@ List<RouteBase> _getMobileRoutes() {
           path: '/myAccount',
           builder: (context, state) => const MyAccountPage(),
           routes: [
-            // GoRoute(
-            //     path: 'books/:bookId/chapters',
-            //     builder: (context, state) {
-            //       final bookId = state.pathParameters['bookId']!;
-            //       return BookChaptersPage(bookId: bookId);
-            //     },
-            //     // --- YENİ ALT ROTALAR ---
-            //     routes: [
-            //       // Yeni bir bölüm oluşturmak için: /account/books/{id}/chapters/new
-            //       GoRoute(
-            //         path: 'new',
-            //         builder: (context, state) {
-            //           final bookId = state.pathParameters['bookId']!;
-            //           return EditChapterPage(bookId: bookId);
-            //         },
-            //       ),
-            //       // Mevcut bir bölümü düzenlemek için: /account/books/{id}/chapters/{chapterId}/edit
-            //       GoRoute(
-            //         path: ':chapterId/edit',
-            //         builder: (context, state) {
-            //           final bookId = state.pathParameters['bookId']!;
-            //           final chapterId = state.pathParameters['chapterId']!;
-            //           return EditChapterPage(
-            //               bookId: bookId, chapterId: chapterId);
-            //         },
-            //       ),
-            //     ]),
-
             // BookChaptersPage'in bir alt rotası olarak
             GoRoute(
               path: 'chapters/:chapterId/edit', // Düzenleme için
@@ -197,11 +170,19 @@ List<RouteBase> _getMobileRoutes() {
     ),
     // Okuma ekranı gibi tam ekran olacak, kabuk dışında kalacak sayfalar
     GoRoute(
-      path: '/reader/:seriesId/:episodeId',
+      path: '/comic-reader/:seriesId/:episodeId',
       builder: (context, state) {
         final seriesId = state.pathParameters['seriesId']!;
         final episodeId = state.pathParameters['episodeId']!;
-        return ReaderPage(seriesId: seriesId, episodeId: episodeId);
+        return ComicReaderPage(seriesId: seriesId, episodeId: episodeId);
+      },
+    ),
+    GoRoute(
+      path: '/book-reader/:bookId/:chapterId',
+      builder: (context, state) {
+        final bookId = state.pathParameters['bookId']!;
+        final chapterId = state.pathParameters['chapterId']!;
+        return BookReaderPage(bookId: bookId, chapterId: chapterId);
       },
     ),
     GoRoute(

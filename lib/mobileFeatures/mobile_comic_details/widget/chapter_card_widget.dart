@@ -27,7 +27,7 @@ class ChapterCardWidget extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         print('SeriesId: $seriesId , title: $title, chapter: $episodeId');
-        context.push('/reader/$seriesId/$episodeId');
+        context.push('/book-reader/$seriesId/$episodeId');
       },
       child: Container(
           decoration: BoxDecoration(

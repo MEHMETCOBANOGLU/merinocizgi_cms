@@ -8,21 +8,21 @@ import 'package:merinocizgi/core/providers/account_providers.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/controller/myAccount_controller.dart';
 
-class ReaderPage extends ConsumerStatefulWidget {
+class ComicReaderPage extends ConsumerStatefulWidget {
   final String seriesId;
   final String episodeId;
 
-  const ReaderPage({
+  const ComicReaderPage({
     Key? key,
     required this.seriesId,
     required this.episodeId,
   }) : super(key: key);
 
   @override
-  ConsumerState<ReaderPage> createState() => _ReaderPageState();
+  ConsumerState<ComicReaderPage> createState() => _ReaderPageState();
 }
 
-class _ReaderPageState extends ConsumerState<ReaderPage> {
+class _ReaderPageState extends ConsumerState<ComicReaderPage> {
   // Sadece bir kez çalışmasını sağlamak için bayraklar
   bool _historyUpdateInitiated = false;
   bool _viewCountTriggered = false;

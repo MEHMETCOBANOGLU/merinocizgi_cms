@@ -71,7 +71,7 @@ class _HistoryCard extends ConsumerWidget {
         onTap: () {
           // Tıklama mantığı aynı, kullanıcıyı kaldığı bölüme yönlendirir.
           if (seriesId.isNotEmpty && lastReadEpisodeId.isNotEmpty) {
-            context.push('/reader/$seriesId/$lastReadEpisodeId');
+            context.push('/comic-reader/$seriesId/$lastReadEpisodeId');
           }
         },
         child: Padding(
