@@ -9,6 +9,7 @@ import 'package:merinocizgi/core/di.dart';
 import 'package:merinocizgi/core/theme/index.dart';
 import 'package:merinocizgi/firebase_options.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:merinocizgi/mobileFeatures/mobile_settings/controller/settings_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +22,9 @@ void main() async {
     // Eğer Firebase başlatılamazsa, bu kritik bir hatadır.
     print("❌ Firebase başlatılırken HATA oluştu: $e");
   }
+  final settings = SettingsController();
+  await settings.loadSettings(); // uygulama başlamadan ayarları uygula
+
   configureDependencies(); // ← bütün bağımlılıkları burada kaydettik
   runApp(const ProviderScope(child: MyApp()));
 }

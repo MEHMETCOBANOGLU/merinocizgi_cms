@@ -25,7 +25,7 @@ class MobileLoginPage extends ConsumerWidget {
               size: 30,
             ),
             onPressed: () {
-              context.pop();
+              context.go('/');
             },
           ),
         ],

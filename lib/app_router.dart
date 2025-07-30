@@ -202,12 +202,7 @@ List<RouteBase> _getMobileRoutes() {
           );
         }),
     GoRoute(
-        path: '/myAccount',
-        builder: (context, state) {
-          return const MyAccountPage();
-        }),
-    GoRoute(
-        path: '/mobileLogin',
+        path: '/landingLogin',
         builder: (context, state) {
           return const MobileLoginPage();
         }),

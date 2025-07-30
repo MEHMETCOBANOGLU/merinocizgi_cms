@@ -26,7 +26,11 @@ class ChapterCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.push('/book-reader/$seriesId/$episodeId');
+        if (isBook) {
+          context.push('/book-reader/$seriesId/$episodeId');
+        } else {
+          context.push('/comic-reader/$seriesId/$episodeId');
+        }
       },
       child: Container(
           decoration: BoxDecoration(
@@ -77,7 +81,7 @@ class ChapterCardWidget extends StatelessWidget {
                     Text(
                       title ?? 'Başlıksız',
                       style: const TextStyle(
-                        color: AppColors.primary,
+                        color: Color.fromRGBO(134, 201, 187, 1),
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),

@@ -187,7 +187,7 @@ class MobileMainLayout extends ConsumerWidget {
   // AppBar'daki aksiyon butonlarını, bulunulan sayfaya göre dinamik hale getiren
   // yardımcı bir metot.
   List<Widget>? getAppBarActions(BuildContext context, String location) {
-    if (location.startsWith('/account')) {
+    if (location.startsWith('/myAccount')) {
       return [
         IconButton(
           icon: const Icon(Icons.settings),

@@ -48,7 +48,11 @@ class MyAccountPage extends ConsumerWidget {
     }
     // Kullanıcı giriş yapmamışsa, login sayfasını göster.
     if (authStateAsync.value?.user == null) {
-      return const MobileLoginPage();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.go('/landingLogin');
+      });
+      return const Scaffold(
+          body: SizedBox()); // return an empty scaffold temporarily
     }
 
     // DefaultTabController, TabBar ve TabBarView'ın senkronize çalışmasını sağlar.

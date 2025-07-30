@@ -48,8 +48,10 @@ class UserProfilePage extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     // Kullanıcı giriş yapmamışsa, login sayfasını göster.
-    if (authStateAsync.value?.user == null) {
-      return const MobileLoginPage();
+    // Ama, gösterilen yazarın profiline girmeye çalışıyorsa, giriş sayfasına yönlendirme yapma.
+    if (authStateAsync.value?.user == null &&
+        authorId != authStateAsync.value?.user?.uid) {
+      context.go('/landingLogin');
     }
 
     // DefaultTabController, TabBar ve TabBarView'ın senkronize çalışmasını sağlar.

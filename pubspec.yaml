@@ -66,6 +66,8 @@ dependencies:
   liquid_glass_renderer: ^0.1.1-dev.10
   outlined_text: ^1.0.1
   quill_native_bridge: ^11.0.1
+  screen_brightness: ^2.1.5
+  shared_preferences: ^2.5.3
   shimmer: ^3.0.0
   typed_data: ^1.4.0
   url_launcher: ^6.3.2
