@@ -41,3 +41,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+
+serviceAccountKey.json
+firestore-export.json
+
+
+node_modules/
+.env
+

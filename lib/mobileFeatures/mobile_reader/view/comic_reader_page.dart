@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,6 +9,7 @@ import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/controller/myAccount_controller.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_settings/controller/settings_provider.dart';
+import 'package:merinocizgi/mobileFeatures/shared/widget.dart/custom_glass_appBar.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
 class ComicReaderPage extends ConsumerStatefulWidget {
@@ -92,20 +95,14 @@ class _ComicReaderPageState extends ConsumerState<ComicReaderPage> {
         ref.watch(allEpisodesForSeriesProvider(widget.seriesId));
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        title: const Text("Okuma Modu"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              _bottomSheet(context, ref);
-            },
-          ),
-        ],
-      ),
+      // appBar: CustomGlassAppBar(title: 'Başlık', actions: [
+      //   IconButton(
+      //     icon: const Icon(Icons.more_vert),
+      //     onPressed: () {
+      //       _bottomSheet(context, ref);
+      //     },
+      //   ),
+      // ]),
       body: episodeAsync.when(
         data: (episodes) {
           final episode = episodes.firstWhere(
@@ -124,36 +121,48 @@ class _ComicReaderPageState extends ConsumerState<ComicReaderPage> {
             );
           }
 
-          return InteractiveViewer(
-            panEnabled: false,
-            minScale: 1,
-            maxScale: 5,
-            child: ListView.builder(
-              itemCount: pages.length,
-              itemBuilder: (context, index) {
-                final imageUrl = pages[index];
-
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: Image.network(
-                    imageUrl,
-                    fit: BoxFit.contain,
-                    loadingBuilder: (context, child, progress) {
-                      if (progress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Center(
-                        child:
-                            Icon(Icons.broken_image, color: Colors.redAccent),
-                      );
+          return CustomScrollView(
+            slivers: [
+              CustomGlassSliverAppBar(
+                title: "Başlık",
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () {
+                      _bottomSheet(context, ref);
                     },
                   ),
-                );
-              },
-            ),
+                ],
+              ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final imageUrl = pages[index];
+
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, progress) {
+                          if (progress == null) return child;
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Icon(Icons.broken_image,
+                                color: Colors.redAccent),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                  childCount: pages.length,
+                ),
+              ),
+            ],
           );
         },
         loading: () =>
@@ -167,6 +176,152 @@ class _ComicReaderPageState extends ConsumerState<ComicReaderPage> {
       ),
     );
   }
+
+  _bottomSheet(BuildContext context, WidgetRef ref) {
+    final settingsController = ref.read(settingsControllerProvider);
+    double _currentBrightness = settingsController.brightness;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor:
+          Colors.black.withOpacity(0.2), // ← Bu satır aslında çalışmaz!
+
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary
+                        .withOpacity(0.3), // Saydam renk (önemli)
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(20)),
+                    border: Border.all(color: AppColors.primary),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 🟨 Parlaklık başlığı + slider bar aynı satırda
+                      Row(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(left: 23.0),
+                            child: Text(
+                              'Parlaklık',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Transform.scale(
+                              scale: 0.85,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(30),
+                                  border: Border.all(color: Colors.white),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.dark_mode,
+                                        color: Colors.white70),
+                                    Expanded(
+                                      child: Slider(
+                                        value: _currentBrightness,
+                                        min: 0.0,
+                                        max: 1.0,
+                                        divisions: 100,
+                                        activeColor: AppColors.accent,
+                                        inactiveColor: Colors.white70,
+                                        onChanged: (value) {
+                                          setState(
+                                              () => _currentBrightness = value);
+                                          settingsController
+                                              .updateBrightness(value)
+                                              .catchError((e) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                  content: Text(
+                                                      'Parlaklık hatası: $e')),
+                                            );
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    const Icon(Icons.light_mode,
+                                        color: Colors.white70),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                              ),
+                              icon: const Icon(Icons.flag, color: Colors.white),
+                              label: const Text('Bölümü bildir',
+                                  style: TextStyle(color: Colors.white)),
+                              onPressed: () {
+                                Navigator.pop(context); // bottomSheet kapanır
+                                showReportDialog(
+                                  context,
+                                  ref,
+                                  seriesId: widget.seriesId,
+                                  episodeId: widget.episodeId,
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              icon:
+                                  const Icon(Icons.share, color: Colors.white),
+                              label: const Text('Paylaş',
+                                  style: TextStyle(color: Colors.white)),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                // Share işlemi burada yapılabilir
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 Future<void> setBrightness(double value) async {
@@ -178,115 +333,81 @@ Future<void> setBrightness(double value) async {
   }
 }
 
-_bottomSheet(BuildContext context, WidgetRef ref) {
-  final settingsController = ref.read(settingsControllerProvider);
-  double _currentBrightness = settingsController.brightness;
+Future<void> showReportDialog(BuildContext context, WidgetRef ref,
+    {required String seriesId, required String episodeId}) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
 
-  showModalBottomSheet<void>(
+  final reasons = [
+    'Uygunsuz çıplaklık veya cinsel içerik',
+    'Şiddet veya rahatsız edici görseller',
+    'Nefret söylemi veya istismar',
+    'Spam veya reklam',
+    'Telif hakkı ihlali',
+  ];
+
+  final docId = '${seriesId}_${episodeId}_${user.uid}';
+  final reportRef = FirebaseFirestore.instance.collection('reports').doc(docId);
+
+  showDialog(
     context: context,
-    backgroundColor: Colors.grey[900],
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    builder: (context) => SimpleDialog(
+      backgroundColor: Colors.grey[900],
+      title: const Text('Bildir',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      children: [
+        ...reasons.map((reason) => SimpleDialogOption(
+              onPressed: () async {
+                Navigator.pop(context); // dialogu kapat
+
+                try {
+                  final alreadyReported = await reportRef.get();
+                  if (alreadyReported.exists) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Bu bölümü zaten bildirdiniz.'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
+                  } else {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Bildiriminiz alındı: "$reason"'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                    await reportRef.set({
+                      'userId': user.uid,
+                      'seriesId': seriesId,
+                      'episodeId': episodeId,
+                      'reason': reason,
+                      'reportedAt': FieldValue.serverTimestamp(),
+                    });
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Bir hata oluştu: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: Text(reason, style: const TextStyle(color: Colors.white)),
+            )),
+        SimpleDialogOption(
+          onPressed: () => Navigator.pop(context),
+          child: const Center(
+              child: Text('İptal', style: TextStyle(color: Colors.redAccent))),
+        )
+      ],
     ),
-    builder: (BuildContext context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 🟨 Parlaklık başlığı + slider bar aynı satırda
-                Row(
-                  children: [
-                    const Text(
-                      'Parlaklık',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[850],
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(color: Colors.white30),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.dark_mode, color: Colors.white70),
-                            Expanded(
-                              child: Slider(
-                                value: _currentBrightness,
-                                min: 0.0,
-                                max: 1.0,
-                                divisions: 100,
-                                activeColor: AppColors.primary,
-                                inactiveColor: Colors.white30,
-                                onChanged: (value) {
-                                  setState(() => _currentBrightness = value);
-                                  settingsController
-                                      .updateBrightness(value)
-                                      .catchError((e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content:
-                                              Text('Parlaklık hatası: $e')),
-                                    );
-                                  });
-                                },
-                              ),
-                            ),
-                            const Icon(Icons.light_mode, color: Colors.white70),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                        ),
-                        icon: const Icon(Icons.flag, color: Colors.white),
-                        label: const Text('Bölümü bildir',
-                            style: TextStyle(color: Colors.white)),
-                        onPressed: () {
-                          Navigator.pop(context);
-                          // Report işlemi burada yapılabilir
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.share, color: Colors.white),
-                        label: const Text('Paylaş',
-                            style: TextStyle(color: Colors.white)),
-                        onPressed: () {
-                          Navigator.pop(context);
-                          // Share işlemi burada yapılabilir
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    },
   );
 }
+// bunuun kuralını9 yazacaktık en son burda kaldık promptu attım
