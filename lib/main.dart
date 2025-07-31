@@ -10,6 +10,7 @@ import 'package:merinocizgi/core/theme/index.dart';
 import 'package:merinocizgi/firebase_options.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:merinocizgi/mobileFeatures/mobile_settings/controller/settings_controller.dart';
+import 'package:merinocizgi/mobileFeatures/shared/controller/deeplink_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,8 @@ void main() async {
   await settings.loadSettings(); // uygulama başlamadan ayarları uygula
 
   configureDependencies(); // ← bütün bağımlılıkları burada kaydettik
+  await DeeplinkHandler.init(); // 👈 önce URI yakala
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

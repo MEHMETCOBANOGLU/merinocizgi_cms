@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 
 class CustomGlassSliverAppBar extends StatelessWidget {
+  final Widget? leading;
   final String title;
   final List<Widget>? actions;
 
   const CustomGlassSliverAppBar({
+    this.leading,
     super.key,
     required this.title,
     this.actions,
@@ -16,6 +18,7 @@ class CustomGlassSliverAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
+      leading: leading,
       floating: true,
       snap: true,
       elevation: 10,

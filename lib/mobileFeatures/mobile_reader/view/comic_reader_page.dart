@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:go_router/go_router.dart';
 import 'package:merinocizgi/core/providers/account_providers.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
@@ -11,6 +12,7 @@ import 'package:merinocizgi/mobileFeatures/mobile_myAccount/controller/myAccount
 import 'package:merinocizgi/mobileFeatures/mobile_settings/controller/settings_provider.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/custom_glass_appBar.dart';
 import 'package:screen_brightness/screen_brightness.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ComicReaderPage extends ConsumerStatefulWidget {
   final String seriesId;
@@ -124,6 +126,13 @@ class _ComicReaderPageState extends ConsumerState<ComicReaderPage> {
           return CustomScrollView(
             slivers: [
               CustomGlassSliverAppBar(
+                leading: IconButton(
+                  onPressed: () => context.go('/'),
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                  ),
+                ),
                 title: "Başlık",
                 actions: [
                   IconButton(
@@ -306,7 +315,13 @@ class _ComicReaderPageState extends ConsumerState<ComicReaderPage> {
                                   style: TextStyle(color: Colors.white)),
                               onPressed: () {
                                 Navigator.pop(context);
-                                // Share işlemi burada yapılabilir
+
+                                final deeplink =
+                                    'merinocizgi://series/${widget.seriesId}/episodes/${widget.episodeId}';
+                                final url = Uri.encodeFull(deeplink);
+
+                                Share.share(
+                                    '📖 Yeni bir bölüm keşfettim!\n$url');
                               },
                             ),
                           ),
@@ -410,4 +425,3 @@ Future<void> showReportDialog(BuildContext context, WidgetRef ref,
     ),
   );
 }
-// bunuun kuralını9 yazacaktık en son burda kaldık promptu attım

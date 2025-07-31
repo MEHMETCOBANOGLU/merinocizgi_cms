@@ -40,27 +40,27 @@ import 'package:merinocizgi/mobileFeatures/mobile_library/view/libraryPage.dart'
 import 'package:merinocizgi/mobileFeatures/mobile_reader/view/comic_reader_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comic_details/view/comicDetailsPage.dart';
 
+String? initialAppRoute;
+
 ///router provider
 /// GoRouter örneğini oluşturur ve state değişikliklerine göre yönlendirmeyi yönetir.
 final routerProvider = Provider<GoRouter>((ref) {
   final routerNotifier = ref.watch(routerNotifierProvider);
 
   return GoRouter(
-    // `refreshListenable`, yönlendirmenin ne zaman yeniden değerlendirileceğini belirler.
-    // Artık bu, bizim kontrolümüzdeki `routerNotifier`'a bağlı.
     refreshListenable: routerNotifier,
-
-    // `redirect`, yönlendirme mantığını içerir.
-    // Bu mantık artık Notifier'ın içindeki senkronize değerlere göre çalışır.
     redirect: routerNotifier.redirect,
-
-    // --- PLATFORMA GÖRE ROTA SEÇİMİ ---
-    // kIsWeb sabiti, kodun web'de mi yoksa mobilde mi çalıştığını belirtir.
+    // 👇 ÖNEMLİ: Deeplink varsa onunla başlasın
+    initialLocation: initialAppRoute ?? '/',
     routes: kIsWeb ? _getWebRoutes() : _getMobileRoutes(),
 
     errorBuilder: (context, state) => Scaffold(
       appBar: AppBar(title: const Text('Sayfa Bulunamadı')),
-      body: Center(child: Text('Aradığınız sayfa bulunamadı: ${state.error}')),
+      body: Center(
+          child: Text(
+        'Aradığınız sayfa bulunamadı: ${state.uri}', // URI gösteriyoruz, çünkü tanımlı değilse zaten burası çalışır
+        style: const TextStyle(color: Colors.white),
+      )),
     ),
   );
 });
