@@ -10,6 +10,7 @@ import 'package:merinocizgi/core/theme/index.dart';
 import 'package:merinocizgi/firebase_options.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:merinocizgi/mobileFeatures/mobile_settings/controller/settings_controller.dart';
+import 'package:merinocizgi/mobileFeatures/shared/controller/deeplink_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,32 +30,56 @@ void main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  bool _isDeeplinkInitialized = false;
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
+
+    // Initialize deeplink handler after the first build when GoRouter is available
+    if (!_isDeeplinkInitialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _initializeDeeplink();
+      });
+    }
+
     return MaterialApp.router(
       title: 'MerinoÇizgi',
+      routerConfig: router,
       debugShowCheckedModeBanner: false,
       theme: kIsWeb ? AppTheme.lightTheme : AppTheme.darkTheme,
-      // darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      routerConfig: router,
-
-      // 👇 quill için gerekli ayarlar (bölüm düzenlemedeki font vs ayarları) 👇
       supportedLocales: const [
-        Locale('en'), // English (add others if needed)
-        Locale('tr'), // Turkish
+        Locale('en'),
+        Locale('tr'),
       ],
       localizationsDelegates: const [
-        FlutterQuillLocalizations
-            .delegate, // Crucial addition for flutter_quill
+        FlutterQuillLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
     );
+  }
+
+  void _initializeDeeplink() async {
+    if (!_isDeeplinkInitialized && mounted) {
+      _isDeeplinkInitialized = true;
+      await DeeplinkHandler.init(context);
+    }
+  }
+
+  @override
+  void dispose() {
+    DeeplinkHandler.dispose();
+    super.dispose();
   }
 }
