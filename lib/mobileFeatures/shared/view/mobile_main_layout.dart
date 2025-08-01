@@ -9,11 +9,12 @@ import 'package:merinocizgi/mobileFeatures/mobile_home/widget/bottom_bar_widget.
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/home_app_bar_widget.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
 
-class MobileMainLayout extends ConsumerWidget {
+class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
   final Widget child;
 
   const MobileMainLayout({Key? key, required this.child}) : super(key: key);
-
+  @override
+  Size get preferredSize => const Size.fromHeight(100);
   // Bu metot, her bir butona basıldığında ne olacağını merkezi olarak yönetir.
 
   @override
@@ -43,6 +44,7 @@ class MobileMainLayout extends ConsumerWidget {
               ? Align(
                   alignment: Alignment.centerLeft,
                   child: Container(
+                    height: preferredSize.height,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         transform: const GradientRotation(1.1),
@@ -50,7 +52,10 @@ class MobileMainLayout extends ConsumerWidget {
                         end: Alignment.centerLeft,
                         colors: [
                           AppColors.primary
-                              .withOpacity(0.45), // Opacity azaltıldı
+                              .withOpacity(0.40), // Opacity azaltıldı
+                          AppColors.primary.withOpacity(0.20),
+                          AppColors.primary.withOpacity(0.10),
+                          Colors.transparent,
                           Colors.transparent,
                         ],
                       ),

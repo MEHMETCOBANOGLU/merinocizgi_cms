@@ -19,7 +19,9 @@ class TitleChaptersWidget extends StatelessWidget {
     return Container(
       // Arka plan rengi, yapıştığında içeriğin arkasında kalmasın diye önemli.
       color: Theme.of(context).scaffoldBackgroundColor,
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16.0,
+      ),
       child: Row(
         children: [
           Text(

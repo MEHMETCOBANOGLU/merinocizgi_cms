@@ -7,6 +7,7 @@ import 'package:icons_plus/icons_plus.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_reader/view/comic_reader_page.dart';
 
 class BookReaderPage extends ConsumerStatefulWidget {
   final String bookId;
@@ -141,10 +142,30 @@ class _BookReaderPageState extends ConsumerState<BookReaderPage> {
                           Text('Otomatik Kaydırma'),
                         ],
                       )),
+                  const PopupMenuItem<String>(
+                      padding: EdgeInsets.zero,
+                      value: 'report',
+                      child: Row(
+                        children: [
+                          SizedBox(width: 8),
+                          Icon(Icons.report_problem_outlined,
+                              size: 18, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('Bildir'),
+                        ],
+                      )),
                 ],
               ).then((value) {
                 if (value == 'auto_scroll') {
                   _showAutoScrollMenu();
+                }
+                if (value == 'report') {
+                  showReportDialog(
+                    context,
+                    ref,
+                    seriesId: widget.bookId,
+                    episodeId: widget.chapterId,
+                  );
                 }
               });
             },

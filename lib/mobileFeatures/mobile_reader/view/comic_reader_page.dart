@@ -222,18 +222,15 @@ class _ComicReaderPageState extends ConsumerState<ComicReaderPage> {
                       // 🟨 Parlaklık başlığı + slider bar aynı satırda
                       Row(
                         children: [
-                          const Padding(
-                            padding: EdgeInsets.only(left: 23.0),
-                            child: Text(
-                              'Parlaklık',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
+                          // Text(
+                          //   'Parlaklık',
+                          //   style: TextStyle(
+                          //     color: Colors.white,
+                          //     fontSize: 16,
+                          //     fontWeight: FontWeight.w600,
+                          //   ),
+                          // ),
+                          // const SizedBox(width: 12),
                           Expanded(
                             child: Transform.scale(
                               scale: 0.85,
@@ -280,50 +277,25 @@ class _ComicReaderPageState extends ConsumerState<ComicReaderPage> {
                               ),
                             ),
                           ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                              ),
-                              icon: const Icon(Icons.flag, color: Colors.white),
-                              label: const Text('Bölümü bildir',
-                                  style: TextStyle(color: Colors.white)),
-                              onPressed: () {
-                                Navigator.pop(context); // bottomSheet kapanır
-                                showReportDialog(
-                                  context,
-                                  ref,
-                                  seriesId: widget.seriesId,
-                                  episodeId: widget.episodeId,
-                                );
-                              },
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: const CircleBorder(),
+                              backgroundColor: Colors.red,
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              icon:
-                                  const Icon(Icons.share, color: Colors.white),
-                              label: const Text('Paylaş',
-                                  style: TextStyle(color: Colors.white)),
-                              onPressed: () {
-                                Navigator.pop(context);
-
-                                final deeplink =
-                                    'merinocizgi://series/${widget.seriesId}/episodes/${widget.episodeId}';
-                                final url = Uri.encodeFull(deeplink);
-
-                                Share.share(
-                                    '📖 Yeni bir bölüm keşfettim!\n$url');
-                              },
+                            child: const Icon(
+                              Icons.report_problem_outlined,
+                              color: Colors.white,
+                              size: 24,
                             ),
+                            onPressed: () {
+                              Navigator.pop(context); // bottomSheet kapanır
+                              showReportDialog(
+                                context,
+                                ref,
+                                seriesId: widget.seriesId,
+                                episodeId: widget.episodeId,
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -368,8 +340,10 @@ Future<void> showReportDialog(BuildContext context, WidgetRef ref,
     context: context,
     builder: (context) => SimpleDialog(
       backgroundColor: Colors.grey[900],
-      title: const Text('Bildir',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      title: const Center(
+        child: Text('Bildir',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
       children: [
         ...reasons.map((reason) => SimpleDialogOption(
               onPressed: () async {
