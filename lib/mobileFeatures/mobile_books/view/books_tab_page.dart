@@ -121,8 +121,8 @@ class BooksTabPage extends ConsumerWidget {
                   currentPage = topFeaturedBooks.when(
                     data: (featuredBooks) {
                       if (featuredBooks.isEmpty) {
-                        return const Center(
-                            child: Text("Haftanın Kitapları Yok"));
+                        print("Haftanın Kitapları Yok");
+                        return const SizedBox.shrink();
                       }
                       return CarouselTopWidget(
                         title: "Haftanın Kitapları",
@@ -203,7 +203,8 @@ class BooksTabPage extends ConsumerWidget {
           completedBooksAsync.when(
             data: (books) {
               if (books.docs.isEmpty) {
-                return const Center(child: Text("Tamamlanmış Kitap Yok"));
+                print("Tamamlanmış Kitaplar Yok");
+                return const SizedBox.shrink();
               }
               // if (books.docs.isEmpty) return const SizedBox.shrink();
               return CarouselWidget(

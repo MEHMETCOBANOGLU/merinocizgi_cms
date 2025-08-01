@@ -17,7 +17,7 @@ import 'package:merinocizgi/mobileFeatures/mobile_auth/widgets/email_login_page.
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/book_chapters_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/create_book_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/edit_chapter_page.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_comic_details/view/bookDetailsPage.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/view/bookDetailsPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/view/myAccountPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/accountSettings.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/followers_list_widget.dart';
@@ -38,7 +38,7 @@ import 'package:merinocizgi/features/adminPanel/view/admin_dashboard_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/view/homePage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_library/view/libraryPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_reader/view/comic_reader_page.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_comic_details/view/comicDetailsPage.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/view/comicDetailsPage.dart';
 
 String? initialAppRoute;
 

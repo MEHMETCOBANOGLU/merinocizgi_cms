@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_comic_details/controller/library_controller.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/controller/library_controller.dart';
 
 class SaveToListDialog extends ConsumerStatefulWidget {
   final String seriesId;

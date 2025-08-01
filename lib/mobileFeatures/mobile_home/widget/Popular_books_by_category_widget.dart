@@ -8,7 +8,7 @@ import 'package:merinocizgi/core/providers/series_provider.dart'
     hide nonEmptyCategoriesProvider;
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_comic_details/view/comicDetailsPage.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/view/comicDetailsPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/top_cart_widget.dart';
 
 // Provider'ı bu dosyada, sınıfın dışında ve global olarak tanımlıyoruz.

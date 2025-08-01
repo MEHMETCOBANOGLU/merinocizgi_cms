@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_comic_details/view/comicDetailsPage.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/view/comicDetailsPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/top_cart_widget.dart';
 
 // Provider'ı bu dosyada, sınıfın dışında ve global olarak tanımlıyoruz.

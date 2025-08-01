@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_comic_details/view/comicDetailsPage.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/view/comicDetailsPage.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/controller/new_content_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/carouselTop_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/carousel_widget.dart';

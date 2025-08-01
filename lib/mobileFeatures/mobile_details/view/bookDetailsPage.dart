@@ -5,9 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/chapter_card_widget.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/detail_header_widget.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/title_chapters_witget.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/widget/chapter_card_widget.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/widget/detail_header_widget.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/widget/title_chapters_witget.dart';
 
 class MobileBookDetailsPage extends ConsumerStatefulWidget {
   final String seriesOrBookId;

@@ -1,5 +1,5 @@
 import 'dart:ui';
-
+import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +9,7 @@ import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
 
-class BottomBarWidget extends StatelessWidget {
+class BottomBarWidget extends ConsumerStatefulWidget {
   final List<BottomBarItem> items;
   final int selectedIndex;
   final ValueChanged<int> onItemSelected;
@@ -22,10 +22,34 @@ class BottomBarWidget extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  ConsumerState<BottomBarWidget> createState() => _BottomBarWidgetState();
+}
+
+class _BottomBarWidgetState extends ConsumerState<BottomBarWidget> {
+  // ↓ Alt bar’ı ölçmek için key
+  final GlobalKey _barKey = GlobalKey();
+
+  void _measureAndSaveHeight() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _barKey.currentContext;
+      final h = ctx?.size?.height;
+      if (h != null && h > 0) {
+        final current = ref.read(bottomBarHeightProvider);
+        // Gereksiz rebuild’leri azaltmak için değişmişse yaz.
+        if (current == null || (current - h).abs() > 1.0) {
+          ref.read(bottomBarHeightProvider.notifier).state = h;
+        }
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    _measureAndSaveHeight();
     return ClipRRect(
       borderRadius: BorderRadius.circular(50),
       child: Container(
+        key: _barKey,
         decoration: BoxDecoration(
           color: AppColors.primary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(50),
@@ -41,9 +65,9 @@ class BottomBarWidget extends StatelessWidget {
             child: Row(
               mainAxisAlignment:
                   MainAxisAlignment.spaceAround, // Eşit aralık bırak
-              children: List.generate(items.length, (index) {
-                final item = items[index];
-                final isSelected = (selectedIndex == index);
+              children: List.generate(widget.items.length, (index) {
+                final item = widget.items[index];
+                final isSelected = (widget.selectedIndex == index);
 
                 final prioritizedCodePoint = 0xE758;
 
@@ -81,7 +105,7 @@ class BottomBarWidget extends StatelessWidget {
                             isSelected ? item.activeColor : item.inactiveColor,
                         onPressed: () {
                           print(item.icon);
-                          onItemSelected(index);
+                          widget.onItemSelected(index);
                         },
                         splashColor: item.activeColor.withOpacity(0.2),
                         highlightColor: item.activeColor.withOpacity(0.1),
@@ -124,13 +148,20 @@ void onItemTapped(int index, WidgetRef ref, BuildContext context) {
       context.go('/library'); // Örnek bir rota
       break;
     case 2:
+      final safeBottom = MediaQuery.of(context).padding.bottom;
+      final measuredBarH = ref.read(bottomBarHeightProvider);
+      // Ölçüm gelmediyse makul bir tahmin (56) + 8px tampon
+      final barHeight = (measuredBarH ?? (56.0)) + 8.0;
+
+      final bottomMargin = safeBottom + barHeight; // ← Dinamik alt boşluk
+
       showModalBottomSheet<void>(
         context: context,
         backgroundColor:
             Colors.transparent, // Arka plan tamamen transparan olmalı
         isScrollControlled: true,
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.3,
+          maxHeight: 270,
         ),
         builder: (BuildContext context) {
           // --- 1. DIŞ SARMALAYICI: KAPATMA ALANI ---
@@ -155,7 +186,7 @@ void onItemTapped(int index, WidgetRef ref, BuildContext context) {
                     onTap: () {}, // Hiçbir şey yapma, sadece dokunmayı yut.
                     child: Container(
                       // Görünen modal içeriğimiz.
-                      margin: const EdgeInsets.fromLTRB(20, 0, 20, 65),
+                      margin: EdgeInsets.fromLTRB(20, 0, 20, bottomMargin),
                       decoration: BoxDecoration(
                         // color: AppColors.primary.withOpacity(0.1),
                         color: AppColors.primary.withOpacity(0.85),

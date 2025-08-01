@@ -13,10 +13,10 @@ import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_comic_details/controller/library_controller.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_comic_details/controller/userRatingProvider.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/controller/library_controller.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/controller/userRatingProvider.dart';
 
-import 'package:merinocizgi/mobileFeatures/mobile_comic_details/widget/save_to_list_dialog.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/widget/save_to_list_dialog.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/liquid_glass_%C4%B1con_button.dart';
 
 class DetailHeaderWidget extends ConsumerStatefulWidget {
@@ -220,7 +220,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              title,
+                              title!,
                               style: GoogleFonts.oswald(
                                 color: Colors.white,
                                 fontSize: 24,
@@ -386,21 +386,28 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                           ),
                         ),
                       ),
+                    if (widget.isBook) const SizedBox(height: 8),
                     if (widget.isBook)
-                      Center(
-                        child: Wrap(
-                          spacing: 8.0,
-                          runSpacing: 4.0,
-                          children: tags
-                              .map((tag) => Transform.scale(
-                                    scale: 0.8,
-                                    child: Chip(
-                                        padding: EdgeInsets.zero,
-                                        label: Text(tag)),
-                                  ))
-                              .toList(),
-                        ),
+                      Wrap(
+                        spacing: 4, // gerçek boşluk
+                        runSpacing: 4,
+                        children: tags
+                            .map((tag) => Chip(
+                                  label: Text(tag,
+                                      style: const TextStyle(fontSize: 12)),
+                                  labelPadding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 0),
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: const VisualDensity(
+                                    horizontal: -4, // daha kompakt
+                                    vertical: -4,
+                                  ),
+                                  padding: EdgeInsets.zero, // Chip iç dolgusu
+                                ))
+                            .toList(),
                       ),
+                    if (widget.isBook) const SizedBox(height: 8),
                   ],
                 ),
               ),
