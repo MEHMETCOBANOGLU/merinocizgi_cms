@@ -1,5 +1,7 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 
 class ChapterCardWidget extends StatelessWidget {
@@ -66,27 +68,34 @@ class ChapterCardWidget extends StatelessWidget {
                 ),
               if (urlImage != null)
                 const SizedBox(width: 12), // varsa boşluk bırak
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Bölüm $chapter',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  if (isBook == false)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      title ?? 'Başlıksız',
+                      'Bölüm $chapter',
                       style: const TextStyle(
-                        color: Color.fromRGBO(134, 201, 187, 1),
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
-                    )
-                ],
+                    ),
+                    if (isBook == false)
+                      AutoSizeText(
+                        title ?? '',
+                        maxLines: 2, // tek satır
+                        minFontSize: 12, // buraya kadar küçül
+                        // stepGranularity: 0.5, // küçültme adımı
+                        overflow:
+                            TextOverflow.ellipsis, // hâlâ sığmazsa ellipsis
+                        style: GoogleFonts.oswald(
+                          color: Colors.white,
+                          fontSize: 14, // başlangıç (hedef) font
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  ],
+                ),
               ),
               if (isBook && isOwner == true)
                 IconButton(

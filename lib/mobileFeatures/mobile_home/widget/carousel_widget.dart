@@ -36,16 +36,16 @@ class CarouselWidget extends StatelessWidget {
                 ),
               ),
               // if (onSeeMore != null)
-              GestureDetector(
-                onTap: onSeeMore,
-                child: Text(
-                  'Daha fazla',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
+              // GestureDetector(
+              //   onTap: onSeeMore,
+              //   child: Text(
+              //     'Daha fazla',
+              //     style: TextStyle(
+              //       fontSize: 12,
+              //       color: AppColors.primary,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),

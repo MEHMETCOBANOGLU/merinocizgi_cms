@@ -104,7 +104,7 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
 
           // --- BÖLÜM 3: Haftanın Serisi   /  en iyi dramalar vs ---
           SizedBox(
-            height: 370, // Yüksekliği sabit tutuyoruz
+            height: 380, // Yüksekliği sabit tutuyoruz
             child: PageView.builder(
               // .builder constructor'ını kullanmak daha verimli
               // Controller'ı burada oluşturuyoruz.
