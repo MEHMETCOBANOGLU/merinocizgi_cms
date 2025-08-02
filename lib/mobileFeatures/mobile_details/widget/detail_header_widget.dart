@@ -13,7 +13,6 @@ import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_details/controller/contentProvider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_details/controller/library_controller.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_details/controller/userRatingProvider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_details/widget/rating_button.dart';
@@ -54,20 +53,33 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final content = ref.watch(contentProvider(widget.seriesOrBookId));
+    final seriesAsync = ref.watch(seriesProvider(widget.seriesOrBookId));
+    final bookAsync = ref.watch(bookProvider(widget.seriesOrBookId));
 
-    return content.when(
-      data: (data) {
-        if (data == null) {
-          return const Scaffold(
-              body: Center(child: Text('İçerik bulunamadı.')));
+    return seriesAsync.when(
+      data: (seriesDoc) {
+        if (seriesDoc.exists) {
+          final data = seriesDoc.data() as Map<String, dynamic>;
+          return _buildDetailWidget(data);
+        } else {
+          return bookAsync.when(
+            data: (bookDoc) {
+              if (bookDoc.exists) {
+                final data = bookDoc.data() as Map<String, dynamic>;
+                return _buildDetailWidget(data);
+              }
+              return const Scaffold(
+                  body: Center(child: Text("İçerik bulunamadı.")));
+            },
+            loading: () => const Scaffold(
+                body: Center(child: CircularProgressIndicator())),
+            error: (e, st) => Scaffold(body: Center(child: Text("Hata: $e"))),
+          );
         }
-        return _buildDetailWidget(data);
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Center(
-        child: Text('Hata: $e'),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (e, st) => Scaffold(body: Center(child: Text("Hata: $e"))),
     );
   }
 
@@ -233,8 +245,6 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                           id: widget.seriesOrBookId,
                           isBook: widget.isBook,
                           averageRating: averageRating,
-                          onRate: () => showRatingDialog(
-                              context, widget.seriesOrBookId, ref),
                         ),
                         Padding(
                           padding: const EdgeInsets.only(bottom: 10.0),
@@ -308,7 +318,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                                     ),
                                     onPressed: () {
                                       if (authStateAsync.value?.user == null) {
-                                        context.push('/landingLogin');
+                                        context.push('/mobileLogin');
                                         return;
                                       }
                                       _showSaveToListDialog();
@@ -321,7 +331,14 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                                   );
                                 }
                               },
-                              loading: () => const SizedBox.shrink(),
+                              loading: () => const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                    width: 15,
+                                    height: 15,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2)),
+                              ),
                               error: (error, stack) => IconButton(
                                 icon: const Icon(Icons.error_outline,
                                     color: Colors.red),

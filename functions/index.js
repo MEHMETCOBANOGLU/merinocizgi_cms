@@ -278,42 +278,76 @@ exports.onUserFollow = onDocumentWritten("users/{followerId}/following/{followed
  * İlgili serinin ve bölümün 'viewCount' sayaçlarını bir artırır.
  */
 exports.incrementViewCounts = onDocumentWritten("readEvents/{eventId}", async(event) => {
-    // Sadece yeni bir döküman oluşturulduğunda çalış.
-    if (!event.data.after.exists || event.data.before.exists) {
+    // yalnızca CREATE
+    if (!event.data.after.exists || event.data.before.exists) return null;
+
+    const eventId = event.params.eventId;
+    const ev = event.data.after.data() || {};
+
+    // --- normalize alanlar ---
+    // contentType: series|books|book vs.
+    const rawType =
+        ev.contentType ||
+        (ev.seriesId ? "series" : null) ||
+        (ev.bookId ? "books" : null);
+
+    const contentType = (rawType || "").toString().toLowerCase()
+        .replace(/^serie(s)?$/, "series")
+        .replace(/^book(s)?$/, "books");
+
+    // içerik id
+    const contentId =
+        ev.contentId || ev.seriesId || ev.bookId || ev.id || null;
+
+    // bölüm/chapter id (varsa)
+    const unitId =
+        ev.unitId ||
+        ev.episodeId ||
+        ev.chapterId ||
+        ev.chapterID ||
+        ev.chapter ||
+        null;
+
+    const userId = ev.userId || ev.uid || null;
+
+    logger.info("readEvents normalize", { eventId, contentType, contentId, unitId, userId });
+
+    if (!userId || !contentType || !contentId) {
+        logger.error("Okuma olayında eksik veri", { eventId, userId, contentType, contentId, unitId, ev });
         return null;
     }
 
-    const eventData = event.data.after.data();
-    const { userId, seriesId, episodeId } = eventData;
-
-    // Gerekli veriler yoksa işlemi durdur.
-    if (!userId || !seriesId || !episodeId) {
-        logger.error("Okuma olayında eksik veri: ", event.data.after.id);
-        return null;
-    }
-
-    // Hem seri hem de bölüm dökümanlarının referanslarını al.
-    const seriesRef = admin.firestore().collection("series").doc(seriesId);
-    const episodeRef = seriesRef.collection("episodes").doc(episodeId);
-
-    // Sayaçları bir artırmak için 'increment' operatörünü kullan.
-    // Bu, birden fazla isteğin aynı anda gelmesi durumunda bile doğru sonucu verir.
-    const increment = admin.firestore.FieldValue.increment(1);
+    const db = admin.firestore();
+    const inc = admin.firestore.FieldValue.increment(1);
+    const batch = db.batch();
 
     try {
-        // İki güncellemeyi de bir batch işlemi içinde yapmak en iyisidir.
-        const batch = admin.firestore().batch();
+        if (contentType === "series") {
+            const seriesRef = db.collection("series").doc(contentId);
+            batch.update(seriesRef, { viewCount: inc });
 
-        batch.update(seriesRef, { viewCount: increment });
-        batch.update(episodeRef, { viewCount: increment });
+            if (unitId) {
+                const epRef = seriesRef.collection("episodes").doc(unitId);
+                batch.update(epRef, { viewCount: inc });
+            }
+        } else if (contentType === "books") {
+            const bookRef = db.collection("books").doc(contentId);
+            batch.update(bookRef, { viewCount: inc });
+
+            // chapter varsa: update yerine set(merge) kullan
+            if (unitId) {
+                const chRef = bookRef.collection("chapters").doc(unitId);
+                batch.set(chRef, { viewCount: inc }, { merge: true });
+            }
+        } else {
+            logger.warn("Bilinmeyen contentType", { eventId, contentType, ev });
+            return null;
+        }
 
         await batch.commit();
-
-        logger.info(`Görüntülenme sayısı artırıldı. Seri: ${seriesId}, Bölüm: ${episodeId}`);
-        return null;
-
-    } catch (error) {
-        logger.error(`Görüntülenme sayısı artırılırken hata oluştu:`, error);
-        return null;
+        logger.info("ViewCount arttı", { contentType, contentId, unitId });
+    } catch (err) {
+        logger.error("ViewCount artırılırken hata", { contentType, contentId, unitId, error: err });
     }
+    return null;
 });

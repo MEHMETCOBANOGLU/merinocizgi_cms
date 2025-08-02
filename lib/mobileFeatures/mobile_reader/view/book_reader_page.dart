@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -25,6 +27,7 @@ class BookReaderPage extends ConsumerStatefulWidget {
 }
 
 class _BookReaderPageState extends ConsumerState<BookReaderPage> {
+  bool _viewEventSent = false;
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _chapterKeys = {};
   bool _didScroll = false;
@@ -35,10 +38,39 @@ class _BookReaderPageState extends ConsumerState<BookReaderPage> {
       false; //Kullanıcının dokunup dokunmadığını anlayabilmek için
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _sendReadEvent();
+    });
+  }
+
+  @override
   void dispose() {
     _autoScrollTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _sendReadEvent() async {
+    if (_viewEventSent) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      await FirebaseFirestore.instance.collection('readEvents').add({
+        'userId': user.uid,
+        'bookId': widget.bookId,
+        'chapterId': widget.chapterId,
+        'readAt': FieldValue.serverTimestamp(),
+      });
+
+      if (mounted) {
+        setState(() => _viewEventSent = true);
+      }
+    } catch (e) {
+      debugPrint("Okuma olayı kaydedilirken hata: $e");
+    }
   }
 
   void _scrollToChapter() {
