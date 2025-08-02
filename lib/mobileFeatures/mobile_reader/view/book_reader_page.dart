@@ -8,6 +8,7 @@ import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_reader/view/comic_reader_page.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_reader/widget/quill_content_view.dart';
 
 class BookReaderPage extends ConsumerStatefulWidget {
   final String bookId;
@@ -221,12 +222,12 @@ class _BookReaderPageState extends ConsumerState<BookReaderPage> {
                         key: _chapterKeys[id],
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 2),
                           Text(
                             "${chapter['chapterNumber']}. Bölüm",
                             style: AppTextStyles.text.copyWith(fontSize: 12),
                           ),
-                          const SizedBox(height: 8),
+                          // const SizedBox(height: 8),
                           Center(
                             child: Text(
                               chapter['title'] ?? '',
@@ -237,7 +238,7 @@ class _BookReaderPageState extends ConsumerState<BookReaderPage> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Text(chapter['content'] ?? ''),
+                          QuillContentView(rawContent: chapter['content']),
                         ],
                       );
                     }),

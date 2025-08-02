@@ -77,10 +77,10 @@ class _MobileComicDetailsPageState
             publishedChaptersAsync.when(
               data: (episodes) {
                 if (episodes.isEmpty) {
+                  print("Henüz yayınlanmış bölüm bulunmuyor");
                   // SliverFillRemaining, liste boş olduğunda kalan tüm alanı doldurur.
                   return const SliverFillRemaining(
-                    child: Center(
-                        child: Text("Henüz yayınlanmış bölüm bulunmuyor.")),
+                    child: SizedBox.shrink(),
                   );
                 }
                 // ListView yerine SliverList kullanıyoruz. Bu, iç içe kaydırma sorunlarını önler.

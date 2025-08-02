@@ -286,8 +286,8 @@ final chaptersProvider =
 });
 
 // Tek bir kitabın verisini getirir.
-final bookProvider =
-    StreamProvider.autoDispose.family<DocumentSnapshot, String>((ref, bookId) {
+final bookProvider = StreamProvider.autoDispose
+    .family<DocumentSnapshot<Map<String, dynamic>>, String>((ref, bookId) {
   if (bookId.isEmpty) return const Stream.empty();
   return FirebaseFirestore.instance.collection('books').doc(bookId).snapshots();
 });

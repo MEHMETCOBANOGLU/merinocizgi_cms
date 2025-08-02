@@ -11,7 +11,7 @@ import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 /// Tek bir serinin verisini ANLIK OLARAK (stream) getirir.
 /// Bu, bir serinin detaylarını gösteren tüm sayfalar için temel provider'dır.
 final seriesProvider = StreamProvider.autoDispose
-    .family<DocumentSnapshot, String>((ref, seriesId) {
+    .family<DocumentSnapshot<Map<String, dynamic>>, String>((ref, seriesId) {
   if (seriesId.isEmpty) return const Stream.empty();
   return FirebaseFirestore.instance
       .collection('series')

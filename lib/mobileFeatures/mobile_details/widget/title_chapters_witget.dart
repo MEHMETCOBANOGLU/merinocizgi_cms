@@ -48,33 +48,42 @@ class TitleChaptersWidget extends StatelessWidget {
 
 // --- YENİ EKLENEN DELEGATE SINIFI ---
 // Bu sınıf, TitleChaptersWidget'ın bir Sliver olarak nasıl davranacağını tanımlar.
-class SliverChapterHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final TitleChaptersWidget child;
+// lib/mobileFeatures/mobile_details/widget/sliver_chapter_header_delegate.dart
 
-  SliverChapterHeaderDelegate({required this.child});
+class SliverChapterHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+
+  SliverChapterHeaderDelegate({
+    required this.child,
+    this.height = 56.0, // başlık yüksekliği: ihtiyaca göre ayarla
+  });
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    // shrinkOffset, başlığın ne kadar küçüldüğünü belirtir (bizim durumumuzda sabit).
-    // overlapsContent, başlığın ana içeriğin üzerine gelip gelmediğini belirtir.
-    return child;
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    // Yükseklik mutlaka kısıtlanmış olmalı
+    return SizedBox(
+      height: height,
+      child: Material(
+        // ink efektleri vs için güvenli
+        color: Colors.transparent,
+        child: child,
+      ),
+    );
   }
 
-  // Başlığın maksimum (tamamen açık) yüksekliği.
-  // TitleChaptersWidget'ın padding'i ve metin yüksekliğine göre ayarla.
   @override
-  double get maxExtent => 56.0;
-
-  // Başlığın minimum (yapışık) yüksekliği.
-  // Pinned olduğunda bu yükseklikte kalır.
-  @override
-  double get minExtent => 56.0;
-
-  // Başlığın içeriği değiştiğinde yeniden oluşturulup oluşturulmayacağı.
-  // Bizimki statik olduğu için false dönebiliriz.
-  @override
-  bool shouldRebuild(SliverChapterHeaderDelegate oldDelegate) {
-    return false;
+  bool shouldRebuild(covariant SliverChapterHeaderDelegate oldDelegate) {
+    return oldDelegate.child != child || oldDelegate.height != height;
   }
 }

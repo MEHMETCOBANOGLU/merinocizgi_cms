@@ -13,8 +13,10 @@ import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/controller/contentProvider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_details/controller/library_controller.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_details/controller/userRatingProvider.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_details/widget/rating_button.dart';
 
 import 'package:merinocizgi/mobileFeatures/mobile_details/widget/save_to_list_dialog.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/liquid_glass_%C4%B1con_button.dart';
@@ -52,33 +54,20 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final seriesAsync = ref.watch(seriesProvider(widget.seriesOrBookId));
-    final bookAsync = ref.watch(bookProvider(widget.seriesOrBookId));
+    final content = ref.watch(contentProvider(widget.seriesOrBookId));
 
-    return seriesAsync.when(
-      data: (seriesDoc) {
-        if (seriesDoc.exists) {
-          final data = seriesDoc.data() as Map<String, dynamic>;
-          return _buildDetailWidget(data);
-        } else {
-          return bookAsync.when(
-            data: (bookDoc) {
-              if (bookDoc.exists) {
-                final data = bookDoc.data() as Map<String, dynamic>;
-                return _buildDetailWidget(data);
-              }
-              return const Scaffold(
-                  body: Center(child: Text("İçerik bulunamadı.")));
-            },
-            loading: () => const Scaffold(
-                body: Center(child: CircularProgressIndicator())),
-            error: (e, st) => Scaffold(body: Center(child: Text("Hata: $e"))),
-          );
+    return content.when(
+      data: (data) {
+        if (data == null) {
+          return const Scaffold(
+              body: Center(child: Text('İçerik bulunamadı.')));
         }
+        return _buildDetailWidget(data);
       },
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, st) => Scaffold(body: Center(child: Text("Hata: $e"))),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, st) => Center(
+        child: Text('Hata: $e'),
+      ),
     );
   }
 
@@ -239,37 +228,19 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                           ],
                         ),
                         const Spacer(),
-                        userRating.when(
-                          data: (ratingvalue) => InkWell(
-                            onTap: () {
-                              if (authStateAsync.value?.user == null) {
-                                context.push('/mobileLogin');
-                                return;
-                              }
-                              showRatingDialog(
-                                  context, widget.seriesOrBookId, ref);
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 10.0),
-                              child: Icon(
-                                rating != null ? Icons.star : Icons.star_border,
-                                color: Colors.yellow,
-                              ),
-                            ),
-                          ),
-                          loading: () =>
-                              const CircularProgressIndicator(strokeWidth: 1),
-                          error: (_, __) =>
-                              const Icon(Icons.error, color: Colors.red),
+                        // Puanla butonu
+                        RatingButton(
+                          id: widget.seriesOrBookId,
+                          isBook: widget.isBook,
+                          averageRating: averageRating,
+                          onRate: () => showRatingDialog(
+                              context, widget.seriesOrBookId, ref),
                         ),
                         Padding(
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(averageRating.toStringAsFixed(1),
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 12)),
                               const SizedBox(width: 16),
                               const Icon(Icons.visibility,
                                   color: Colors.white, size: 16),
@@ -337,7 +308,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                                     ),
                                     onPressed: () {
                                       if (authStateAsync.value?.user == null) {
-                                        context.push('/mobileLogin');
+                                        context.push('/landingLogin');
                                         return;
                                       }
                                       _showSaveToListDialog();
@@ -350,14 +321,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                                   );
                                 }
                               },
-                              loading: () => const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                    width: 15,
-                                    height: 15,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2)),
-                              ),
+                              loading: () => const SizedBox.shrink(),
                               error: (error, stack) => IconButton(
                                 icon: const Icon(Icons.error_outline,
                                     color: Colors.red),
