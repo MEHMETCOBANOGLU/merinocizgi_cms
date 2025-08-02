@@ -47,23 +47,20 @@ class RatingButton extends ConsumerWidget {
 
             showRatingDialog(context, id, ref);
           },
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 10.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  hasUserRating ? Icons.star : Icons.star_border,
-                  color: hasUserRating ? Colors.yellow : Colors.white70,
-                  size: 22,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  averageRating.toStringAsFixed(1),
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                ),
-              ],
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                hasUserRating ? Icons.star : Icons.star_border,
+                color: hasUserRating ? Colors.yellow : Colors.white70,
+                size: 22,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                averageRating.toStringAsFixed(1),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ],
           ),
         );
       },

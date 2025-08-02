@@ -8,6 +8,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:icons_plus/icons_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
@@ -55,6 +56,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
   Widget build(BuildContext context) {
     final seriesAsync = ref.watch(seriesProvider(widget.seriesOrBookId));
     final bookAsync = ref.watch(bookProvider(widget.seriesOrBookId));
+    final user = FirebaseAuth.instance.currentUser;
 
     return seriesAsync.when(
       data: (seriesDoc) {
@@ -217,50 +219,177 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                   children: [
                     Row(
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title!,
-                              style: GoogleFonts.oswald(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            InkWell(
-                              onTap: () =>
-                                  context.push('/UserProfile/$authorId'),
-                              child: Text(
-                                '@$authorName',
-                                style: GoogleFonts.oswald(
-                                    color: Colors.grey[600], fontSize: 14),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        // Puanla butonu
-                        RatingButton(
-                          id: widget.seriesOrBookId,
-                          isBook: widget.isBook,
-                          averageRating: averageRating,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 10.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                        // SOLDaki blok: bounded genişlik vermek için Expanded
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const SizedBox(width: 16),
-                              const Icon(Icons.visibility,
-                                  color: Colors.white, size: 16),
-                              const SizedBox(width: 4),
-                              Text(formattedViewCount,
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 12)),
+                              Row(
+                                children: [
+                                  Text(
+                                    title!,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.oswald(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  RatingButton(
+                                    id: widget.seriesOrBookId,
+                                    isBook: widget.isBook,
+                                    averageRating: averageRating,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.visibility,
+                                          color: Colors.white, size: 16),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        formattedViewCount,
+                                        style: const TextStyle(
+                                            color: Colors.white, fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              // BURADA Expanded KALDIRILDI
+                              Row(
+                                // Spacer yerine spaceBetween ya da sabit boşluk kullanın
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  InkWell(
+                                    onTap: () =>
+                                        context.push('/UserProfile/$authorId'),
+                                    child: Flexible(
+                                      // Expanded değil, Flexible
+                                      child: Text(
+                                        '@$authorName',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.oswald(
+                                          color: Colors.grey[600],
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Spacer(),
+                                  ref
+                                      .watch(isContentInAnyLibraryProvider(
+                                        (
+                                          widget.seriesOrBookId,
+                                          widget.isBook ? 'books' : 'series'
+                                        ),
+                                      ))
+                                      .when(
+                                        data: (isSaved) {
+                                          if (isSaved) {
+                                            return ElevatedButton.icon(
+                                              style: ElevatedButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 10),
+                                                minimumSize: const Size(0, 0),
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                                visualDensity:
+                                                    const VisualDensity(
+                                                        horizontal: -3,
+                                                        vertical: -1.5),
+                                                backgroundColor: AppColors
+                                                    .primary
+                                                    .withOpacity(0.2),
+                                                side: BorderSide(
+                                                    color: AppColors.primary),
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            6)),
+                                              ),
+                                              onPressed: _showSaveToListDialog,
+                                              icon: const Icon(
+                                                  Icons.bookmark_added,
+                                                  size: 15,
+                                                  color: AppColors.primary),
+                                              label: const Text('Kaydedildi',
+                                                  style: TextStyle(
+                                                      fontSize: 10,
+                                                      color:
+                                                          AppColors.primary)),
+                                            );
+                                          } else {
+                                            return ElevatedButton.icon(
+                                              style: ElevatedButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 10),
+                                                minimumSize: const Size(0, 0),
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                                visualDensity:
+                                                    const VisualDensity(
+                                                        horizontal: -3,
+                                                        vertical: -1.5),
+                                                backgroundColor:
+                                                    Colors.transparent,
+                                                side: const BorderSide(
+                                                    color: Colors.white24),
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            6)),
+                                              ),
+                                              onPressed: () {
+                                                if (authStateAsync
+                                                        .value?.user ==
+                                                    null) {
+                                                  context.push('/mobileLogin');
+                                                  return;
+                                                }
+                                                _showSaveToListDialog();
+                                              },
+                                              icon: const Icon(
+                                                  Icons.bookmark_add_outlined,
+                                                  size: 15),
+                                              label: const Text('Kaydet',
+                                                  style:
+                                                      TextStyle(fontSize: 10)),
+                                            );
+                                          }
+                                        },
+                                        loading: () => const Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: SizedBox(
+                                              width: 15,
+                                              height: 15,
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2)),
+                                        ),
+                                        error: (error, stack) => IconButton(
+                                          icon: const Icon(Icons.error_outline,
+                                              color: Colors.red),
+                                          onPressed: () {},
+                                        ),
+                                      ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
+
+                        // const SizedBox(
+                        //     width:
+                        //         12), // Dış Row'daki eski Spacer yerine küçük boşluk
+                        // // Sağdaki bileşenler
                       ],
                     ),
                     Row(
@@ -274,77 +403,18 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                           ),
                         ),
                         const Spacer(),
-                        ref
-                            .watch(isContentInAnyLibraryProvider(
-                              (
-                                widget.seriesOrBookId,
-                                widget.isBook ? 'books' : 'series'
-                              ),
-                            ))
-                            .when(
-                              data: (isSaved) {
-                                if (isSaved) {
-                                  return ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.all(7),
-                                      minimumSize: const Size.square(25),
-                                      backgroundColor:
-                                          AppColors.primary.withOpacity(0.2),
-                                      side:
-                                          BorderSide(color: AppColors.primary),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(6)),
-                                    ),
-                                    onPressed: _showSaveToListDialog,
-                                    icon: const Icon(Icons.bookmark_added,
-                                        size: 15, color: AppColors.primary),
-                                    label: const Text('Kaydedildi',
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: AppColors.primary)),
-                                  );
-                                } else {
-                                  return ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.all(7),
-                                      minimumSize: const Size.square(25),
-                                      backgroundColor: Colors.transparent,
-                                      side: const BorderSide(
-                                          color: Colors.white24),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(6)),
-                                    ),
-                                    onPressed: () {
-                                      if (authStateAsync.value?.user == null) {
-                                        context.push('/mobileLogin');
-                                        return;
-                                      }
-                                      _showSaveToListDialog();
-                                    },
-                                    icon: const Icon(
-                                        Icons.bookmark_add_outlined,
-                                        size: 15),
-                                    label: const Text('Kaydet',
-                                        style: TextStyle(fontSize: 14)),
-                                  );
-                                }
-                              },
-                              loading: () => const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                    width: 15,
-                                    height: 15,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2)),
-                              ),
-                              error: (error, stack) => IconButton(
-                                icon: const Icon(Icons.error_outline,
-                                    color: Colors.red),
-                                onPressed: () {},
-                              ),
-                            ),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          // constraints: const BoxConstraints.tightFor(
+                          //     width: 28, height: 28),
+                          visualDensity:
+                              const VisualDensity(horizontal: -4, vertical: -4),
+                          // iconSize: 22,
+                          onPressed: () {},
+                          icon: const Icon(
+                            AntDesign.comment_outline,
+                          ),
+                        ),
                       ],
                     ),
                     Text.rich(
