@@ -53,3 +53,11 @@ final addCommentProvider = FutureProvider.family.autoDispose<
     text: args.text,
   );
 });
+
+// lile
+
+final isLikedProvider =
+    StreamProvider.family<bool, ({String commentId, String uid})>((ref, p) {
+  final repo = ref.watch(commentRepositoryProvider);
+  return repo.isLiked(p.commentId, p.uid);
+});

@@ -8,6 +8,13 @@ class CommentRepository {
   CollectionReference<Map<String, dynamic>> get _col =>
       _db.collection('comments');
 
+  DocumentReference<Map<String, dynamic>> _commentRef(String id) =>
+      _col.doc(id);
+
+  DocumentReference<Map<String, dynamic>> _likeRef(
+          String commentId, String uid) =>
+      _commentRef(commentId).collection('likes').doc(uid);
+
   Future<Comment> addComment({
     required String contentType,
     required String contentId,
@@ -60,17 +67,6 @@ class CommentRepository {
     return q.snapshots().map((s) => s.docs.map(Comment.fromDoc).toList());
   }
 
-  /// Beğeni arttır / azalt (idempotent değilse sunucu tarafında guard’la—basit örnek)
-  Future<void> like(String commentId, {int delta = 1}) async {
-    final ref = _col.doc(commentId);
-    await _db.runTransaction((tx) async {
-      final snap = await tx.get(ref);
-      if (!snap.exists) return;
-      final cur = (snap.data()!['likeCount'] as num?)?.toInt() ?? 0;
-      tx.update(ref, {'likeCount': (cur + delta).clamp(0, 1 << 31)});
-    });
-  }
-
   Future<void> delete(String commentId,
       {required String byUserId, required bool isAdmin}) async {
     final ref = _col.doc(commentId);
@@ -82,5 +78,30 @@ class CommentRepository {
     } else {
       throw Exception('Bu yorumu silme yetkiniz yok.');
     }
+  }
+
+  /// Kullanıcı bu yorumu like’lamış mı?
+  Stream<bool> isLiked(String commentId, String uid) {
+    return _likeRef(commentId, uid).snapshots().map((s) => s.exists);
+  }
+
+  /// Toggle: varsa sil (unlike), yoksa oluştur (like)
+  Future<void> toggleLike(String commentId, String uid) async {
+    final likeRef = _likeRef(commentId, uid);
+    final commentRef = _commentRef(commentId);
+
+    await _db.runTransaction((tx) async {
+      final likeSnap = await tx.get(likeRef);
+      final commentSnap = await tx.get(commentRef);
+      if (!commentSnap.exists) return;
+
+      if (likeSnap.exists) {
+        // UNLIKE
+        tx.delete(likeRef);
+      } else {
+        // LIKE
+        tx.set(likeRef, {'createdAt': FieldValue.serverTimestamp()});
+      }
+    });
   }
 }

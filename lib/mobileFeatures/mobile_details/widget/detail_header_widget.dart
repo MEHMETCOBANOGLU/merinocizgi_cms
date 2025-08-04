@@ -11,9 +11,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:merinocizgi/core/providers/auth_state_provider.dart';
+import 'package:merinocizgi/core/providers/comment_providers.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_comments/view/comment_composer.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_comments/widget/comment_list.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_details/controller/library_controller.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_details/controller/userRatingProvider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_details/widget/rating_button.dart';
@@ -56,7 +59,12 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
   Widget build(BuildContext context) {
     final seriesAsync = ref.watch(seriesProvider(widget.seriesOrBookId));
     final bookAsync = ref.watch(bookProvider(widget.seriesOrBookId));
-    final user = FirebaseAuth.instance.currentUser;
+
+    // final isOwner = bookAsync.when(
+    //   data: (book) => book['authorId'] == authUser?.uid,
+    //   loading: () => false,
+    //   error: (_, __) => false,
+    // );
 
     return seriesAsync.when(
       data: (seriesDoc) {
@@ -86,6 +94,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
   }
 
   Widget _buildDetailWidget(Map<String, dynamic> data) {
+    final authUser = FirebaseAuth.instance.currentUser;
     final size = MediaQuery.of(context).size;
     final safeTop = MediaQuery.of(context).padding.top; // ★ CHANGED: safe area
     final authStateAsync = ref.watch(authStateProvider);
@@ -410,7 +419,10 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                           visualDensity:
                               const VisualDensity(horizontal: -4, vertical: -4),
                           // iconSize: 22,
-                          onPressed: () {},
+                          onPressed: () {
+                            _commentWidget(
+                                ref, authUser, context, widget.seriesOrBookId);
+                          },
                           icon: const Icon(
                             AntDesign.comment_outline,
                           ),
@@ -565,4 +577,76 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
       ),
     );
   }
+}
+
+_commentWidget(
+    WidgetRef ref, User? user, BuildContext context, String seriesOrBookId) {
+  return showModalBottomSheet(
+    context: context,
+    builder: (_) => Column(
+      children: [
+        CommentComposer(
+          onSend: (text) async {
+            if (user == null) {
+              // login sayfasına yönlendir vb.
+              context.push('/mobileLogin');
+              return;
+            }
+            await ref.read(addCommentProvider((
+              contentType: 'books', // veya 'series' / 'episodes'
+              contentId: seriesOrBookId,
+              parentId: null,
+              userId: user.uid,
+              userName: user.displayName ?? 'Kullanıcı',
+              userPhoto: user.photoURL,
+              text: text,
+            )).future);
+          },
+        ),
+        const SizedBox(height: 12),
+        CommentList(
+          contentType: 'books',
+          contentId: seriesOrBookId,
+
+          onReplyTap: (c) {
+            showModalBottomSheet(
+              context: context,
+              builder: (_) => Padding(
+                padding: const EdgeInsets.all(16),
+                child: CommentComposer(
+                  hint: '${c.userName} kullanıcısına cevap ver…',
+                  onSend: (text) async {
+                    if (user == null) {
+                      context.push('/mobileLogin');
+                      return;
+                    }
+                    await ref.read(addCommentProvider((
+                      contentType: 'books',
+                      contentId: seriesOrBookId,
+                      parentId: c.id,
+                      userId: user.uid,
+                      userName: user.displayName ?? 'Kullanıcı',
+                      userPhoto: user.photoURL,
+                      text: text,
+                    )).future);
+                    if (Navigator.canPop(context)) Navigator.pop(context);
+                  },
+                ),
+              ),
+            );
+          },
+          // onLikeTap: (c) async {
+          //   final user = FirebaseAuth.instance.currentUser;
+          //   if (user == null) {
+          //     context.push('/mobileLogin');
+          //     return;
+          //   }
+          //   await ref
+          //       .read(commentRepositoryProvider)
+          //       .toggleLike(c.id, user.uid);
+          // },
+        ),
+      ],
+    ),
+  );
 }

@@ -1,6 +1,8 @@
 // Liste (üst yorumlar + istenirse cevapları açma)
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:merinocizgi/core/providers/comment_providers.dart';
 import 'package:merinocizgi/domain/entities/comment.dart';
@@ -61,6 +63,10 @@ class _CommentTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final user = FirebaseAuth.instance.currentUser;
+    final isLikedAsync = ref.watch(
+        isLikedProvider((commentId: comment.id, uid: user?.uid ?? '_guest')));
+
     final replies = ref.watch(repliesProvider(comment.id));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,8 +87,27 @@ class _CommentTile extends ConsumerWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.thumb_up_alt_outlined, size: 18),
-              onPressed: () => onLikeTap?.call(comment),
+              icon: isLikedAsync.when(
+                data: (liked) => Icon(
+                  liked ? Icons.favorite : Icons.favorite_border,
+                  color: liked ? Colors.redAccent : Colors.white70,
+                ),
+                loading: () => const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2)),
+                error: (_, __) => const Icon(Icons.error, color: Colors.red),
+              ),
+              onPressed: () async {
+                final user = FirebaseAuth.instance.currentUser;
+                if (user == null) {
+                  context.push('/mobileLogin');
+                  return;
+                }
+                await ref
+                    .read(commentRepositoryProvider)
+                    .toggleLike(comment.id, user.uid);
+              },
             ),
             Text('${comment.likeCount}'),
           ],

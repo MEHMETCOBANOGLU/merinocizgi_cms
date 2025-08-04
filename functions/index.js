@@ -1,7 +1,9 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onDocumentWritten } = require("firebase-functions/v2/firestore");
+const { onDocumentCreated, onDocumentDeleted } = require("firebase-functions/v2/firestore");
 const { logger } = require("firebase-functions");
 const admin = require("firebase-admin");
+
 
 
 // Firebase Admin SDK'yı başlat
@@ -349,5 +351,48 @@ exports.incrementViewCounts = onDocumentWritten("readEvents/{eventId}", async(ev
     } catch (err) {
         logger.error("ViewCount artırılırken hata", { contentType, contentId, unitId, error: err });
     }
+    return null;
+});
+
+
+
+
+//Cloud Functions ile sayaç güncelle
+
+/**
+ * Yorum beğenildiğinde likeCount +1
+ */
+exports.onLikeCreate = onDocumentCreated("comments/{commentId}/likes/{uid}", async(event) => {
+    const commentId = event.params.commentId;
+    const commentRef = admin.firestore().doc(`comments/${commentId}`);
+
+    try {
+        await commentRef.update({
+            likeCount: admin.firestore.FieldValue.increment(1),
+        });
+        logger.info(`Like eklendi: ${commentId}`);
+    } catch (error) {
+        logger.error(`Like eklenirken hata: ${commentId}`, error);
+    }
+
+    return null;
+});
+
+/**
+ * Beğeni geri çekildiğinde likeCount -1
+ */
+exports.onLikeDelete = onDocumentDeleted("comments/{commentId}/likes/{uid}", async(event) => {
+    const commentId = event.params.commentId;
+    const commentRef = admin.firestore().doc(`comments/${commentId}`);
+
+    try {
+        await commentRef.update({
+            likeCount: admin.firestore.FieldValue.increment(-1),
+        });
+        logger.info(`Like silindi: ${commentId}`);
+    } catch (error) {
+        logger.error(`Like silinirken hata: ${commentId}`, error);
+    }
+
     return null;
 });
