@@ -88,7 +88,7 @@ class _RepliesSectionState extends ConsumerState<RepliesSection>
                                   Text(
                                     '${r.userName}',
                                     style: AppTextStyles.oswaldText.copyWith(
-                                        color: Colors.white, fontSize: 12),
+                                        color: Colors.white70, fontSize: 12),
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
@@ -101,7 +101,7 @@ class _RepliesSectionState extends ConsumerState<RepliesSection>
                               Text(
                                 r.text,
                                 style: AppTextStyles.oswaldText.copyWith(
-                                    color: Colors.white, fontSize: 12),
+                                    color: Colors.white70, fontSize: 12),
                               ),
                             ],
                           ),

@@ -33,6 +33,7 @@ class _CommentComposerState extends State<CommentComposer> {
               maxLines: 4,
               decoration: InputDecoration(
                 hintText: widget.hint ?? 'Yorum yaz…',
+                hintStyle: const TextStyle(fontSize: 14),
               ),
             ),
           ),

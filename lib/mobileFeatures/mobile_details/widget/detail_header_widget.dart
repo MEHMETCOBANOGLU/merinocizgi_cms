@@ -15,6 +15,7 @@ import 'package:merinocizgi/core/providers/comment_providers.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/core/theme/index.dart';
+import 'package:merinocizgi/domain/entities/comment.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comments/view/comment_composer.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comments/widget/comment_list.dart';
@@ -26,13 +27,14 @@ import 'package:merinocizgi/mobileFeatures/mobile_details/widget/save_to_list_di
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/liquid_glass_%C4%B1con_button.dart';
 
 class DetailHeaderWidget extends ConsumerStatefulWidget {
-  final String seriesOrBookId;
-  final bool isBook;
   const DetailHeaderWidget({
     super.key,
     required this.seriesOrBookId,
     this.isBook = false,
   });
+
+  final bool isBook;
+  final String seriesOrBookId;
 
   @override
   ConsumerState<DetailHeaderWidget> createState() => _DetailHeaderWidgetState();
@@ -40,11 +42,83 @@ class DetailHeaderWidget extends ConsumerStatefulWidget {
 
 class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
   bool isLiked = false;
-  int rating = 0;
   bool isReadMore = false;
+  int rating = 0;
 
-  final GlobalKey _cardKey = GlobalKey(); // ★ CHANGED: kartı ölçmek için
   double _cardHeight = 0; // ★ CHANGED: ölçülen yükseklik
+  final GlobalKey _cardKey = GlobalKey(); // ★ CHANGED: kartı ölçmek için
+
+  Future<void> submitRating(String seriesId, double rating) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return Future.error('Kullanıcı oturum açılmamış.');
+    }
+    final ratingRef = FirebaseFirestore.instance
+        .collection('series')
+        .doc(seriesId)
+        .collection('ratings')
+        .doc(user.uid);
+
+    await ratingRef.set({
+      'rating': rating,
+      'ratedAt': FieldValue.serverTimestamp(),
+      'userId': user.uid,
+    });
+  }
+
+  Future<void> showRatingDialog(
+    BuildContext context,
+    String seriesId,
+    WidgetRef ref,
+  ) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final contentType = widget.isBook ? 'books' : 'series';
+    final contentId = widget.seriesOrBookId;
+
+    final doc = await FirebaseFirestore.instance
+        .collection(contentType)
+        .doc(contentId)
+        .collection('ratings')
+        .doc(user.uid)
+        .get();
+
+    final initialRating = (doc.data()?['rating'] as num?)?.toDouble() ?? 0.0;
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Center(child: Text('Puanla')),
+        content: RatingBar.builder(
+          initialRating: initialRating,
+          minRating: 1,
+          direction: Axis.horizontal,
+          allowHalfRating: true,
+          itemCount: 5,
+          itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+          itemBuilder: (context, _) =>
+              const Icon(Icons.star, color: Colors.amber),
+          onRatingUpdate: (rating) async {
+            await ref
+                .read(userRatingProvider((id: contentId, type: contentType))
+                    .notifier)
+                .submitRating(rating);
+
+            if (Navigator.of(dialogContext).canPop()) {
+              Navigator.of(dialogContext).pop();
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Puanınız kaydedildi.")),
+            );
+          },
+        ),
+      ),
+    );
+  }
 
   void _showSaveToListDialog() {
     showDialog(
@@ -56,49 +130,12 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final seriesAsync = ref.watch(seriesProvider(widget.seriesOrBookId));
-    final bookAsync = ref.watch(bookProvider(widget.seriesOrBookId));
-
-    // final isOwner = bookAsync.when(
-    //   data: (book) => book['authorId'] == authUser?.uid,
-    //   loading: () => false,
-    //   error: (_, __) => false,
-    // );
-
-    return seriesAsync.when(
-      data: (seriesDoc) {
-        if (seriesDoc.exists) {
-          final data = seriesDoc.data() as Map<String, dynamic>;
-          return _buildDetailWidget(data);
-        } else {
-          return bookAsync.when(
-            data: (bookDoc) {
-              if (bookDoc.exists) {
-                final data = bookDoc.data() as Map<String, dynamic>;
-                return _buildDetailWidget(data);
-              }
-              return const Scaffold(
-                  body: Center(child: Text("İçerik bulunamadı.")));
-            },
-            loading: () => const Scaffold(
-                body: Center(child: CircularProgressIndicator())),
-            error: (e, st) => Scaffold(body: Center(child: Text("Hata: $e"))),
-          );
-        }
-      },
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, st) => Scaffold(body: Center(child: Text("Hata: $e"))),
-    );
-  }
-
   Widget _buildDetailWidget(Map<String, dynamic> data) {
     final authUser = FirebaseAuth.instance.currentUser;
     final size = MediaQuery.of(context).size;
     final safeTop = MediaQuery.of(context).padding.top; // ★ CHANGED: safe area
     final authStateAsync = ref.watch(authStateProvider);
+    String contentType = widget.isBook ? 'books' : 'series';
 
     // ★ CHANGED: Kart ölçümü – post-frame’de 1px toleransla setState
     void _scheduleMeasureCard() {
@@ -133,6 +170,9 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
         type: widget.isBook ? 'books' : 'series'
       )),
     );
+
+    final countAsync = ref.watch(commentCountProvider(
+        (contentType: contentType, contentId: widget.seriesOrBookId)));
 
     // --- METİN HESABI (fallback) ---
     final textSpan = TextSpan(
@@ -362,7 +402,7 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                                                 if (authStateAsync
                                                         .value?.user ==
                                                     null) {
-                                                  context.push('/mobileLogin');
+                                                  context.push('/landingLogin');
                                                   return;
                                                 }
                                                 _showSaveToListDialog();
@@ -421,13 +461,22 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                               const VisualDensity(horizontal: -4, vertical: -4),
                           // iconSize: 22,
                           onPressed: () {
-                            _commentWidget(
-                                ref, authUser, context, widget.seriesOrBookId);
+                            _commentWidget(ref, authUser, context,
+                                widget.seriesOrBookId, contentType);
                           },
                           icon: const Icon(
                             AntDesign.comment_outline,
                           ),
                         ),
+                        Text(
+                          countAsync.when(
+                            data: (commentCount) => '$commentCount',
+                            loading: () => '…',
+                            error: (_, __) => '-',
+                          ),
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 12),
+                        )
                       ],
                     ),
                     Text.rich(
@@ -507,81 +556,47 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
     );
   }
 
-  Future<void> submitRating(String seriesId, double rating) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return Future.error('Kullanıcı oturum açılmamış.');
-    }
-    final ratingRef = FirebaseFirestore.instance
-        .collection('series')
-        .doc(seriesId)
-        .collection('ratings')
-        .doc(user.uid);
+  @override
+  Widget build(BuildContext context) {
+    final seriesAsync = ref.watch(seriesProvider(widget.seriesOrBookId));
+    final bookAsync = ref.watch(bookProvider(widget.seriesOrBookId));
 
-    await ratingRef.set({
-      'rating': rating,
-      'ratedAt': FieldValue.serverTimestamp(),
-      'userId': user.uid,
-    });
-  }
+    // final isOwner = bookAsync.when(
+    //   data: (book) => book['authorId'] == authUser?.uid,
+    //   loading: () => false,
+    //   error: (_, __) => false,
+    // );
 
-  Future<void> showRatingDialog(
-    BuildContext context,
-    String seriesId,
-    WidgetRef ref,
-  ) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    final contentType = widget.isBook ? 'books' : 'series';
-    final contentId = widget.seriesOrBookId;
-
-    final doc = await FirebaseFirestore.instance
-        .collection(contentType)
-        .doc(contentId)
-        .collection('ratings')
-        .doc(user.uid)
-        .get();
-
-    final initialRating = (doc.data()?['rating'] as num?)?.toDouble() ?? 0.0;
-
-    if (!mounted) return;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Center(child: Text('Puanla')),
-        content: RatingBar.builder(
-          initialRating: initialRating,
-          minRating: 1,
-          direction: Axis.horizontal,
-          allowHalfRating: true,
-          itemCount: 5,
-          itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-          itemBuilder: (context, _) =>
-              const Icon(Icons.star, color: Colors.amber),
-          onRatingUpdate: (rating) async {
-            await ref
-                .read(userRatingProvider((id: contentId, type: contentType))
-                    .notifier)
-                .submitRating(rating);
-
-            if (Navigator.of(dialogContext).canPop()) {
-              Navigator.of(dialogContext).pop();
-            }
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Puanınız kaydedildi.")),
-            );
-          },
-        ),
-      ),
+    return seriesAsync.when(
+      data: (seriesDoc) {
+        if (seriesDoc.exists) {
+          final data = seriesDoc.data() as Map<String, dynamic>;
+          return _buildDetailWidget(data);
+        } else {
+          return bookAsync.when(
+            data: (bookDoc) {
+              if (bookDoc.exists) {
+                final data = bookDoc.data() as Map<String, dynamic>;
+                return _buildDetailWidget(data);
+              }
+              return const Scaffold(
+                  body: Center(child: Text("İçerik bulunamadı.")));
+            },
+            loading: () => const Scaffold(
+                body: Center(child: CircularProgressIndicator())),
+            error: (e, st) => Scaffold(body: Center(child: Text("Hata: $e"))),
+          );
+        }
+      },
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (e, st) => Scaffold(body: Center(child: Text("Hata: $e"))),
     );
   }
 }
 
-_commentWidget(
-    WidgetRef ref, User? user, BuildContext context, String seriesOrBookId) {
+_commentWidget(WidgetRef ref, User? user, BuildContext context,
+    String seriesOrBookId, String contentType) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -601,10 +616,15 @@ _commentWidget(
             expand: false, // içerik kadar büyüsün
             builder: (context, scrollCtrl) {
               return Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).canvasColor,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(16)),
+                decoration: const BoxDecoration(
+                  color: Colors.black, // Saydam renk (önemli)
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  border: Border(
+                    top: BorderSide(color: Colors.white24, width: 0.5),
+                    left: BorderSide(color: Colors.white24, width: 0.5),
+                    right: BorderSide(color: Colors.white24, width: 0.5),
+                    bottom: BorderSide.none, // alt kenar yok
+                  ),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min, // ✅ Kapsama alanı kadar
@@ -629,10 +649,11 @@ _commentWidget(
                         padding: const EdgeInsets.all(16),
                         children: [
                           CommentList(
-                            contentType: 'books',
+                            contentType: contentType,
                             contentId: seriesOrBookId,
                             onReplyTap: (c) {
                               showModalBottomSheet(
+                                backgroundColor: Colors.black,
                                 context: context,
                                 isScrollControlled: true,
                                 builder: (context) => Padding(
@@ -642,15 +663,20 @@ _commentWidget(
                                         .bottom, // ✅ Klavye yüksekliği kadar boşluk
                                   ),
                                   child: CommentComposer(
-                                    hint:
-                                        '${c.userName} kullanıcısına cevap ver…',
+                                    hint: '${c.userName}\'e yanıt ver...',
                                     onSend: (text) async {
                                       if (user == null) {
-                                        context.push('/mobileLogin');
+                                        FocusManager.instance.primaryFocus
+                                            ?.unfocus();
+                                        await Future.delayed(
+                                            const Duration(milliseconds: 150));
+                                        if (context.mounted) {
+                                          context.push('/landingLogin');
+                                        }
                                         return;
                                       }
                                       await ref.read(addCommentProvider((
-                                        contentType: 'books',
+                                        contentType: contentType,
                                         contentId: seriesOrBookId,
                                         parentId: c.id,
                                         userId: user.uid,
@@ -672,16 +698,21 @@ _commentWidget(
                         ],
                       ),
                     ),
-                    const Divider(height: 1),
+                    // const Divider(height: 1),
                     CommentComposer(
                       onSend: (text) async {
                         if (user == null) {
-                          // login sayfasına yönlendir vb.
-                          context.push('/mobileLogin');
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          await Future.delayed(
+                              const Duration(milliseconds: 150));
+                          if (context.mounted) {
+                            context.push('/landingLogin');
+                          }
                           return;
                         }
                         await ref.read(addCommentProvider((
-                          contentType: 'books', // veya 'series' / 'episodes'
+                          contentType:
+                              contentType, // veya 'series' / 'episodes'
                           contentId: seriesOrBookId,
                           parentId: null,
                           userId: user.uid,

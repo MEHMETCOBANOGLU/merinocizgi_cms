@@ -396,3 +396,87 @@ exports.onLikeDelete = onDocumentDeleted("comments/{commentId}/likes/{uid}", asy
 
     return null;
 });
+
+
+
+
+/**
+ * Yorum için sayaç
+ */
+// yorum oluşturulduğunda
+
+
+// exports.onCommentCreated = onDocumentCreated("comments/{commentId}", async(event) => {
+//     const c = event.data && event.data.data ? event.data.data() : (event.data ? event.data() : {});
+//     const key = `${c.contentType}_${c.contentId}`;
+//     const ref = admin.firestore().collection("commentCounts").doc(key);
+
+//     const inc = admin.firestore.FieldValue.increment(1);
+//     const updates = { total: inc }; // <-- TS tipi yok
+
+//     if (!c.parentId) updates.topLevel = inc;
+
+//     await ref.set(updates, { merge: true });
+//     return null;
+// });
+
+// exports.onCommentDeleted = onDocumentDeleted("comments/{commentId}", async(event) => {
+//     const c = event.data && event.data.data ? event.data.data() : (event.data ? event.data() : {});
+//     const key = `${c.contentType}_${c.contentId}`;
+//     const ref = admin.firestore().collection("commentCounts").doc(key);
+
+//     const dec = admin.firestore.FieldValue.increment(-1);
+//     const updates = { total: dec }; // <-- TS tipi yok
+
+//     if (!c.parentId) updates.topLevel = dec;
+
+//     await ref.set(updates, { merge: true });
+//     return null;
+// });
+
+
+
+
+// --- Yardımcı: 0 altına düşmeyecek şekilde güncelle ---
+async function bumpCommentCountSafely(contentType, contentId, delta, isTopLevelDelta) {
+    if (!contentType || !contentId) return null;
+
+    const key = `${contentType}_${contentId}`;
+    const ref = admin.firestore().collection("commentCounts").doc(key);
+
+    await admin.firestore().runTransaction(async(tx) => {
+        const snap = await tx.get(ref);
+        const cur = snap.exists ? (snap.data() || {}) : {};
+
+        const totalNow = Number(cur.total || 0);
+        const topNow = Number(cur.topLevel || 0);
+
+        const nextTotal = Math.max(0, totalNow + delta);
+        const nextTop = Math.max(0, topNow + (isTopLevelDelta ? delta : 0));
+
+        // merge: true değil; transaction içinde zaten tek set çağrısı
+        tx.set(ref, { total: nextTotal, topLevel: nextTop }, { merge: true });
+    });
+}
+
+// --- CREATE: total +1 (üst yorumsa topLevel +1) ---
+exports.onCommentCreated = onDocumentCreated("comments/{commentId}", async(event) => {
+    if (!event.data) return null;
+    const c = event.data.data();
+    if (!c) return null;
+
+    const isTopLevel = !c.parentId;
+    await bumpCommentCountSafely(c.contentType, c.contentId, +1, isTopLevel);
+    return null;
+});
+
+// --- DELETE: total -1 (üst yorumsa topLevel -1) ---
+exports.onCommentDeleted = onDocumentDeleted("comments/{commentId}", async(event) => {
+    if (!event.data) return null;
+    const c = event.data.data();
+    if (!c) return null;
+
+    const isTopLevel = !c.parentId;
+    await bumpCommentCountSafely(c.contentType, c.contentId, -1, isTopLevel);
+    return null;
+});
