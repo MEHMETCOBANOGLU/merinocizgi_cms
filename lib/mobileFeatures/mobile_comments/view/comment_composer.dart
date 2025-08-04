@@ -25,16 +25,15 @@ class _CommentComposerState extends State<CommentComposer> {
     return Row(
       children: [
         Expanded(
-          child: TextField(
-            controller: _c,
-            minLines: 1,
-            maxLines: 4,
-            decoration: InputDecoration(
-              hintText: widget.hint ?? 'Yorum yaz…',
-              filled: true,
-              fillColor: Colors.white10,
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8.0, bottom: 8.0, top: 8.0),
+            child: TextField(
+              controller: _c,
+              minLines: 1,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: widget.hint ?? 'Yorum yaz…',
+              ),
             ),
           ),
         ),

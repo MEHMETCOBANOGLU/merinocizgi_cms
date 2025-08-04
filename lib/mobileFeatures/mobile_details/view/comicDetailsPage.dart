@@ -36,6 +36,7 @@ class _MobileComicDetailsPageState
     //   }
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: CustomScrollView(
         slivers: [
           // 1. Sliver: Header Bölümü

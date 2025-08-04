@@ -14,6 +14,7 @@ import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/providers/comment_providers.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
+import 'package:merinocizgi/core/theme/index.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comments/view/comment_composer.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comments/widget/comment_list.dart';
@@ -583,70 +584,119 @@ _commentWidget(
     WidgetRef ref, User? user, BuildContext context, String seriesOrBookId) {
   return showModalBottomSheet(
     context: context,
-    builder: (_) => Column(
-      children: [
-        CommentComposer(
-          onSend: (text) async {
-            if (user == null) {
-              // login sayfasına yönlendir vb.
-              context.push('/mobileLogin');
-              return;
-            }
-            await ref.read(addCommentProvider((
-              contentType: 'books', // veya 'series' / 'episodes'
-              contentId: seriesOrBookId,
-              parentId: null,
-              userId: user.uid,
-              userName: user.displayName ?? 'Kullanıcı',
-              userPhoto: user.photoURL,
-              text: text,
-            )).future);
-          },
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      final viewInsets = MediaQuery.of(context).viewInsets;
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context)
+              .viewInsets
+              .bottom, // ✅ Klavye yüksekliği kadar boşluk
         ),
-        const SizedBox(height: 12),
-        CommentList(
-          contentType: 'books',
-          contentId: seriesOrBookId,
-
-          onReplyTap: (c) {
-            showModalBottomSheet(
-              context: context,
-              builder: (_) => Padding(
-                padding: const EdgeInsets.all(16),
-                child: CommentComposer(
-                  hint: '${c.userName} kullanıcısına cevap ver…',
-                  onSend: (text) async {
-                    if (user == null) {
-                      context.push('/mobileLogin');
-                      return;
-                    }
-                    await ref.read(addCommentProvider((
-                      contentType: 'books',
-                      contentId: seriesOrBookId,
-                      parentId: c.id,
-                      userId: user.uid,
-                      userName: user.displayName ?? 'Kullanıcı',
-                      userPhoto: user.photoURL,
-                      text: text,
-                    )).future);
-                    if (Navigator.canPop(context)) Navigator.pop(context);
-                  },
+        child: DraggableScrollableSheet(
+            initialChildSize: 0.5, // ilk açılışta ekranın %50’si
+            minChildSize: 0.3, // en küçük %30
+            maxChildSize: 0.95, // en büyük %95
+            expand: false, // içerik kadar büyüsün
+            builder: (context, scrollCtrl) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).canvasColor,
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
                 ),
-              ),
-            );
-          },
-          // onLikeTap: (c) async {
-          //   final user = FirebaseAuth.instance.currentUser;
-          //   if (user == null) {
-          //     context.push('/mobileLogin');
-          //     return;
-          //   }
-          //   await ref
-          //       .read(commentRepositoryProvider)
-          //       .toggleLike(c.id, user.uid);
-          // },
-        ),
-      ],
-    ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min, // ✅ Kapsama alanı kadar
+                  children: [
+                    const SizedBox(height: 8),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Text(
+                      'Yorumlar',
+                      style: AppTextStyles.oswaldText,
+                    ),
+                    Expanded(
+                      child: ListView(
+                        controller: scrollCtrl,
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          CommentList(
+                            contentType: 'books',
+                            contentId: seriesOrBookId,
+                            onReplyTap: (c) {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                builder: (context) => Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: MediaQuery.of(context)
+                                        .viewInsets
+                                        .bottom, // ✅ Klavye yüksekliği kadar boşluk
+                                  ),
+                                  child: CommentComposer(
+                                    hint:
+                                        '${c.userName} kullanıcısına cevap ver…',
+                                    onSend: (text) async {
+                                      if (user == null) {
+                                        context.push('/mobileLogin');
+                                        return;
+                                      }
+                                      await ref.read(addCommentProvider((
+                                        contentType: 'books',
+                                        contentId: seriesOrBookId,
+                                        parentId: c.id,
+                                        userId: user.uid,
+                                        userName:
+                                            user.displayName ?? 'Kullanıcı',
+                                        userPhoto: user.photoURL,
+                                        text: text,
+                                      )).future);
+                                      if (Navigator.canPop(context))
+                                        Navigator.pop(context);
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(
+                              height: 80), // composer için nefes payı
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    CommentComposer(
+                      onSend: (text) async {
+                        if (user == null) {
+                          // login sayfasına yönlendir vb.
+                          context.push('/mobileLogin');
+                          return;
+                        }
+                        await ref.read(addCommentProvider((
+                          contentType: 'books', // veya 'series' / 'episodes'
+                          contentId: seriesOrBookId,
+                          parentId: null,
+                          userId: user.uid,
+                          userName: user.displayName ?? 'Kullanıcı',
+                          userPhoto: user.photoURL,
+                          text: text,
+                        )).future);
+                      },
+                    ),
+                    SizedBox(height: MediaQuery.of(context).padding.bottom),
+                  ],
+                ),
+              );
+            }),
+      );
+    },
   );
 }

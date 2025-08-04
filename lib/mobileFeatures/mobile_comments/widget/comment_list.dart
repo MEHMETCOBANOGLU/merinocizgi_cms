@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:merinocizgi/core/providers/comment_providers.dart';
+import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/domain/entities/comment.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_comments/widget/replies_section.dart';
 
 class CommentList extends ConsumerWidget {
   final String contentType; // "series" | "books" | "episodes"
@@ -31,7 +33,7 @@ class CommentList extends ConsumerWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: comments.length,
-        separatorBuilder: (_, __) => const Divider(height: 16),
+        separatorBuilder: (_, __) => const SizedBox(height: 16),
         itemBuilder: (_, i) => _CommentTile(
           comment: comments[i],
           onReplyTap: onReplyTap,
@@ -68,10 +70,42 @@ class _CommentTile extends ConsumerWidget {
         isLikedProvider((commentId: comment.id, uid: user?.uid ?? '_guest')));
 
     final replies = ref.watch(repliesProvider(comment.id));
+
+    /// Ör: 8 dk, 1 saat, 3 gün, 2 ay, 1 yıl
+    String timeAgoTr(DateTime dateTime, {DateTime? now}) {
+      final current = now ?? DateTime.now();
+      var diff = current.difference(dateTime);
+
+      // Gelecek tarih güvenliği (negatifse 0 yap)
+      if (diff.isNegative) diff = Duration.zero;
+
+      final seconds = diff.inSeconds;
+      final minutes = diff.inMinutes;
+      final hours = diff.inHours;
+      final days = diff.inDays;
+
+      if (seconds < 60) return 'şimdi';
+      if (minutes < 60) return '$minutes dk';
+      if (hours < 24) return '$hours saat';
+      if (days < 7) return '$days gün';
+
+      // Haftayı istersen açabilirsin:
+      final weeks = (days / 7).floor();
+      if (weeks < 5) return '$weeks hf';
+
+      // Ay/yıl kabaca (takvim ayı gerekirse paket kullan)
+      final months = (days / 30).floor();
+      if (months < 12) return '$months ay';
+
+      final years = (days / 365).floor();
+      return '$years yıl';
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CircleAvatar(
                 radius: 16,
@@ -81,79 +115,82 @@ class _CommentTile extends ConsumerWidget {
                         : null),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(
-                '${comment.userName} · ${DateFormat('dd.MM.yyyy HH:mm').format(comment.createdAt)}',
-                style: Theme.of(context).textTheme.labelMedium,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        '${comment.userName}',
+                        style: AppTextStyles.oswaldText
+                            .copyWith(color: Colors.white, fontSize: 12),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${timeAgoTr(comment.createdAt)}',
+                        style: AppTextStyles.oswaldText
+                            .copyWith(color: Colors.white38, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    comment.text,
+                    style: AppTextStyles.oswaldText
+                        .copyWith(color: Colors.white, fontSize: 12),
+                  ),
+                  const SizedBox(height: 4),
+                  InkWell(
+                    onTap: () => onReplyTap?.call(comment),
+                    child: Text(
+                      'Yanıtla',
+                      style: AppTextStyles.oswaldText.copyWith(
+                          color: Colors.white38,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
             ),
-            IconButton(
-              icon: isLikedAsync.when(
-                data: (liked) => Icon(
-                  liked ? Icons.favorite : Icons.favorite_border,
-                  color: liked ? Colors.redAccent : Colors.white70,
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  visualDensity:
+                      const VisualDensity(horizontal: -4, vertical: -4), // ←
+                  icon: isLikedAsync.when(
+                    data: (liked) => Icon(
+                      liked ? Icons.favorite : Icons.favorite_border,
+                      color: liked ? Colors.redAccent : Colors.white70,
+                      size: 18,
+                    ),
+                    loading: () => const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2)),
+                    error: (_, __) =>
+                        const Icon(Icons.error, color: Colors.red),
+                  ),
+                  onPressed: () async {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) {
+                      context.push('/mobileLogin');
+                      return;
+                    }
+                    await ref
+                        .read(commentRepositoryProvider)
+                        .toggleLike(comment.id, user.uid);
+                  },
                 ),
-                loading: () => const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2)),
-                error: (_, __) => const Icon(Icons.error, color: Colors.red),
-              ),
-              onPressed: () async {
-                final user = FirebaseAuth.instance.currentUser;
-                if (user == null) {
-                  context.push('/mobileLogin');
-                  return;
-                }
-                await ref
-                    .read(commentRepositoryProvider)
-                    .toggleLike(comment.id, user.uid);
-              },
+                Text('${comment.likeCount}',
+                    style: AppTextStyles.oswaldText
+                        .copyWith(fontSize: 12, color: Colors.white38)),
+              ],
             ),
-            Text('${comment.likeCount}'),
           ],
         ),
-        const SizedBox(height: 4),
-        Text(comment.text),
-        const SizedBox(height: 8),
-        TextButton(
-          onPressed: () => onReplyTap?.call(comment),
-          child: const Text('Cevapla'),
-        ),
-        replies.when(
-          data: (list) => Column(
-            children: list.map((r) {
-              return Padding(
-                padding: const EdgeInsets.only(left: 40.0, top: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                              '${r.userName} · ${DateFormat('dd.MM HH:mm').format(r.createdAt)}',
-                              style: Theme.of(context).textTheme.labelMedium),
-                          const SizedBox(height: 2),
-                          Text(r.text),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-          loading: () => const Padding(
-            padding: EdgeInsets.only(left: 40.0),
-            child: LinearProgressIndicator(minHeight: 2),
-          ),
-          error: (e, _) => Padding(
-            padding: const EdgeInsets.only(left: 40.0),
-            child: Text('Cevaplar yüklenemedi: $e'),
-          ),
-        ),
+        RepliesSection(parentId: comment.id),
       ],
     );
   }
