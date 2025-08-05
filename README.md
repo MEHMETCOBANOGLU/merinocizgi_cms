@@ -118,3 +118,8 @@ Bu proje, ölçeklenebilir ve sürdürülebilir bir yapı için **Clean Architec
 - GitHub: [@MEHMETCOBANOGLU](https://github.com/MEHMETCOBANOGLU)
 - LinkedIn: [linkedin.com/in/mehmet-çobanoğlu](https://www.linkedin.com/in/mehmet-çobanoğlu/)
 - E-posta: `mehmett_ceng@hotmail.com`
+
+## License
+
+This project is **not open source**. All rights reserved © 2025 MEHMETCOBANOGLU.  
+Unauthorized use, copying, or distribution is strictly prohibited.
