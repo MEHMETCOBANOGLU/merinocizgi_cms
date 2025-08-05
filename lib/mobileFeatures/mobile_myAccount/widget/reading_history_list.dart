@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:merinocizgi/core/providers/series_books_providers.dart';
 import 'package:merinocizgi/core/providers/series_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/controller/MyAccount_providers.dart'; // Yeni provider'ı import et
 
@@ -13,6 +14,7 @@ class ReadingHistoryList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final historyAsync = ref.watch(readingHistoryProvider);
+    final episodesMapAsync = ref.watch(readingHistoryEpisodesMapProvider);
 
     return historyAsync.when(
       data: (snapshot) {
@@ -22,56 +24,68 @@ class ReadingHistoryList extends ConsumerWidget {
           );
         }
 
-        // Dikey bir liste ile okunan serileri göster.
-        return ListView.builder(
-          padding: const EdgeInsets.all(16.0),
-          itemCount: snapshot.docs.length,
-          itemBuilder: (context, index) {
-            final doc = snapshot.docs[index];
-            final data = doc.data() as Map<String, dynamic>;
+        return episodesMapAsync.when(
+          data: (episodesMap) {
+            return ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: snapshot.docs.length,
+              itemBuilder: (context, index) {
+                final doc = snapshot.docs[index];
+                final data = doc.data() as Map<String, dynamic>;
 
-            // Her bir okuma kaydı için özel bir kart widget'ı
-            return _HistoryCard(data: data);
+                return _HistoryCard(
+                  data: data,
+                  allEpisodesMap: episodesMap,
+                );
+              },
+            );
           },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, st) => Center(child: Text("Bölümler yüklenemedi: $e")),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) {
-        print("ReadingHistoryList Hata: $e");
-        return Center(child: Text("Okuma geçmişi yüklenemedi: $e"));
-      },
+      error: (e, st) => Center(child: Text("Okuma geçmişi yüklenemedi: $e")),
     );
   }
 }
 
-class _HistoryCard extends ConsumerWidget {
+class _HistoryCard extends StatelessWidget {
   final Map<String, dynamic> data;
-  const _HistoryCard({required this.data});
+  final Map<String, List<Map<String, dynamic>>> allEpisodesMap;
+
+  const _HistoryCard({
+    required this.data,
+    required this.allEpisodesMap,
+    Key? key,
+  }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Gerekli ID'leri veriden alalım.
-    final String seriesId = data['seriesId'] ?? '';
+  Widget build(BuildContext context) {
+    final String contentId = data['seriesId'] ?? data['booksId'];
     final String lastReadEpisodeId = data['lastReadEpisodeId'] ?? '';
+    final List<Map<String, dynamic>> episodeDocs =
+        allEpisodesMap[contentId] ?? [];
 
-    // Bu seriye ait TÜM bölümlerin listesini izle.
-    final episodesAsync = ref.watch(allEpisodesForSeriesProvider(seriesId));
+    final int episodeIndex = episodeDocs.indexWhere(
+      (doc) => doc['id'] == lastReadEpisodeId,
+    );
 
     return Card(
       shape: RoundedRectangleBorder(
-        side: const BorderSide(
-          color: Colors.white30, // Kenar rengi
-          width: 2, // Kenar kalınlığı
-        ),
+        side: const BorderSide(color: Colors.white30, width: 2),
         borderRadius: BorderRadius.circular(12),
       ),
       color: Colors.transparent,
       margin: const EdgeInsets.only(bottom: 12.0),
       child: InkWell(
         onTap: () {
-          // Tıklama mantığı aynı, kullanıcıyı kaldığı bölüme yönlendirir.
-          if (seriesId.isNotEmpty && lastReadEpisodeId.isNotEmpty) {
-            context.push('/comic-reader/$seriesId/$lastReadEpisodeId');
+          if (contentId.isNotEmpty && lastReadEpisodeId.isNotEmpty) {
+            if (data['contentType'] == 'series') {
+              context.push('/comic-reader/$contentId/$lastReadEpisodeId');
+            } else if (data['contentType'] == 'books') {
+              context.push('/book-reader/$contentId/$lastReadEpisodeId');
+            }
           }
         },
         child: Padding(
@@ -97,49 +111,25 @@ class _HistoryCard extends ConsumerWidget {
                     Text(
                       data['seriesTitle'] ?? 'Seri Başlığı Yok',
                       style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-
+                    if (data['contentType'] == 'series')
+                      Text(
+                        data['lastReadEpisodeTitle'] ?? 'Bölüm',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     Text(
-                      "${data['lastReadEpisodeTitle'] ?? 'Bölüm'}",
+                      episodeIndex != -1
+                          ? "${episodeIndex + 1}. Bölüm"
+                          : "Okumaya Devam Et: ${data['lastReadEpisodeTitle'] ?? ''}",
                       style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    // --- ANA DEĞİŞİKLİK BURADA ---
-                    // Bölüm listesinin durumuna göre metni göster.
-                    episodesAsync.when(
-                      data: (episodeDocs) {
-                        // Son okunan bölümün listedeki index'ini (sırasını) bul.
-                        final int episodeIndex = episodeDocs
-                            .indexWhere((doc) => doc.id == lastReadEpisodeId);
-
-                        // Eğer bölüm bulunduysa (index -1 değilse), numarasını göster.
-                        if (episodeIndex != -1) {
-                          // index 0'dan başladığı için, bölüm numarası index + 1 olur.
-                          return Text(
-                            "${episodeIndex + 1}. Bölüm",
-                            style: TextStyle(
-                                color: Colors.grey[600], fontSize: 14),
-                          );
-                        }
-
-                        // Eğer bir sebepten bölüm bulunamazsa (silinmiş olabilir), başlığını göster.
-                        return Text(
-                          "Okumaya Devam Et: ${data['lastReadEpisodeTitle'] ?? ''}",
-                          style:
-                              TextStyle(color: Colors.grey[600], fontSize: 14),
-                        );
-                      },
-                      // Bölümler yüklenirken veya hata olduğunda gösterilecek metin.
-                      loading: () => Text("Bölüm bilgisi yükleniyor...",
-                          style:
-                              TextStyle(color: Colors.grey[600], fontSize: 14)),
-                      error: (e, st) => Text("Bölüm bilgisi alınamadı.",
-                          style: TextStyle(color: Colors.red, fontSize: 14)),
                     ),
                   ],
                 ),

@@ -9,6 +9,7 @@ import 'package:icons_plus/icons_plus.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_myAccount/controller/myAccount_controller.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_reader/view/comic_reader_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_reader/widget/quill_content_view.dart';
 
@@ -27,6 +28,7 @@ class BookReaderPage extends ConsumerStatefulWidget {
 }
 
 class _BookReaderPageState extends ConsumerState<BookReaderPage> {
+  bool _historyUpdated = false;
   bool _viewEventSent = false;
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _chapterKeys = {};
@@ -41,6 +43,7 @@ class _BookReaderPageState extends ConsumerState<BookReaderPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateHistory();
       _sendReadEvent();
     });
   }
@@ -50,6 +53,35 @@ class _BookReaderPageState extends ConsumerState<BookReaderPage> {
     _autoScrollTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _updateHistory() async {
+    if (_historyUpdated || !mounted) return;
+    setState(() => _historyUpdated = true);
+
+    try {
+      final bookDoc = await ref.read(bookProvider(widget.bookId).future);
+      final chapters = await ref.read(chaptersProvider(widget.bookId).future);
+
+      if (!bookDoc.exists || chapters.isEmpty) return;
+
+      final booksData = bookDoc.data() as Map<String, dynamic>;
+      final chapterData =
+          chapters.firstWhere((e) => e['id'] == widget.chapterId);
+
+      await ref
+          .read(MyAccountControllerProvider.notifier)
+          .updateUserReadingHistory(
+            seriesId: widget.bookId,
+            seriesTitle: booksData['title'] ?? '',
+            seriesImageUrl: booksData['coverImageUrl'] ?? '',
+            episodeId: widget.chapterId,
+            episodeTitle: chapterData['title'] ?? '',
+            contentType: 'books',
+          );
+    } catch (e) {
+      debugPrint("Geçmiş güncellenirken hata: $e");
+    }
   }
 
   Future<void> _sendReadEvent() async {

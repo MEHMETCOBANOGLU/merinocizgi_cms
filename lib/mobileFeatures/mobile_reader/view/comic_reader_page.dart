@@ -64,6 +64,7 @@ class _ComicReaderPageState extends ConsumerState<ComicReaderPage> {
             seriesImageUrl: seriesData['squareImageUrl'] ?? '',
             episodeId: widget.episodeId,
             episodeTitle: episodeData['title'] ?? '',
+            contentType: 'series',
           );
     } catch (e) {
       debugPrint("Geçmiş güncellenirken hata: $e");

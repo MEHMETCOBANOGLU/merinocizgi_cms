@@ -75,7 +75,7 @@ class _CarouselCategoryWidgetState
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                "Kategorilere Göre Hit Seriler",
+                "Kategoriye göre hitler",
                 style: GoogleFonts.oswald(
                     fontSize: 24, fontWeight: FontWeight.bold),
               ),

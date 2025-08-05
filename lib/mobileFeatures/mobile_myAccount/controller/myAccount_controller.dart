@@ -18,6 +18,7 @@ class MyAccountController extends StateNotifier<AsyncValue<void>> {
     required String seriesImageUrl,
     required String episodeId,
     required String episodeTitle,
+    required String contentType,
   }) async {
     // Sadece giriş yapmış kullanıcılar için çalışır.
     final user = _ref.read(authStateProvider).value?.user;
@@ -41,6 +42,7 @@ class MyAccountController extends StateNotifier<AsyncValue<void>> {
             FieldValue.serverTimestamp(), // En son okuma zamanını güncelle
         'seriesTitle': seriesTitle,
         'seriesImageUrl': seriesImageUrl,
+        'contentType': contentType,
       }, SetOptions(merge: true));
     } catch (e) {
       // Bu işlem arka planda çalıştığı için kullanıcıya hata göstermeye gerek yok.
