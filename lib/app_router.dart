@@ -25,6 +25,7 @@ import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/following_lis
 import 'package:merinocizgi/mobileFeatures/mobile_myAccount/widget/reading_list_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_reader/view/book_reader_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_search/view/search_page.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_social/view/post_list.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_user_profile/view/userProfilePage.dart';
 import 'package:merinocizgi/mobileFeatures/shared/view/mobile_main_layout.dart'; // Mobil için yeni layout
 
@@ -166,6 +167,8 @@ List<RouteBase> _getMobileRoutes() {
         GoRoute(
             path: '/more',
             builder: (context, state) => const MobileLibraryPage()),
+        GoRoute(
+            path: '/social', builder: (context, state) => const PostListPage()),
       ],
     ),
     // Okuma ekranı gibi tam ekran olacak, kabuk dışında kalacak sayfalar

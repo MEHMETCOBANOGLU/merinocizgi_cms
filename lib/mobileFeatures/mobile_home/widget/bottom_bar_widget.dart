@@ -145,7 +145,7 @@ void onItemTapped(int index, WidgetRef ref, BuildContext context) {
       context.go('/');
       break;
     case 1:
-      context.go('/library'); // Örnek bir rota
+      context.go('/social'); // Örnek bir rota
       break;
     case 2:
       final safeBottom = MediaQuery.of(context).padding.bottom;

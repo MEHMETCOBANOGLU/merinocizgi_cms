@@ -1,11 +1,16 @@
 // lib/features/shared/view/mobile_main_layout.dart
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:icons_plus/icons_plus.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/books_tab_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/bottom_bar_widget.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_social/controller/user_provider.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_social/view/post_composer.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_social/view/post_list.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/home_app_bar_widget.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
 
@@ -19,11 +24,14 @@ class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final user = FirebaseAuth.instance.currentUser;
+    final followedIdsAsync = ref.watch(followedUserIdsProvider(user!.uid));
     final selectedBottomBarIndex = ref.watch(selectedBottomBarIndexProvider);
     // Mevcut rotanın yolunu alıyoruz.
     final location = GoRouterState.of(context).uri.toString();
     // TabBar'ın sadece ana sayfada ('/') görünmesini sağlıyoruz.
     final bool isHomePage = (location == '/');
+    final bool isSocialPage = (location == '/social');
 
     // Alt bar'ın kaplayacağı yükseklik
     const double bottomBarTotalHeight = 0.0;
@@ -40,7 +48,7 @@ class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
 
           // 'title' parametresini, sekmeleri içeren bir Row ile dolduruyoruz.
           // 'Expanded' kullanarak, sekmelerin 'actions'a kadar olan tüm boşluğu doldurmasını sağlıyoruz.
-          title: isHomePage
+          title: isHomePage || isSocialPage
               ? Align(
                   alignment: Alignment.centerLeft,
                   child: Container(
@@ -79,20 +87,27 @@ class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
                       ),
                       // indicatorSize: TabBarIndicatorSize.,
 
-                      labelStyle: const TextStyle(
-                        fontSize: 24,
+                      labelStyle: TextStyle(
+                        fontSize: isSocialPage ? 18 : 24,
                         fontWeight: FontWeight.bold,
                       ),
-                      unselectedLabelStyle: const TextStyle(
-                        fontSize: 24,
+                      unselectedLabelStyle: TextStyle(
+                        fontSize: isSocialPage ? 18 : 24,
                         fontWeight: FontWeight.normal,
                       ),
 
                       dividerColor: Colors.transparent,
-                      tabs: const [
-                        Tab(text: 'Çizgi'),
-                        Tab(text: 'Kitap'),
-                      ],
+                      tabs: isHomePage
+                          ? const [
+                              Tab(text: 'Çizgi'),
+                              Tab(text: 'Kitap'),
+                            ]
+                          : isSocialPage
+                              ? const [
+                                  Tab(text: "Sana Özel"),
+                                  Tab(text: "Takip Ettiklerin"),
+                                ]
+                              : const [],
                     ),
                   ),
                 )
@@ -120,7 +135,12 @@ class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
                         const BooksTabPage(), // Bu widget'ı oluşturacağız.
                       ],
                     )
-                  : child, // Diğer sayfalar (MyAccountPage vb.)
+                  : isSocialPage
+                      ? SocialTabBarView(
+                          // tabController: _tabController,
+                          ref: ref,
+                          followedIdsAsync: followedIdsAsync)
+                      : child, // Diğer sayfalar (MyAccountPage vb.)
             ),
 
             // --- YENİ EKLENEN GRADYAN VE BOŞLUK ---
@@ -185,6 +205,49 @@ class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
             ),
           ],
         ),
+        // floatingActionButton: FloatingActionButton(
+        //   onPressed: () {
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(builder: (_) => const PostComposerPage()),
+        // );
+        //   },
+        //   child: const Icon(Icons.edit),
+        // ),
+
+        floatingActionButton: isSocialPage
+            ? Padding(
+                padding: const EdgeInsets.only(bottom: 60.0),
+                child: FloatingActionButton.small(
+                  backgroundColor: AppColors.primary,
+                  shape: const CircleBorder(),
+                  onPressed: () {
+                    // context.push(
+                    // '/myAccount/books/${widget.seriesOrBookId}/chapters/new');
+                  },
+                  child: const Stack(
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.none,
+
+                    children: [
+                      Positioned(
+                          bottom: 6,
+                          right: 4,
+                          child: Icon(MingCute.quill_pen_line,
+                              color: Colors.white)),
+                      Positioned(
+                          left: 7,
+                          top: 5,
+                          child: Icon(
+                            Icons.add,
+                            size: 16,
+                            color: Colors.white,
+                          )),
+                    ], // Row(
+                  ),
+                ),
+              )
+            : null,
       ),
     );
   }
