@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:merinocizgi/domain/entities/post.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/controller/post_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/controller/user_provider.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_social/view/post_composer.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_social/view/post_composer_sheet.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/widget/post_tile.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/home_app_bar_widget.dart';
 
