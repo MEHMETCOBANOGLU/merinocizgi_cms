@@ -15,6 +15,7 @@ class PostTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final size = MediaQuery.of(context).size;
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: (post.userPhoto != null && post.userPhoto!.isNotEmpty)
@@ -24,105 +25,46 @@ class PostTile extends ConsumerWidget {
       ),
       title: Row(
         children: [
-          Text(post.userName,
-              style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(width: 8),
-          Text(
-            '· ${timeAgoTr(post.createdAt)}',
-            style: AppTextStyles.oswaldText.copyWith(
-                color: Colors.white38,
-                fontSize: 12,
-                fontWeight: FontWeight.bold),
+          // USERNAME + ZAMAN birlikte: tek blok
+          Expanded(
+            child: Row(
+              children: [
+                // USERNAME
+                Flexible(
+                  child: Text(
+                    post.userName,
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                ),
+
+                Text(
+                  ' · ${timeAgoTr(post.createdAt)}',
+                  style: AppTextStyles.oswaldText.copyWith(
+                    color: Colors.white38,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.clip, // İstersen ekle
+                ),
+              ],
+            ),
           ),
-          const Spacer(),
-          GestureDetector(
-            onTapDown: (TapDownDetails details) async {
-              // 1. Ekran boyutlarını al
-              final RenderBox overlay =
-                  Overlay.of(context).context.findRenderObject() as RenderBox;
 
-              // 2. Parmağın dokunduğu noktadan menü konumunu ayarla
-              final RelativeRect position = RelativeRect.fromRect(
-                Rect.fromLTWH(
-                  details.globalPosition.dx,
-                  details.globalPosition.dy,
-                  0,
-                  0,
-                ),
-                Offset.zero & overlay.size,
-              );
-
-              // 3. Menüyü göster
-              final selected = await showMenu<String>(
-                context: context,
-                position: position,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                items: [
-                  if (post.userId == FirebaseAuth.instance.currentUser?.uid)
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Text('Sil', style: TextStyle(color: Colors.white70)),
-                          Spacer(),
-                          Icon(Icons.delete, color: Colors.red[400]),
-                        ],
-                      ),
-                    ),
-                  PopupMenuItem(
-                    value: 'report',
-                    child: Row(
-                      children: [
-                        Text('Bildir', style: TextStyle(color: Colors.white70)),
-                        Spacer(),
-                        Icon(Icons.report, color: Colors.yellow[400]),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-
-              HapticFeedback.lightImpact(); // tıklama hissi
-
-              // 4. Gelen değere göre işlem yap
-
-              if (selected == 'delete') {
-                final shouldDelete = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Gönderi Sil'),
-                    content: const Text(
-                        'Bu gönderiyi silmek istediğinize emin misiniz?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('İptal'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Sil'),
-                      ),
-                    ],
-                  ),
-                );
-
-                if (shouldDelete == true && context.mounted) {
-                  final ref = ProviderScope.containerOf(context);
-                  await ref.read(deletePostProvider(post.id).future);
-                }
-              }
-              if (selected == 'report') {
-                showReportDialog(
-                  context,
-                  ref,
-                  seriesId: post.id,
-                  contentType: 'post',
-                );
-              }
-            },
-            child: const Icon(Icons.more_horiz),
+          // EN SAĞDA sabit ikon
+          SizedBox(width: 8),
+          SizedBox(
+            width: 24,
+            height: 24,
+            child: GestureDetector(
+              onTapDown: (TapDownDetails details) async {
+                // menü kodların
+              },
+              child: const Icon(Icons.more_horiz),
+            ),
           ),
         ],
       ),

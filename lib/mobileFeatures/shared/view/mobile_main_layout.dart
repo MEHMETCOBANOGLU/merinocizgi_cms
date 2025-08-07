@@ -1,19 +1,15 @@
 // lib/features/shared/view/mobile_main_layout.dart
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:icons_plus/icons_plus.dart';
 import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/books_tab_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/bottom_bar_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/controller/post_provider.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_social/view/post_composer_sheet.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/view/post_list.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/add_post_sheet.dart';
-import 'package:merinocizgi/mobileFeatures/shared/widget.dart/home_app_bar_widget.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
 
 class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
