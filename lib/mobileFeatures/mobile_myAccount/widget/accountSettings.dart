@@ -28,26 +28,21 @@ class AccountSettingsPage extends ConsumerWidget {
           Consumer(builder: (context, ref, _) {
             final userProfile = ref.watch(currentUserProfileProvider);
             return userProfile.when(
-              data: (data) {
-                if (data == null) {
-                  return const Text('Profil verisi yüklenemedi.');
-                }
-
-                return Column(
-                  children: [
-                    _SettingsTile(
-                      title: data['mahlas'] ?? 'Mahlas yok',
-                      subtitle: "Profilini düzenle",
-                      icon: Icons.person_outline,
-                      onTap: () => context.go('/account'),
-                    ),
-                    _SettingsTile(
-                      title: data['email'] ?? 'E-posta yok',
-                      icon: Icons.email_outlined,
-                    ),
-                  ],
-                );
-              },
+              data: (data) => Column(
+                children: [
+                  _SettingsTile(
+                    title: data?['mahlas'] ?? 'Mahlas Yükleniyor...',
+                    subtitle: "Profilini düzenle",
+                    icon: Icons.person_outline,
+                    onTap: () => context
+                        .go('/account'), // Profil düzenleme sayfasına git
+                  ),
+                  _SettingsTile(
+                    title: data?['email'] ?? 'E-posta Yükleniyor...',
+                    icon: Icons.email_outlined,
+                  ),
+                ],
+              ),
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, st) => _SettingsTile(
                   title: "Bilgiler yüklenemedi", icon: Icons.error),
