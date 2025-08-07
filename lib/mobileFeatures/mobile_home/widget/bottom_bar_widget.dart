@@ -8,6 +8,8 @@ import 'package:icons_plus/icons_plus.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
+import 'package:merinocizgi/mobileFeatures/shared/view/mobile_main_layout.dart';
+import 'package:merinocizgi/mobileFeatures/shared/widget.dart/add_post_sheet.dart';
 
 class BottomBarWidget extends ConsumerStatefulWidget {
   final List<BottomBarItem> items;
@@ -235,7 +237,19 @@ void onItemTapped(int index, WidgetRef ref, BuildContext context) {
                                     color: Colors.white),
                                 title: Text('Durum Paylaş',
                                     style: AppTextStyles.oswaldText),
-                                onTap: () {},
+                                onTap: () {
+                                  Navigator.of(context, rootNavigator: true)
+                                      .pop(); // önce açık modalı kapat
+                                  context.go('/social');
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    // Sayfa geçişi tamamlandıktan sonra çalışır
+                                    Future.delayed(
+                                        const Duration(milliseconds: 100), () {
+                                      addPostSheetfunc(context, ref);
+                                    });
+                                  });
+                                },
                               ),
                             ])
                           ],

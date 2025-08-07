@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/books_tab_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/bottom_bar_widget.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/controller/user_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/view/post_composer_sheet.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/view/post_list.dart';
+import 'package:merinocizgi/mobileFeatures/shared/widget.dart/add_post_sheet.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/home_app_bar_widget.dart';
 import 'package:merinocizgi/mobileFeatures/shared/providers/bottom_bar_provider.dart';
 
@@ -24,8 +26,10 @@ class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = FirebaseAuth.instance.currentUser;
-    final followedIdsAsync = ref.watch(followedUserIdsProvider(user!.uid));
+    final user = ref.watch(authStateProvider).asData?.value;
+    final followedIdsAsync =
+        ref.watch(followedUserIdsProvider(user!.user?.uid));
+
     final selectedBottomBarIndex = ref.watch(selectedBottomBarIndexProvider);
     // Mevcut rotanın yolunu alıyoruz.
     final location = GoRouterState.of(context).uri.toString();
@@ -205,56 +209,7 @@ class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
             ),
           ],
         ),
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: () {
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (_) => const PostComposerPage()),
-        // );
-        //   },
-        //   child: const Icon(Icons.edit),
-        // ),
-
-        floatingActionButton: isSocialPage
-            ? Padding(
-                padding: const EdgeInsets.only(bottom: 60.0),
-                child: FloatingActionButton.small(
-                  backgroundColor: AppColors.primary,
-                  shape: const CircleBorder(),
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true, // klavye için önemli
-                      shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(16)),
-                      ),
-                      builder: (context) => const PostComposerSheet(),
-                    );
-                  },
-                  child: const Stack(
-                    alignment: Alignment.center,
-                    clipBehavior: Clip.none,
-
-                    children: [
-                      Positioned(
-                          bottom: 6,
-                          right: 4,
-                          child: Icon(MingCute.quill_pen_line,
-                              color: Colors.white)),
-                      Positioned(
-                          left: 7,
-                          top: 5,
-                          child: Icon(
-                            Icons.add,
-                            size: 16,
-                            color: Colors.white,
-                          )),
-                    ], // Row(
-                  ),
-                ),
-              )
-            : null,
+        floatingActionButton: isSocialPage ? addPostSheet(context) : null,
       ),
     );
   }

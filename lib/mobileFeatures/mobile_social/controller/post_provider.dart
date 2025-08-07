@@ -47,3 +47,10 @@ final togglePostLikeProvider = FutureProvider.family
   final repo = ref.watch(postRepositoryProvider);
   await repo.toggleLike(args.postId, args.uid);
 });
+
+// Post silme
+final deletePostProvider =
+    FutureProvider.family.autoDispose<void, String>((ref, postId) async {
+  final repo = ref.watch(postRepositoryProvider);
+  await repo.deletePost(postId);
+});

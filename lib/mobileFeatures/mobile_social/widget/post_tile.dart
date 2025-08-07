@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -5,6 +6,7 @@ import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/domain/entities/post.dart';
 import 'package:intl/intl.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_reader/view/comic_reader_page.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_social/controller/post_provider.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/time.dart';
 
 class PostTile extends ConsumerWidget {
@@ -51,23 +53,24 @@ class PostTile extends ConsumerWidget {
               );
 
               // 3. Menüyü göster
-              final value = await showMenu<String>(
+              final selected = await showMenu<String>(
                 context: context,
                 position: position,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
                 items: [
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Text('Sil', style: TextStyle(color: Colors.white70)),
-                        Spacer(),
-                        Icon(Icons.delete, color: Colors.red[400]),
-                      ],
+                  if (post.userId == FirebaseAuth.instance.currentUser?.uid)
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Text('Sil', style: TextStyle(color: Colors.white70)),
+                          Spacer(),
+                          Icon(Icons.delete, color: Colors.red[400]),
+                        ],
+                      ),
                     ),
-                  ),
                   PopupMenuItem(
                     value: 'report',
                     child: Row(
@@ -84,9 +87,33 @@ class PostTile extends ConsumerWidget {
               HapticFeedback.lightImpact(); // tıklama hissi
 
               // 4. Gelen değere göre işlem yap
-              if (value == 'delete') {
-                // TODO: Silme işlemini burada yap
-              } else if (value == 'report') {
+
+              if (selected == 'delete') {
+                final shouldDelete = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Gönderi Sil'),
+                    content: const Text(
+                        'Bu gönderiyi silmek istediğinize emin misiniz?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('İptal'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text('Sil'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (shouldDelete == true && context.mounted) {
+                  final ref = ProviderScope.containerOf(context);
+                  await ref.read(deletePostProvider(post.id).future);
+                }
+              }
+              if (selected == 'report') {
                 showReportDialog(
                   context,
                   ref,

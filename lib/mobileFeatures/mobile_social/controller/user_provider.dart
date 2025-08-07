@@ -3,7 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Bu provider, oturum açmış kullanıcının takip ettiği kullanıcı ID’lerini verir.
 final followedUserIdsProvider =
-    FutureProvider.family<List<String>, String>((ref, uid) async {
+    FutureProvider.family.autoDispose<List<String>, String?>((ref, uid) async {
+  if (uid == null) return const [];
+
   final snapshot = await FirebaseFirestore.instance
       .collection("users")
       .doc(uid)

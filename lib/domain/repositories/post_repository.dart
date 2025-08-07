@@ -14,6 +14,12 @@ class PostRepository {
     await doc.set(post.toFirestore());
   }
 
+  /// Post sil
+  Future<void> deletePost(String postId) async {
+    final docRef = _col.doc(postId);
+    await docRef.delete();
+  }
+
   /// Tüm gönderileri izler (sıralı)
   Stream<List<Post>> watchAll({int limit = 50}) {
     return _col

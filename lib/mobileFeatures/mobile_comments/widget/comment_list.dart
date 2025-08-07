@@ -100,16 +100,17 @@ class _CommentTile extends ConsumerWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          items: const [
-            PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Text('Sil', style: TextStyle(color: Colors.red)),
-                    Spacer(),
-                    Icon(Icons.delete, color: Colors.red),
-                  ],
-                )),
+          items: [
+            if (comment.userId == FirebaseAuth.instance.currentUser?.uid)
+              const PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Text('Sil', style: TextStyle(color: Colors.red)),
+                      Spacer(),
+                      Icon(Icons.delete, color: Colors.red),
+                    ],
+                  )),
           ],
         );
 

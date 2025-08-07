@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/domain/entities/post.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/controller/post_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/controller/user_provider.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_social/view/post_composer_sheet.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/widget/post_tile.dart';
-import 'package:merinocizgi/mobileFeatures/shared/widget.dart/home_app_bar_widget.dart';
 
 class PostListPage extends ConsumerWidget {
   const PostListPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = ref.watch(authStateProvider).asData?.value;
 
     if (user == null) {
-      return const Center(child: Text("Giriş yapmanız gerekiyor."));
+      return const Center(
+          child: Text("Sosyal sayfayı görüntülemek için giriş yapmalısınız."));
     }
 
-    final followedIdsAsync = ref.watch(followedUserIdsProvider(user.uid));
+    final followedIdsAsync = ref.watch(followedUserIdsProvider(user.user?.uid));
 
     return SocialTabBarView(ref: ref, followedIdsAsync: followedIdsAsync);
   }
@@ -38,26 +37,32 @@ class SocialTabBarView extends StatelessWidget {
   Widget build(BuildContext context) {
     return TabBarView(
       children: [
-        // Sana Özel (tüm postlar)
+        // SEKME 1: Sana Özel (tüm postlar)
         ref.watch(allPostsProvider).when(
               data: (posts) => _PostListView(posts),
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text("Hata: $e")),
             ),
 
-        // Takip Ettiklerin
+        // SEKME 2: Takip Ettiklerin
         followedIdsAsync.when(
           data: (ids) {
+            if (ids.isEmpty) {
+              return const Center(
+                child: Text("Takip ettiğiniz kimse yok."),
+              );
+            }
+
             return ref.watch(followedPostsProvider(ids)).when(
                   data: (posts) => _PostListView(posts),
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(child: Text("Hata: $e")),
+                  error: (e, _) => Center(child: Text("Gönderi hatası: $e")),
                 );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text("Hata: $e")),
-        )
+          error: (e, _) => Center(child: Text("Takip listesi hatası: $e")),
+        ),
       ],
     );
   }
