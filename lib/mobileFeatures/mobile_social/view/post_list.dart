@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/domain/entities/post.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/controller/post_provider.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_social/controller/user_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/widget/post_tile.dart';
 
 class PostListPage extends ConsumerWidget {
@@ -18,51 +17,43 @@ class PostListPage extends ConsumerWidget {
           child: Text("Sosyal sayfayı görüntülemek için giriş yapmalısınız."));
     }
 
-    final followedIdsAsync = ref.watch(followedUserIdsProvider(user.user?.uid));
+    final followedIdsAsync = ref.watch(followedUserIdsProvider(user.user!.uid));
 
-    return SocialTabBarView(ref: ref, followedIdsAsync: followedIdsAsync);
+    return SocialTabBarView(ref: ref, followedIds: followedIdsAsync);
   }
 }
 
+// Önce AsyncValue’ı kaldırıyoruz:
 class SocialTabBarView extends StatelessWidget {
-  const SocialTabBarView({
-    super.key,
-    required this.ref,
-    required this.followedIdsAsync,
-  });
   final WidgetRef ref;
-  final AsyncValue<List<String>> followedIdsAsync;
+  final List<String> followedIds; // <- artık AsyncValue değil, direkt List
+
+  const SocialTabBarView({
+    Key? key,
+    required this.ref,
+    required this.followedIds,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TabBarView(
       children: [
-        // SEKME 1: Sana Özel (tüm postlar)
+        // 1. sekme: tüm postlar
         ref.watch(allPostsProvider).when(
               data: (posts) => _PostListView(posts),
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text("Hata: $e")),
             ),
 
-        // SEKME 2: Takip Ettiklerin
-        followedIdsAsync.when(
-          data: (ids) {
-            if (ids.isEmpty) {
-              return const Center(
-                child: Text("Takip ettiğiniz kimse yok."),
-              );
-            }
-
-            return ref.watch(followedPostsProvider(ids)).when(
-                  data: (posts) => _PostListView(posts),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(child: Text("Gönderi hatası: $e")),
-                );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text("Takip listesi hatası: $e")),
-        ),
+        // 2. sekme: takip ettiklerim
+        if (followedIds.isEmpty)
+          const Center(child: Text("Takip ettiğiniz kimse yok."))
+        else
+          ref.watch(followedPostsProvider).when(
+                data: (posts) => _PostListView(posts),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text("Gönderi hatası: $e")),
+              ),
       ],
     );
   }

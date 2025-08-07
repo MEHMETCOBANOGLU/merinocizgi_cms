@@ -9,7 +9,7 @@ import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/books_tab_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_home/widget/bottom_bar_widget.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_social/controller/user_provider.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_social/controller/post_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/view/post_composer_sheet.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/view/post_list.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/add_post_sheet.dart';
@@ -27,8 +27,7 @@ class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider).asData?.value;
-    final followedIdsAsync =
-        ref.watch(followedUserIdsProvider(user!.user?.uid));
+    final followedIds = ref.watch(followedUserIdsProvider(user!.user!.uid));
 
     final selectedBottomBarIndex = ref.watch(selectedBottomBarIndexProvider);
     // Mevcut rotanın yolunu alıyoruz.
@@ -142,8 +141,8 @@ class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
                   : isSocialPage
                       ? SocialTabBarView(
                           // tabController: _tabController,
-                          ref: ref,
-                          followedIdsAsync: followedIdsAsync)
+                          ref: ref, followedIds: followedIds,
+                        )
                       : child, // Diğer sayfalar (MyAccountPage vb.)
             ),
 

@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/domain/entities/post.dart';
 import 'package:merinocizgi/domain/repositories/post_repository.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_social/controller/followed_user_notifier.dart';
 
 // Firestore erişimi
 final firestoreProvider = Provider<FirebaseFirestore>((ref) {
@@ -21,11 +23,19 @@ final allPostsProvider = StreamProvider.autoDispose<List<Post>>((ref) {
 });
 
 // Belirli kullanıcıların postları (takip edilenler)
-final followedPostsProvider =
-    StreamProvider.family.autoDispose<List<Post>, List<String>>((ref, userIds) {
+final followedPostsProvider = StreamProvider.autoDispose<List<Post>>((ref) {
+  final user = ref.watch(authStateProvider).asData?.value;
+  if (user == null) return const Stream.empty();
+
+  final followedIds = ref.watch(followedUserIdsProvider(user.user!.uid));
   final repo = ref.watch(postRepositoryProvider);
-  return repo.watchByUserIds(userIds);
+  return repo.watchByUserIds(followedIds);
 });
+
+final followedUserIdsProvider =
+    StateNotifierProvider.family<FollowedUserIdsNotifier, List<String>, String>(
+  (ref, uid) => FollowedUserIdsNotifier(uid),
+);
 
 // Post ekleme
 final addPostProvider =
