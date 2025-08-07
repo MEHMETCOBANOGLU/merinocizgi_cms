@@ -295,6 +295,7 @@ class _ComicReaderPageState extends ConsumerState<ComicReaderPage> {
                                 ref,
                                 seriesId: widget.seriesId,
                                 episodeId: widget.episodeId,
+                                contentType: 'series',
                               );
                             },
                           ),
@@ -322,7 +323,9 @@ Future<void> setBrightness(double value) async {
 }
 
 Future<void> showReportDialog(BuildContext context, WidgetRef ref,
-    {required String seriesId, required String episodeId}) async {
+    {required String seriesId,
+    String? episodeId,
+    required String contentType}) async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
 
@@ -371,6 +374,7 @@ Future<void> showReportDialog(BuildContext context, WidgetRef ref,
                       );
                     }
                     await reportRef.set({
+                      'contentType': contentType,
                       'userId': user.uid,
                       'seriesId': seriesId,
                       'episodeId': episodeId,

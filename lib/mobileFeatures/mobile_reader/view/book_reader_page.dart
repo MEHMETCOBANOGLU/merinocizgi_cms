@@ -230,6 +230,7 @@ class _BookReaderPageState extends ConsumerState<BookReaderPage> {
                     ref,
                     seriesId: widget.bookId,
                     episodeId: widget.chapterId,
+                    contentType: 'books',
                   );
                 }
               });

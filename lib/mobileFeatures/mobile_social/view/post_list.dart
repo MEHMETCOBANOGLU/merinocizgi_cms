@@ -77,7 +77,11 @@ class _PostListView extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 80.0),
       child: ListView.separated(
         itemCount: posts.length,
-        separatorBuilder: (_, __) => const Divider(),
+        separatorBuilder: (_, __) => const Divider(
+          // height: 1,
+          thickness: 0.5,
+          color: Colors.white10,
+        ),
         itemBuilder: (context, index) => PostTile(post: posts[index]),
       ),
     );
