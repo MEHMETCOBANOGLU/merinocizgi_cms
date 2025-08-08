@@ -42,7 +42,7 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
     final topCategoriesAsync =
         ref.watch(topSeriesGroupedByPopularCategoriesProvider);
     // itemCount hesapla
-    int baseCount = 2; // 0 = Haftanın Kitabı, son = Reklam
+    int baseCount = 1; // 0 = Haftanın Kitabı, son = Reklam(kaldırıldı)
     int dynamicCount = 0;
 
     if (topCategoriesAsync is AsyncData) {
@@ -121,7 +121,8 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
               // PageView'in çocuklarını bir listeyle tanımlayalım
               itemCount: itemCount,
               itemBuilder: (context, index) {
-                Widget currentPage;
+                Widget currentPage =
+                    const SizedBox.shrink(); // default boş widget
 
                 // index'e göre doğru sayfayı oluştur
                 if (index == 0) {
@@ -157,7 +158,7 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                     ),
                     error: (e, st) => Center(child: Text("Hata: $e")),
                   );
-                } else if (index > 0 && index < itemCount - 1) {
+                } else if (index > 0 && index < itemCount) {
                   currentPage = topCategoriesAsync.when(
                     data: (categoryLists) {
                       final categoryMap = categoryLists[index - 1];
@@ -185,10 +186,6 @@ class _MobileHomePageState extends ConsumerState<MobileHomePage> {
                     ),
                     error: (e, st) =>
                         Center(child: Text("Dramalar yüklenemedi: $e")),
-                  );
-                } else {
-                  currentPage = const Text(
-                    "REKLAMM",
                   );
                 }
 

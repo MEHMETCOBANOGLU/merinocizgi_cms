@@ -31,7 +31,7 @@ class BooksTabPage extends ConsumerWidget {
         ref.watch(topBooksGroupedByPopularCategoriesProvider);
 
 // itemCount hesapla
-    int baseCount = 2; // 0 = Haftanın Kitabı, son = Reklam
+    int baseCount = 1; // 0 = Haftanın Kitabı, son = Reklam
     int dynamicCount = 0;
 
     if (topCategoriesAsync is AsyncData) {
@@ -113,8 +113,8 @@ class BooksTabPage extends ConsumerWidget {
               // PageView'in çocuklarını bir listeyle tanımlayalım
               itemCount: itemCount,
               itemBuilder: (context, index) {
-                Widget currentPage;
-
+                Widget currentPage =
+                    const SizedBox.shrink(); // default boş widget
                 // index'e göre doğru sayfayı oluştur
                 if (index == 0) {
                   // SAYFA 1: Haftanın Serisi
@@ -150,7 +150,7 @@ class BooksTabPage extends ConsumerWidget {
                     ),
                     error: (e, st) => Center(child: Text("Hata: $e")),
                   );
-                } else if (index > 0 && index < itemCount - 1) {
+                } else if (index > 0 && index < itemCount) {
                   currentPage = topCategoriesAsync.when(
                     data: (categoryLists) {
                       if (index - 1 >= categoryLists.length) {
@@ -182,11 +182,13 @@ class BooksTabPage extends ConsumerWidget {
                     error: (e, st) =>
                         Center(child: Text("Dramalar yüklenemedi: $e")),
                   );
-                } else {
-                  currentPage = const Text(
-                    "REKLAMM",
-                  );
                 }
+
+                // else {
+                //   currentPage = const Text(
+                //     "REKLAMM",
+                //   );
+                // }
 
                 // Her sayfaya, sayfalar arası boşluk için sağ tarafa padding ekle
                 return Padding(
