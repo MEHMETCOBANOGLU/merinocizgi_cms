@@ -30,9 +30,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   @override
   Widget build(BuildContext context) {
     final authUser = ref.watch(authStateProvider).asData?.value;
-    final postAsync = ref.watch(getPostByIdProvider(widget.postId));
+    final postAsync = ref.watch(watchPostByIdProvider(widget.postId));
     final countAsync = ref.watch(
-        commentCountProvider((contentType: 'post', contentId: widget.postId)));
+        commentCountProvider((contentType: 'posts', contentId: widget.postId)));
 
     return postAsync.when(
       data: (post) {
@@ -62,7 +62,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: CommentList(
-                          contentType: 'post',
+                          contentType: 'posts',
                           contentId: post.id,
                         ),
                       ),
@@ -84,7 +84,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                     }
                     final reply = ref.read(replyStateProvider);
                     await ref.read(addCommentProvider((
-                      contentType: 'post',
+                      contentType: 'posts',
                       contentId: post.id,
                       parentId: reply?.commentId,
                       userId: authUser.user!.uid,

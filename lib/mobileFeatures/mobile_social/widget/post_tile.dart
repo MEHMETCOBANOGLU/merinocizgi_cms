@@ -1,14 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/providers/comment_providers.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/domain/entities/post.dart';
 import 'package:intl/intl.dart';
-import 'package:merinocizgi/mobileFeatures/mobile_reader/view/comic_reader_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/controller/post_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/widget/more_menu_horiz.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/time.dart';
@@ -19,9 +18,28 @@ class PostTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final countAsync = ref
-        .watch(commentCountProvider((contentType: 'post', contentId: post.id)));
-    final size = MediaQuery.of(context).size;
+    final countAsync = ref.watch(
+      commentCountProvider((contentType: 'posts', contentId: post.id)),
+    );
+    final authUser = ref.watch(authStateProvider).asData?.value?.user;
+    final uid = authUser?.uid ?? '';
+
+    final isLikedAsync = ref.watch(
+      isPostLikedProvider((postId: post.id, uid: uid)),
+    );
+
+    Future<void> toggle() async {
+      if (authUser == null) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        await Future.delayed(const Duration(milliseconds: 150));
+        if (context.mounted) context.push('/landingLogin');
+        return;
+      }
+      HapticFeedback.selectionClick();
+      await ref
+          .read(togglePostLikeProvider((postId: post.id, uid: uid)).future);
+    }
+
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: (post.userPhoto != null && post.userPhoto!.isNotEmpty)
@@ -75,17 +93,63 @@ class PostTile extends ConsumerWidget {
           if (post.imageUrl != null)
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(post.imageUrl!, fit: BoxFit.cover),
+              child: GestureDetector(
+                onDoubleTap: toggle, // çift tıkla beğen
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(post.imageUrl!, fit: BoxFit.cover),
+                ),
               ),
             ),
           Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            IconButton(
-              icon: const Icon(Icons.favorite_border_outlined),
-              color: Colors.white38,
-              onPressed: () {},
+            // LIKE (ikon + sayı)
+            isLikedAsync.when(
+              data: (isLiked) => Row(
+                children: [
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    visualDensity:
+                        const VisualDensity(horizontal: -4, vertical: -4),
+                    icon: Icon(isLiked
+                        ? Icons.favorite
+                        : Icons.favorite_border_outlined),
+                    color: isLiked ? Colors.redAccent : Colors.white38,
+                    onPressed: toggle,
+                  ),
+                  Text('${post.likeCount}',
+                      style:
+                          const TextStyle(color: Colors.white38, fontSize: 12)),
+                ],
+              ),
+              loading: () => const Row(
+                children: [
+                  Text('…',
+                      style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  Padding(
+                    padding: EdgeInsets.only(left: 8.0),
+                    child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2)),
+                  ),
+                ],
+              ),
+              error: (_, __) => Row(
+                children: [
+                  Text('${post.likeCount}',
+                      style:
+                          const TextStyle(color: Colors.white38, fontSize: 12)),
+                  IconButton(
+                    icon: const Icon(Icons.favorite_border_outlined),
+                    color: Colors.white38,
+                    onPressed: toggle,
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(width: 8),
+            // YORUM (ikon + sayı)
+
             IconButton(
               padding: EdgeInsets.zero,
               visualDensity: const VisualDensity(horizontal: -4, vertical: -4),

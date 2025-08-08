@@ -398,6 +398,46 @@ exports.onLikeDelete = onDocumentDeleted("comments/{commentId}/likes/{uid}", asy
 });
 
 
+/**
+ * Post beğenildiğinde likeCount +1
+ */
+exports.onPostLikeCreate = onDocumentCreated("posts/{postId}/likes/{uid}", async(event) => {
+    const postId = event.params.postId;
+    const postRef = admin.firestore().doc(`posts/${postId}`);
+
+    try {
+        await postRef.update({
+            likeCount: admin.firestore.FieldValue.increment(1),
+        });
+        logger.info(`Post like eklendi: ${postId}`);
+    } catch (error) {
+        logger.error(`Post like eklenirken hata: ${postId}`, error);
+    }
+
+    return null;
+});
+
+/**
+ * Post beğenisi geri çekildiğinde likeCount -1
+ */
+exports.onPostLikeDelete = onDocumentDeleted("posts/{postId}/likes/{uid}", async(event) => {
+    const postId = event.params.postId;
+    const postRef = admin.firestore().doc(`posts/${postId}`);
+
+    try {
+        await postRef.update({
+            likeCount: admin.firestore.FieldValue.increment(-1),
+        });
+        logger.info(`Post like silindi: ${postId}`);
+    } catch (error) {
+        logger.error(`Post like silinirken hata: ${postId}`, error);
+    }
+
+    return null;
+});
+
+
+
 
 
 /**

@@ -41,25 +41,16 @@ class PostRepository {
   }
 
   /// Gönderiyi beğen / geri al (toggle)
+// PostRepository
   Future<void> toggleLike(String postId, String uid) async {
     final likeRef = _col.doc(postId).collection('likes').doc(uid);
-    final postRef = _col.doc(postId);
-
-    await _db.runTransaction((tx) async {
-      final likeSnap = await tx.get(likeRef);
-      final postSnap = await tx.get(postRef);
-      if (!postSnap.exists) return;
-
-      final increment = FieldValue.increment(likeSnap.exists ? -1 : 1);
-
-      if (likeSnap.exists) {
-        tx.delete(likeRef);
-      } else {
-        tx.set(likeRef, {'createdAt': FieldValue.serverTimestamp()});
-      }
-
-      tx.update(postRef, {'likeCount': increment});
-    });
+    final likeSnap = await likeRef.get();
+    if (likeSnap.exists) {
+      await likeRef.delete();
+    } else {
+      await likeRef.set({'createdAt': FieldValue.serverTimestamp()});
+    }
+    // NOT: likeCount'ı burada güncellemiyoruz.
   }
 
   /// Kullanıcı bu gönderiyi beğenmiş mi
@@ -76,5 +67,11 @@ class PostRepository {
     final doc = await _col.doc(postId).get();
     if (!doc.exists) return null;
     return Post.fromDoc(doc);
+  }
+
+  Stream<Post?> watchById(String postId) {
+    return _col.doc(postId).snapshots().map(
+          (d) => d.exists ? Post.fromDoc(d) : null,
+        );
   }
 }

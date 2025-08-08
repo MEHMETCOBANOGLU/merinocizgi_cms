@@ -91,3 +91,11 @@ final getPostByIdProvider =
   final repo = ref.watch(postRepositoryProvider);
   return await repo.getPostById(postId);
 });
+
+// Liste sayfasında zaten watchAll() ile akış var, sorun yok.
+//Detay sayfasında bunu kullanacağız ki likeCount anında güncellensin.
+final watchPostByIdProvider =
+    StreamProvider.family.autoDispose<Post?, String>((ref, postId) {
+  final repo = ref.watch(postRepositoryProvider);
+  return repo.watchById(postId);
+});
