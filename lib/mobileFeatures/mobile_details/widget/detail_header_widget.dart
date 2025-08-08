@@ -17,6 +17,7 @@ import 'package:merinocizgi/core/theme/colors.dart';
 import 'package:merinocizgi/core/theme/index.dart';
 import 'package:merinocizgi/domain/entities/comment.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_books/view/controller/book_controller.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_comments/controller/reply_state_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comments/view/comment_composer.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comments/widget/comment_list.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_details/controller/library_controller.dart';
@@ -41,12 +42,24 @@ class DetailHeaderWidget extends ConsumerStatefulWidget {
 }
 
 class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
+  final composerFocus = FocusNode();
   bool isLiked = false;
   bool isReadMore = false;
   int rating = 0;
 
   double _cardHeight = 0; // ★ CHANGED: ölçülen yükseklik
   final GlobalKey _cardKey = GlobalKey(); // ★ CHANGED: kartı ölçmek için
+
+  @override
+  void dispose() {
+    composerFocus.dispose();
+    super.dispose();
+  }
+
+  Future<void> _focusComposer() async {
+    await Future.delayed(const Duration(milliseconds: 80));
+    if (mounted) composerFocus.requestFocus();
+  }
 
   Future<void> submitRating(String seriesId, double rating) async {
     final user = FirebaseAuth.instance.currentUser;
@@ -461,8 +474,15 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
                               const VisualDensity(horizontal: -4, vertical: -4),
                           // iconSize: 22,
                           onPressed: () {
-                            _commentWidget(ref, authUser, context,
-                                widget.seriesOrBookId, contentType);
+                            _commentWidget(
+                              ref,
+                              authUser,
+                              context,
+                              widget.seriesOrBookId,
+                              contentType,
+                              _focusComposer,
+                              composerFocus,
+                            );
                           },
                           icon: const Icon(
                             AntDesign.comment_outline,
@@ -595,8 +615,14 @@ class _DetailHeaderWidgetState extends ConsumerState<DetailHeaderWidget> {
   }
 }
 
-_commentWidget(WidgetRef ref, User? user, BuildContext context,
-    String seriesOrBookId, String contentType) {
+_commentWidget(
+    WidgetRef ref,
+    User? user,
+    BuildContext context,
+    String seriesOrBookId,
+    String contentType,
+    Function _focusComposer,
+    FocusNode composerFocus) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -651,70 +677,46 @@ _commentWidget(WidgetRef ref, User? user, BuildContext context,
                           CommentList(
                             contentType: contentType,
                             contentId: seriesOrBookId,
-                            onReplyTap: (c) {
-                              showModalBottomSheet(
-                                backgroundColor: Colors.black,
-                                context: context,
-                                isScrollControlled: true,
-                                builder: (context) => Padding(
-                                  padding: EdgeInsets.only(
-                                    bottom: MediaQuery.of(context)
-                                        .viewInsets
-                                        .bottom, // ✅ Klavye yüksekliği kadar boşluk
-                                  ),
-                                  child: CommentComposer(
-                                    hint: '${c.userName}\'e yanıt ver...',
-                                    onSend: (text) async {
-                                      if (user == null) {
-                                        FocusManager.instance.primaryFocus
-                                            ?.unfocus();
-                                        await Future.delayed(
-                                            const Duration(milliseconds: 150));
-                                        if (context.mounted) {
-                                          context.push('/landingLogin');
-                                        }
-                                        return;
-                                      }
-                                      await ref.read(addCommentProvider((
-                                        contentType: contentType,
-                                        contentId: seriesOrBookId,
-                                        parentId: c.id,
-                                        userId: user.uid,
-                                        userName:
-                                            user.displayName ?? 'Kullanıcı',
-                                        userPhoto: user.photoURL,
-                                        text: text,
-                                      )).future);
-                                      if (Navigator.canPop(context))
-                                        Navigator.pop(context);
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
+                            // onReplyTap: (c) async {
+                            //   // 🔹 IG usulü: reply state setle
+                            //   ref.read(replyStateProvider.notifier).set(
+                            //         ReplyTarget(
+                            //           commentId: c.id,
+                            //           userName: c.userName,
+                            //           preview: c.text.length > 40
+                            //               ? '${c.text.substring(0, 40)}…'
+                            //               : c.text,
+                            //         ),
+                            //       );
+                            //   // 🔹 composer’ı fokusla
+                            //   await _focusComposer();
+                            // },
                           ),
                           const SizedBox(
-                              height: 80), // composer için nefes payı
+                              height: 80), // alttaki composer için nefes payı
                         ],
                       ),
                     ),
                     // const Divider(height: 1),
                     CommentComposer(
+                      externalFocusNode: composerFocus,
+                      hint: "Yorum yaz...",
                       onSend: (text) async {
                         if (user == null) {
                           FocusManager.instance.primaryFocus?.unfocus();
                           await Future.delayed(
                               const Duration(milliseconds: 150));
-                          if (context.mounted) {
-                            context.push('/landingLogin');
-                          }
+                          if (context.mounted) context.push('/landingLogin');
                           return;
                         }
+
+                        final reply = ref
+                            .read(replyStateProvider); // null ise normal yorum
                         await ref.read(addCommentProvider((
-                          contentType:
-                              contentType, // veya 'series' / 'episodes'
+                          contentType: contentType,
                           contentId: seriesOrBookId,
-                          parentId: null,
+                          parentId:
+                              reply?.commentId, // 🔹 reply varsa parentId ver
                           userId: user.uid,
                           userName: user.displayName ?? 'Kullanıcı',
                           userPhoto: user.photoURL,

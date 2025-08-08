@@ -81,7 +81,7 @@ class _PostListView extends StatelessWidget {
       return const Center(child: Text("Henüz gönderi yok."));
     }
     return Padding(
-      padding: const EdgeInsets.only(bottom: 80.0),
+      padding: const EdgeInsets.only(bottom: 110.0),
       child: ListView.separated(
         itemCount: posts.length,
         separatorBuilder: (_, __) => const Divider(

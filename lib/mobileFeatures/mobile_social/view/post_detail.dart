@@ -8,30 +8,45 @@ import 'package:merinocizgi/core/providers/auth_state_provider.dart';
 import 'package:merinocizgi/core/providers/comment_providers.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/domain/entities/post.dart';
+import 'package:merinocizgi/mobileFeatures/mobile_comments/controller/reply_state_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comments/view/comment_composer.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comments/widget/comment_list.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_reader/view/comic_reader_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/controller/post_provider.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/time.dart';
 
-class PostDetailPage extends ConsumerWidget {
+// post_detail_page.dart (ilgili parçalar)
+class PostDetailPage extends ConsumerStatefulWidget {
   final String postId;
   const PostDetailPage({super.key, required this.postId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PostDetailPage> createState() => _PostDetailPageState();
+}
+
+class _PostDetailPageState extends ConsumerState<PostDetailPage> {
+  final _composerFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _composerFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authUser = ref.watch(authStateProvider).asData?.value;
-    final postAsync = ref.watch(getPostByIdProvider(postId));
-    final countAsync = ref
-        .watch(commentCountProvider((contentType: 'post', contentId: postId)));
+    final postAsync = ref.watch(getPostByIdProvider(widget.postId));
+    final countAsync = ref.watch(
+        commentCountProvider((contentType: 'post', contentId: widget.postId)));
+
     return postAsync.when(
       data: (post) {
         if (post == null)
           return const Center(child: Text('Gönderi bulunamadı.'));
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Gönderi'),
-          ),
+          resizeToAvoidBottomInset: true, // 👈 önemli
+          appBar: AppBar(title: const Text('Gönderi')),
           body: Column(
             children: [
               ListTile(
@@ -231,73 +246,28 @@ class PostDetailPage extends ConsumerWidget {
                 isThreeLine: true,
               ),
               Expanded(
-                child: ListView(
-                  // controller: scrollCtrl,
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    CommentList(
-                      contentType: 'post',
-                      contentId: post.id,
-                      onReplyTap: (c) {
-                        showModalBottomSheet(
-                          backgroundColor: Colors.black,
-                          context: context,
-                          isScrollControlled: true,
-                          builder: (context) => Padding(
-                            padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context)
-                                  .viewInsets
-                                  .bottom, // ✅ Klavye yüksekliği kadar boşluk
-                            ),
-                            child: CommentComposer(
-                              hint: '${c.userName}\'e yanıt ver...',
-                              onSend: (text) async {
-                                if (authUser == null) {
-                                  FocusManager.instance.primaryFocus?.unfocus();
-                                  await Future.delayed(
-                                      const Duration(milliseconds: 150));
-                                  if (context.mounted) {
-                                    context.push('/landingLogin');
-                                  }
-                                  return;
-                                }
-                                await ref.read(addCommentProvider((
-                                  contentType: 'post',
-                                  contentId: post.id,
-                                  parentId: c.id,
-                                  userId: authUser.user!.uid,
-                                  userName:
-                                      authUser.user!.displayName ?? 'Kullanıcı',
-                                  userPhoto: authUser.user!.photoURL,
-                                  text: text,
-                                )).future);
-                                if (Navigator.canPop(context))
-                                  Navigator.pop(context);
-                              },
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 80), // composer için nefes payı
-                  ],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: CommentList(
+                    contentType: 'post',
+                    contentId: post.id,
+                  ),
                 ),
               ),
-              const Spacer(),
               CommentComposer(
+                externalFocusNode: _composerFocus,
                 onSend: (text) async {
                   if (authUser == null) {
                     FocusManager.instance.primaryFocus?.unfocus();
                     await Future.delayed(const Duration(milliseconds: 150));
-                    if (context.mounted) {
-                      context.push('/landingLogin');
-                    }
+                    if (context.mounted) context.push('/landingLogin');
                     return;
                   }
+                  final reply = ref.read(replyStateProvider);
                   await ref.read(addCommentProvider((
-                    contentType: 'post', // veya 'series' / 'episodes'
+                    contentType: 'post',
                     contentId: post.id,
-                    parentId: null,
+                    parentId: reply?.commentId,
                     userId: authUser.user!.uid,
                     userName: authUser.user!.displayName ?? 'Kullanıcı',
                     userPhoto: authUser.user!.photoURL,
