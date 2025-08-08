@@ -1,6 +1,5 @@
 // comment_tile.dart
 // CommentList: Üst yorumları ve yanıtlarını listeler (indentli). “Yanıtla” tıklanınca replyState setlenir, composer fokuslanır.
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +8,6 @@ import 'package:merinocizgi/core/theme/typography.dart';
 // senin entity & repo importların:
 import 'package:merinocizgi/domain/entities/comment.dart';
 import 'package:merinocizgi/core/providers/auth_state_provider.dart';
-import 'package:merinocizgi/domain/repositories/comment_repository.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_comments/widget/delete_comment_undo.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/time.dart';
 

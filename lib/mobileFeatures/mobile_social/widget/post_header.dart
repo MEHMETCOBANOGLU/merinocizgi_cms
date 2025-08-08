@@ -1,27 +1,30 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
-import 'package:merinocizgi/core/providers/comment_providers.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/domain/entities/post.dart';
-import 'package:intl/intl.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_reader/view/comic_reader_page.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/controller/post_provider.dart';
 import 'package:merinocizgi/mobileFeatures/mobile_social/widget/more_menu_horiz.dart';
 import 'package:merinocizgi/mobileFeatures/shared/widget.dart/time.dart';
 
-class PostTile extends ConsumerWidget {
+class PostHeader extends StatelessWidget {
   final Post post;
-  const PostTile({super.key, required this.post});
+  final AsyncValue<int> countAsync;
+  final WidgetRef ref;
+  final BuildContext context;
+
+  const PostHeader({
+    required this.post,
+    required this.countAsync,
+    required this.ref,
+    required this.context,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final countAsync = ref
-        .watch(commentCountProvider((contentType: 'post', contentId: post.id)));
-    final size = MediaQuery.of(context).size;
+  Widget build(BuildContext context) {
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: (post.userPhoto != null && post.userPhoto!.isNotEmpty)
@@ -62,6 +65,7 @@ class PostTile extends ConsumerWidget {
 
           // EN SAĞDA sabit ikon
           MoreMenu(post: post, ref: ref),
+          // SizedBox(width: 8),
         ],
       ),
       subtitle: Column(
@@ -91,7 +95,6 @@ class PostTile extends ConsumerWidget {
               visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
               color: Colors.white38,
               onPressed: () {
-                context.push('/post-detail/${post.id}');
                 // _commentWidget(
                 // ref, authUser, context, widget.seriesOrBookId, contentType);
               },

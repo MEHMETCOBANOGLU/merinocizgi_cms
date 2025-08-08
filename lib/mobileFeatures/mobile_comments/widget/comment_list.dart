@@ -51,7 +51,7 @@ class _CommentListState extends ConsumerState<CommentList> {
         }
         final parents = topSnap.data!;
         if (parents.isEmpty) {
-          return const Text("Henüz yorum yok.");
+          return const SizedBox.shrink();
         }
 
         return ListView(
