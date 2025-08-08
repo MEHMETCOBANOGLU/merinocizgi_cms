@@ -71,4 +71,10 @@ class PostRepository {
         .snapshots()
         .map((s) => s.exists);
   }
+
+  Future<Post?> getPostById(String postId) async {
+    final doc = await _col.doc(postId).get();
+    if (!doc.exists) return null;
+    return Post.fromDoc(doc);
+  }
 }

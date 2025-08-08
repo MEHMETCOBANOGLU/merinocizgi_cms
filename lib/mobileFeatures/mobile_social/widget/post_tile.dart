@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:merinocizgi/core/providers/comment_providers.dart';
 import 'package:merinocizgi/core/theme/typography.dart';
 import 'package:merinocizgi/domain/entities/post.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +18,8 @@ class PostTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final countAsync = ref
+        .watch(commentCountProvider((contentType: 'post', contentId: post.id)));
     final size = MediaQuery.of(context).size;
     return ListTile(
       leading: CircleAvatar(
@@ -177,10 +181,26 @@ class PostTile extends ConsumerWidget {
               onPressed: () {},
             ),
             IconButton(
-              icon: const Icon(AntDesign.comment_outline),
+              padding: EdgeInsets.zero,
+              visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
               color: Colors.white38,
-              onPressed: () {},
+              onPressed: () {
+                context.push('/post-detail/${post.id}');
+                // _commentWidget(
+                // ref, authUser, context, widget.seriesOrBookId, contentType);
+              },
+              icon: const Icon(
+                AntDesign.comment_outline,
+              ),
             ),
+            Text(
+              countAsync.when(
+                data: (commentCount) => '$commentCount',
+                loading: () => '…',
+                error: (_, __) => '-',
+              ),
+              style: const TextStyle(color: Colors.white38, fontSize: 12),
+            )
           ])
         ],
       ),

@@ -22,9 +22,6 @@ class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authStateProvider).asData?.value;
-    final followedIds = ref.watch(followedUserIdsProvider(user!.user!.uid));
-
     final selectedBottomBarIndex = ref.watch(selectedBottomBarIndexProvider);
     // Mevcut rotanın yolunu alıyoruz.
     final location = GoRouterState.of(context).uri.toString();
@@ -135,10 +132,7 @@ class MobileMainLayout extends ConsumerWidget implements PreferredSizeWidget {
                       ],
                     )
                   : isSocialPage
-                      ? SocialTabBarView(
-                          // tabController: _tabController,
-                          ref: ref, followedIds: followedIds,
-                        )
+                      ? const PostListPage()
                       : child, // Diğer sayfalar (MyAccountPage vb.)
             ),
 

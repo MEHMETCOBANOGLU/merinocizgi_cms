@@ -23,20 +23,41 @@ final allPostsProvider = StreamProvider.autoDispose<List<Post>>((ref) {
 });
 
 // Belirli kullanıcıların postları (takip edilenler)
-final followedPostsProvider = StreamProvider.autoDispose<List<Post>>((ref) {
-  final user = ref.watch(authStateProvider).asData?.value;
-  if (user == null) return const Stream.empty();
-
-  final followedIds = ref.watch(followedUserIdsProvider(user.user!.uid));
-  final repo = ref.watch(postRepositoryProvider);
-  return repo.watchByUserIds(followedIds);
-});
-
-final followedUserIdsProvider =
-    StateNotifierProvider.family<FollowedUserIdsNotifier, List<String>, String>(
+// final followedPostsProvider =
+//     StreamProvider.family.autoDispose<List<Post>, List<String>>((ref, userIds) {
+//   final repo = ref.watch(postRepositoryProvider);
+//   return repo.watchByUserIds(userIds);
+// });
+// Change the StateNotifierProvider's state type to AsyncValue<List<String>>
+final followedUserIdsProvider = StateNotifierProvider.family<
+    FollowedUserIdsNotifier, AsyncValue<List<String>>, String>(
   (ref, uid) => FollowedUserIdsNotifier(uid),
 );
 
+// Belirli kullanıcıların postları (takip edilenler)
+// Also, update the followedPostsProvider to correctly handle the AsyncValue.
+// Use .when() or .asData?.value to safely access the data.
+// Belirli kullanıcıların postları (takip edilenler)
+final followedPostsProvider = StreamProvider.autoDispose<List<Post>>((ref) {
+  final user = ref.watch(authStateProvider).asData?.value;
+  if (user == null || user.user?.uid == null) {
+    return const Stream.empty();
+  }
+
+  final followedIdsAsync = ref.watch(followedUserIdsProvider(user.user!.uid));
+  final repo = ref.watch(postRepositoryProvider);
+
+  // Burada when metodunu kullanarak followedIdsAsync'in durumunu kontrol ediyoruz.
+  return followedIdsAsync.when(
+    data: (followedIds) {
+      // Data geldiğinde, bu listeyi watchByUserIds'e gönderiyoruz.
+      return repo.watchByUserIds(followedIds);
+    },
+    // Loading veya error durumlarında ne yapacağımızı belirtiyoruz.
+    loading: () => const Stream.empty(),
+    error: (e, st) => Stream.error(e, st),
+  );
+});
 // Post ekleme
 final addPostProvider =
     FutureProvider.family.autoDispose<void, Post>((ref, post) async {
@@ -63,4 +84,10 @@ final deletePostProvider =
     FutureProvider.family.autoDispose<void, String>((ref, postId) async {
   final repo = ref.watch(postRepositoryProvider);
   await repo.deletePost(postId);
+});
+
+final getPostByIdProvider =
+    FutureProvider.family.autoDispose<Post?, String>((ref, postId) async {
+  final repo = ref.watch(postRepositoryProvider);
+  return await repo.getPostById(postId);
 });
